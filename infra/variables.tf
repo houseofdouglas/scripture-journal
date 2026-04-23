@@ -21,6 +21,19 @@ variable "account_id" {
   description = "AWS account ID — used in bucket naming."
 }
 
+variable "jwt_secret" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = <<-EOT
+    JWT signing secret injected directly into the Lambda environment.
+    When set, the Lambda uses this value and skips the SSM lookup.
+    Generate with: openssl rand -base64 48
+    Pass as: terraform apply -var="jwt_secret=<value>"
+    or store in terraform.tfvars (gitignored).
+  EOT
+}
+
 variable "cloudfront_domain" {
   type        = string
   default     = ""

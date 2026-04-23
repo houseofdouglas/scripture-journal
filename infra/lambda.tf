@@ -39,20 +39,9 @@ resource "aws_iam_role_policy" "lambda_s3" {
   })
 }
 
-# SSM: GetParameter on the JWT secret only
-resource "aws_iam_role_policy" "lambda_ssm" {
-  name = "scripture-journal-lambda-ssm-${var.env}"
-  role = aws_iam_role.lambda.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["ssm:GetParameter"]
-      Resource = aws_ssm_parameter.jwt_secret.arn
-    }]
-  })
-}
+# SSM IAM policy omitted — JWT secret is injected via JWT_SECRET env var.
+# If you switch to SSM, add:
+#   ssm:GetParameter on arn:aws:ssm:us-east-1:<account>:parameter/scripture-journal/<env>/jwt-secret
 
 # ── Lambda function ────────────────────────────────────────────────────────────
 
@@ -75,6 +64,9 @@ resource "aws_lambda_function" "api" {
       # Populated via -var="cloudfront_domain=..." after the first apply.
       # Empty on initial deploy — app.ts CORS falls back to "*" when unset.
       CLOUDFRONT_DOMAIN = var.cloudfront_domain
+      # When set, the Lambda uses this directly and skips the SSM lookup.
+      # Leave blank to use SSM (requires the parameter to exist).
+      JWT_SECRET        = var.jwt_secret
     }
   }
 }
