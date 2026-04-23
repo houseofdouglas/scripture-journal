@@ -18,11 +18,17 @@ export type AppEnv = {
 export function createApp(): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
 
-  // CORS — restricted to the CloudFront domain
+  // CORS — restricted to the CloudFront domain when known, open otherwise.
+  // CLOUDFRONT_DOMAIN is empty on the initial deploy and in local dev;
+  // updated via `terraform apply -var="cloudfront_domain=..."` after first deploy.
+  const corsOrigin = env.CLOUDFRONT_DOMAIN
+    ? `https://${env.CLOUDFRONT_DOMAIN}`
+    : "*";
+
   app.use(
     "*",
     cors({
-      origin: `https://${env.CLOUDFRONT_DOMAIN}`,
+      origin: corsOrigin,
       allowMethods: ["GET", "POST", "OPTIONS"],
       allowHeaders: ["Content-Type", "Authorization"],
       maxAge: 86400,

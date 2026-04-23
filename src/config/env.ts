@@ -7,8 +7,10 @@ const EnvSchema = z.object({
   ENV: z.string().min(1),
   /** Username that is granted admin privileges (defaults to "peter") */
   ADMIN_USERNAME: z.string().min(1).default("peter"),
-  /** CloudFront domain used for building public asset URLs */
-  CLOUDFRONT_DOMAIN: z.string().min(1),
+  /** CloudFront domain used for CORS origin restriction.
+   *  Optional — defaults to "*" on first deploy before CloudFront exists,
+   *  and for local dev (where there is no CloudFront). */
+  CLOUDFRONT_DOMAIN: z.string().default(""),
 });
 
 type Env = z.infer<typeof EnvSchema>;

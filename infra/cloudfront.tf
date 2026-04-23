@@ -51,6 +51,11 @@ resource "aws_cloudfront_distribution" "app" {
     }
   }
 
+  # AWS-managed policy IDs — hardcoded to avoid needing cloudfront:List* permissions.
+  # These are stable global constants; see:
+  # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+  # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.html
+
   # Default: serve SPA
   default_cache_behavior {
     target_origin_id       = "spa"
@@ -59,8 +64,8 @@ resource "aws_cloudfront_distribution" "app" {
     cached_methods         = ["GET", "HEAD"]
     compress               = true
 
-    cache_policy_id          = data.aws_cloudfront_cache_policy.managed_caching_optimized.id
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.cors_s3.id
+    cache_policy_id          = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
+    origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-CORS-S3Origin
   }
 
   # /api/* — write API routes proxied to Lambda Function URL (no caching)
@@ -72,8 +77,8 @@ resource "aws_cloudfront_distribution" "app" {
     cached_methods         = ["GET", "HEAD"]
     compress               = true
 
-    cache_policy_id          = data.aws_cloudfront_cache_policy.managed_caching_disabled.id
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
+    origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac" # Managed-AllViewerExceptHostHeader
   }
 
   # /content/* — cached scripture and article JSON
@@ -86,8 +91,8 @@ resource "aws_cloudfront_distribution" "app" {
     compress               = true
 
     # Long cache — scripture never changes; articles are write-once
-    cache_policy_id          = data.aws_cloudfront_cache_policy.managed_caching_optimized.id
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.cors_s3.id
+    cache_policy_id          = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
+    origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-CORS-S3Origin
   }
 
   # SPA fallback — return index.html for all 404s so React Router handles routing
@@ -117,20 +122,3 @@ resource "aws_cloudfront_distribution" "app" {
   }
 }
 
-# ── Managed cache / request policies (AWS-provided, referenced by ID) ─────────
-
-data "aws_cloudfront_cache_policy" "managed_caching_optimized" {
-  name = "Managed-CachingOptimized"
-}
-
-data "aws_cloudfront_cache_policy" "managed_caching_disabled" {
-  name = "Managed-CachingDisabled"
-}
-
-data "aws_cloudfront_origin_request_policy" "cors_s3" {
-  name = "Managed-CORS-S3Origin"
-}
-
-data "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
-  name = "Managed-AllViewerExceptHostHeader"
-}

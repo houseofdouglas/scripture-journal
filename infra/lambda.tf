@@ -69,10 +69,12 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      BUCKET_NAME        = aws_s3_bucket.app.bucket
-      ENV                = var.env
-      ADMIN_USERNAME     = "peter"
-      CLOUDFRONT_DOMAIN  = aws_cloudfront_distribution.app.domain_name
+      BUCKET_NAME       = aws_s3_bucket.app.bucket
+      ENV               = var.env
+      ADMIN_USERNAME    = "peter"
+      # Populated via -var="cloudfront_domain=..." after the first apply.
+      # Empty on initial deploy — app.ts CORS falls back to "*" when unset.
+      CLOUDFRONT_DOMAIN = var.cloudfront_domain
     }
   }
 }
@@ -83,9 +85,11 @@ resource "aws_lambda_function_url" "api" {
   function_name      = aws_lambda_function.api.function_name
   authorization_type = "NONE" # JWT auth is handled in the Hono middleware
 
+  # The Function URL sits behind CloudFront — browsers never hit it directly,
+  # so "*" is safe here. Real auth is enforced by JWT middleware in Hono.
   cors {
     allow_credentials = false
-    allow_origins     = ["https://${aws_cloudfront_distribution.app.domain_name}"]
+    allow_origins     = ["*"]
     allow_methods     = ["GET", "POST", "OPTIONS"]
     allow_headers     = ["Content-Type", "Authorization"]
     max_age           = 86400

@@ -20,3 +20,14 @@ variable "account_id" {
   default     = "818371815071"
   description = "AWS account ID — used in bucket naming."
 }
+
+variable "cloudfront_domain" {
+  type        = string
+  default     = ""
+  description = <<-EOT
+    CloudFront distribution domain injected into the Lambda env.
+    Leave blank on the first apply (CloudFront doesn't exist yet).
+    After the first apply, re-run with:
+      terraform apply -var="cloudfront_domain=$(terraform output -raw cloudfront_domain)"
+  EOT
+}
