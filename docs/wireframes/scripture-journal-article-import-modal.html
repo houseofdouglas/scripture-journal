@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Wireframe: Article Import Modal — Scripture Journal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #e8e8e8; color: #222; font-size: 14px; padding: 24px;
+    }
+
+    .wf-meta {
+      font-size: 11px; color: #888; margin-bottom: 8px; padding: 6px 10px;
+      background: #fff; border: 1px solid #ccc; border-radius: 3px;
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .wf-meta strong { color: #444; }
+
+    .wf-state-label {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: #555; margin: 32px 0 10px;
+      padding: 4px 8px; background: #d0d0d0; display: inline-block; border-radius: 3px;
+    }
+
+    /* ── Browser chrome ──────────────────────────────── */
+    .wf-browser {
+      background: #ddd; border: 1px solid #bbb; border-radius: 6px 6px 0 0;
+      padding: 8px 12px; display: flex; align-items: center; gap: 10px;
+    }
+    .wf-browser-dots { display: flex; gap: 5px; }
+    .wf-browser-dot { width: 11px; height: 11px; border-radius: 50%; background: #bbb; }
+    .wf-browser-url {
+      flex: 1; background: #f0f0f0; border: 1px solid #bbb;
+      border-radius: 3px; padding: 3px 10px; font-size: 12px; color: #555;
+    }
+
+    /* ── Screen shell ────────────────────────────────── */
+    .wf-screen {
+      background: #f5f5f5; border: 1px solid #bbb;
+      border-top: none; border-radius: 0 0 6px 6px; overflow: hidden;
+      position: relative;
+    }
+
+    /* ── Nav ──────────────────────────────────────────── */
+    .wf-nav {
+      background: #fff; border-bottom: 2px solid #ccc;
+      padding: 0 24px; display: flex; align-items: center; height: 52px; gap: 20px;
+    }
+    .wf-nav-logo {
+      font-size: 16px; font-weight: 700; border: 2px solid #222;
+      padding: 3px 10px; border-radius: 3px;
+    }
+    .wf-nav-spacer { flex: 1; }
+    .wf-nav-link {
+      font-size: 13px; color: #444; padding: 4px 10px;
+      border: 1px solid transparent; border-radius: 3px; cursor: default;
+    }
+    .wf-nav-link.active {
+      background: #222; color: #fff; border-color: #222;
+    }
+    .wf-nav-user {
+      font-size: 13px; padding: 4px 10px; border: 1px solid #ccc;
+      border-radius: 3px; background: #f8f8f8;
+    }
+
+    /* ── Page backdrop (dimmed dashboard behind modal) ── */
+    .wf-backdrop {
+      padding: 0;
+      position: relative;
+    }
+    .wf-page-content {
+      padding: 32px 24px;
+      opacity: 0.35;
+      user-select: none;
+      pointer-events: none;
+    }
+    .wf-page-dim {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1;
+    }
+
+    /* ── Modal overlay ────────────────────────────────── */
+    .wf-modal-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      padding: 40px 0;
+    }
+    .wf-modal {
+      background: #fff;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      width: 520px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+    }
+    .wf-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+    .wf-modal-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .wf-modal-close {
+      width: 26px; height: 26px; border: 1px solid #ccc;
+      border-radius: 4px; background: #f5f5f5;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; cursor: default; color: #555;
+    }
+    .wf-modal-body {
+      padding: 20px;
+    }
+    .wf-modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid #e8e8e8;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* ── Form elements ────────────────────────────────── */
+    .wf-field { margin-bottom: 16px; }
+    .wf-field:last-child { margin-bottom: 0; }
+    .wf-label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: #333; margin-bottom: 5px;
+    }
+    .wf-label .req { color: #c00; margin-left: 2px; }
+    .wf-input {
+      width: 100%; padding: 8px 10px;
+      border: 1px solid #ccc; border-radius: 3px;
+      background: #fff; font-size: 13px; color: #555;
+    }
+    .wf-input.error { border-color: #c00; }
+    .wf-input-hint {
+      font-size: 11px; color: #888; margin-top: 4px;
+    }
+    .wf-textarea {
+      width: 100%; padding: 8px 10px;
+      border: 1px solid #ccc; border-radius: 3px;
+      background: #fff; font-size: 13px; color: #555;
+      resize: vertical; min-height: 140px;
+      font-family: Georgia, serif;
+    }
+
+    /* ── Buttons ──────────────────────────────────────── */
+    .wf-btn {
+      padding: 7px 16px; border: 1px solid #bbb;
+      border-radius: 3px; background: #f0f0f0;
+      font-size: 13px; cursor: default; font-weight: 500;
+    }
+    .wf-btn-primary {
+      background: #222; color: #fff; border-color: #222;
+    }
+    .wf-btn-ghost {
+      background: transparent; border-color: transparent; color: #555;
+    }
+    .wf-btn-warning {
+      background: #fff; border: 1px solid #bbb; color: #222;
+    }
+
+    /* ── Inline states: error, warning, info ─────────── */
+    .wf-inline-error {
+      font-size: 12px; color: #c00;
+      margin-top: 6px; display: flex; align-items: flex-start; gap: 5px;
+    }
+    .wf-notice {
+      background: #f8f8f8; border: 1px solid #ccc; border-radius: 4px;
+      padding: 12px 14px; font-size: 13px; line-height: 1.55; color: #333;
+      margin-bottom: 16px;
+    }
+    .wf-notice-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: #777; margin-bottom: 6px;
+    }
+    .wf-notice-date {
+      font-size: 12px; color: #777; margin-top: 4px;
+    }
+    .wf-warning {
+      background: #fffdf0; border: 1px solid #d4b800;
+    }
+    .wf-info {
+      background: #f0f4ff; border: 1px solid #99a8cc;
+    }
+    .wf-loading-bar {
+      height: 4px; background: #ddd; border-radius: 2px; margin-bottom: 14px; overflow: hidden;
+    }
+    .wf-loading-bar-fill {
+      height: 100%; width: 55%; background: repeating-linear-gradient(
+        90deg, #999 0, #999 8px, #ddd 8px, #ddd 16px
+      );
+    }
+    .wf-loading-text {
+      font-size: 13px; color: #555; text-align: center; margin-bottom: 4px;
+    }
+    .wf-loading-url {
+      font-size: 11px; color: #999; text-align: center;
+      font-family: monospace;
+    }
+    .wf-divider {
+      border: none; border-top: 1px solid #e8e8e8; margin: 16px 0;
+    }
+    .wf-paste-link {
+      font-size: 12px; color: #555; text-decoration: underline; cursor: default;
+    }
+
+    /* ── Annotations ──────────────────────────────────── */
+    .wf-annotations {
+      margin-top: 40px; background: #fff; border: 1px solid #ccc;
+      border-radius: 4px; padding: 20px 24px; max-width: 860px;
+    }
+    .wf-annotations h2 {
+      font-size: 14px; font-weight: 700; margin-bottom: 14px;
+      padding-bottom: 8px; border-bottom: 1px solid #eee;
+    }
+    .wf-annotations ol { padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .wf-annotations li { font-size: 13px; line-height: 1.6; color: #444; }
+    .wf-annotations li strong { color: #222; }
+
+    /* ── Background page skeleton ────────────────────── */
+    .skel { background: #e0e0e0; border-radius: 3px; }
+    .skel-h { height: 14px; }
+    .skel-sm { height: 11px; }
+    .skel-card {
+      background: #fff; border: 1px solid #ddd; border-radius: 4px;
+      padding: 12px; margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wf-meta">
+    <span><strong>Screen:</strong> Article Import Modal</span>
+    <span><strong>Feature:</strong> Scripture Journal</span>
+    <span><strong>Date:</strong> 2026-04-21</span>
+    <span><strong>Version:</strong> 1</span>
+    <span><strong>Flows:</strong> 3, 8, 9, 10</span>
+    <span><strong>FRs:</strong> FR-20 – FR-27, FR-60, FR-61</span>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 1 — Default: URL Input
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 1 — Default: URL Input</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link active">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+
+    <!-- Dimmed dashboard behind modal -->
+    <div class="wf-backdrop" style="height: 440px;">
+      <div class="wf-page-dim"></div>
+      <div class="wf-page-content">
+        <div style="font-size:18px; font-weight:700; margin-bottom:16px; color:#999;">My Journal</div>
+        <div class="skel-card">
+          <div class="skel skel-sm" style="width:90px; margin-bottom:8px;"></div>
+          <div class="skel skel-h" style="width:70%; margin-bottom:6px;"></div>
+          <div class="skel skel-sm" style="width:50%;"></div>
+        </div>
+        <div class="skel-card">
+          <div class="skel skel-sm" style="width:90px; margin-bottom:8px;"></div>
+          <div class="skel skel-h" style="width:60%; margin-bottom:6px;"></div>
+          <div class="skel skel-sm" style="width:45%;"></div>
+        </div>
+      </div>
+
+      <!-- The modal -->
+      <div class="wf-modal-overlay">
+        <div class="wf-modal">
+          <div class="wf-modal-header">
+            <div class="wf-modal-title">Import Article</div>
+            <div class="wf-modal-close">✕</div>
+          </div>
+          <div class="wf-modal-body">
+            <div class="wf-field">
+              <label class="wf-label">Article URL <span class="req">*</span></label>
+              <div class="wf-input" style="color:#aaa;">https://www.churchofjesuschrist.org/study/...</div>
+              <div class="wf-input-hint">Only articles from churchofjesuschrist.org are supported in Phase 1.</div>
+            </div>
+          </div>
+          <div class="wf-modal-footer">
+            <button class="wf-btn wf-btn-ghost">Cancel</button>
+            <button class="wf-btn wf-btn-primary">Import</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 2 — Loading: Fetching Article
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 2 — Loading: Fetching Article</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link active">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+    <div class="wf-backdrop" style="height: 440px;">
+      <div class="wf-page-dim"></div>
+      <div class="wf-page-content">
+        <div style="font-size:18px; font-weight:700; margin-bottom:16px; color:#999;">My Journal</div>
+        <div class="skel-card">
+          <div class="skel skel-sm" style="width:90px; margin-bottom:8px;"></div>
+          <div class="skel skel-h" style="width:70%; margin-bottom:6px;"></div>
+        </div>
+      </div>
+      <div class="wf-modal-overlay">
+        <div class="wf-modal">
+          <div class="wf-modal-header">
+            <div class="wf-modal-title">Import Article</div>
+            <div class="wf-modal-close" style="opacity:.4;">✕</div>
+          </div>
+          <div class="wf-modal-body">
+            <div class="wf-loading-text">Fetching article…</div>
+            <div class="wf-loading-url">churchofjesuschrist.org/study/general-conference/2024/04/...</div>
+            <div style="margin-top: 12px;">
+              <div class="wf-loading-bar"><div class="wf-loading-bar-fill"></div></div>
+            </div>
+            <div style="font-size:11px; color:#aaa; text-align:center;">Up to 10 seconds — stripping HTML and computing content hash</div>
+          </div>
+          <div class="wf-modal-footer" style="opacity:.4;">
+            <button class="wf-btn wf-btn-ghost" disabled>Cancel</button>
+            <button class="wf-btn wf-btn-primary" disabled>Import</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 3 — Error: URL Not on Allowlist
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 3 — Error: URL Not on Allowlist</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link active">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+    <div class="wf-backdrop" style="height: 440px;">
+      <div class="wf-page-dim"></div>
+      <div class="wf-page-content">
+        <div style="font-size:18px; font-weight:700; margin-bottom:16px; color:#999;">My Journal</div>
+        <div class="skel-card"><div class="skel skel-h" style="width:65%; margin-bottom:6px;"></div></div>
+      </div>
+      <div class="wf-modal-overlay">
+        <div class="wf-modal">
+          <div class="wf-modal-header">
+            <div class="wf-modal-title">Import Article</div>
+            <div class="wf-modal-close">✕</div>
+          </div>
+          <div class="wf-modal-body">
+            <div class="wf-field">
+              <label class="wf-label">Article URL <span class="req">*</span></label>
+              <div class="wf-input error">https://en.wikipedia.org/wiki/Book_of_Mormon</div>
+              <div class="wf-inline-error">⚠ Only articles from churchofjesuschrist.org are supported. Check your URL and try again.</div>
+            </div>
+          </div>
+          <div class="wf-modal-footer">
+            <button class="wf-btn wf-btn-ghost">Cancel</button>
+            <button class="wf-btn wf-btn-primary">Import</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 4 — Error: Fetch Failed → Offer Manual Paste
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 4 — Error: Fetch Failed (offer manual paste)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link active">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+    <div class="wf-backdrop" style="height: 480px;">
+      <div class="wf-page-dim"></div>
+      <div class="wf-page-content">
+        <div style="font-size:18px; font-weight:700; margin-bottom:16px; color:#999;">My Journal</div>
+        <div class="skel-card"><div class="skel skel-h" style="width:65%; margin-bottom:6px;"></div></div>
+      </div>
+      <div class="wf-modal-overlay">
+        <div class="wf-modal">
+          <div class="wf-modal-header">
+            <div class="wf-modal-title">Import Article</div>
+            <div class="wf-modal-close">✕</div>
+          </div>
+          <div class="wf-modal-body">
+            <div class="wf-field">
+              <label class="wf-label">Article URL <span class="req">*</span></label>
+              <div class="wf-input error">https://www.churchofjesuschrist.org/study/general-conference/2024/04/...</div>
+            </div>
+            <div class="wf-notice" style="background:#fff5f5; border-color:#e0a0a0;">
+              <div class="wf-notice-label" style="color:#900;">Fetch Failed</div>
+              Could not retrieve this article — the request timed out or the server returned an error. You can try a different URL, or paste the article text manually.
+            </div>
+            <div style="font-size:13px; color:#555;">
+              <span class="wf-paste-link">Paste article text manually instead →</span>
+            </div>
+          </div>
+          <div class="wf-modal-footer">
+            <button class="wf-btn wf-btn-ghost">Cancel</button>
+            <button class="wf-btn wf-btn-primary">Try Again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 5 — Manual Paste Fallback
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 5 — Manual Paste Fallback</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link active">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+    <div class="wf-backdrop" style="height: 600px;">
+      <div class="wf-page-dim"></div>
+      <div class="wf-page-content">
+        <div style="font-size:18px; font-weight:700; margin-bottom:16px; color:#999;">My Journal</div>
+        <div class="skel-card"><div class="skel skel-h" style="width:65%; margin-bottom:6px;"></div></div>
+      </div>
+      <div class="wf-modal-overlay">
+        <div class="wf-modal">
+          <div class="wf-modal-header">
+            <div class="wf-modal-title">Paste Article Text</div>
+            <div class="wf-modal-close">✕</div>
+          </div>
+          <div class="wf-modal-body">
+            <div class="wf-notice" style="margin-bottom:14px;">
+              <div class="wf-notice-label">Source URL</div>
+              <div style="font-size:12px; font-family:monospace; color:#555; word-break:break-all;">
+                https://www.churchofjesuschrist.org/study/general-conference/2024/04/...
+              </div>
+              <div class="wf-notice-date">Preserved with the article for reference.</div>
+            </div>
+            <div class="wf-field">
+              <label class="wf-label">Article Title <span class="req">*</span></label>
+              <div class="wf-input" style="color:#aaa;">e.g. "Welcome to Conference"</div>
+            </div>
+            <div class="wf-field">
+              <label class="wf-label">Article Text <span class="req">*</span></label>
+              <textarea class="wf-textarea" style="color:#aaa;" readonly>Paste the article text here. Separate paragraphs with a blank line.
+
+The system will split text on double line breaks to create annotatable paragraphs.</textarea>
+              <div class="wf-input-hint">Paragraphs are split on blank lines. Each paragraph becomes a separately annotatable block.</div>
+            </div>
+          </div>
+          <div class="wf-modal-footer">
+            <button class="wf-btn wf-btn-ghost">← Back to URL</button>
+            <button class="wf-btn wf-btn-primary">Import Text</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 6 — Duplicate Warning
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 6 — Duplicate Detected (Flow 9)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link active">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+    <div class="wf-backdrop" style="height: 480px;">
+      <div class="wf-page-dim"></div>
+      <div class="wf-page-content">
+        <div style="font-size:18px; font-weight:700; margin-bottom:16px; color:#999;">My Journal</div>
+        <div class="skel-card"><div class="skel skel-h" style="width:65%; margin-bottom:6px;"></div></div>
+      </div>
+      <div class="wf-modal-overlay">
+        <div class="wf-modal">
+          <div class="wf-modal-header">
+            <div class="wf-modal-title">Article Already Imported</div>
+            <div class="wf-modal-close">✕</div>
+          </div>
+          <div class="wf-modal-body">
+            <div class="wf-notice wf-warning">
+              <div class="wf-notice-label" style="color:#7a6500;">Already in your library</div>
+              This article's content matches a version already imported on <strong>March 12, 2026</strong>. You can open the existing copy, or re-import it (no new version will be created — the content is identical).
+            </div>
+            <div style="background:#f8f8f8; border:1px solid #ddd; border-radius:4px; padding:12px 14px; font-size:13px;">
+              <div style="font-weight:600; margin-bottom:3px;">Welcome to Conference</div>
+              <div style="font-size:12px; color:#777;">General Conference · April 2024 · 8 paragraphs</div>
+            </div>
+          </div>
+          <div class="wf-modal-footer">
+            <button class="wf-btn wf-btn-ghost">Cancel</button>
+            <button class="wf-btn wf-btn-warning">Open Existing Copy</button>
+            <button class="wf-btn wf-btn-primary">Re-import</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 7 — New Version Detected
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 7 — New Version Detected (Flow 10)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link active">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+    <div class="wf-backdrop" style="height: 520px;">
+      <div class="wf-page-dim"></div>
+      <div class="wf-page-content">
+        <div style="font-size:18px; font-weight:700; margin-bottom:16px; color:#999;">My Journal</div>
+        <div class="skel-card"><div class="skel skel-h" style="width:65%; margin-bottom:6px;"></div></div>
+      </div>
+      <div class="wf-modal-overlay">
+        <div class="wf-modal">
+          <div class="wf-modal-header">
+            <div class="wf-modal-title">Article Has Changed</div>
+            <div class="wf-modal-close">✕</div>
+          </div>
+          <div class="wf-modal-body">
+            <div class="wf-notice wf-info">
+              <div class="wf-notice-label" style="color:#3a55a0;">New version available</div>
+              This article's content has changed since it was last imported on <strong>January 8, 2026</strong>. Importing will create a new version linked to the previous one. Your existing annotations are preserved on the prior version.
+            </div>
+            <div style="background:#f8f8f8; border:1px solid #ddd; border-radius:4px; padding:12px 14px; font-size:13px; margin-bottom:14px;">
+              <div style="font-weight:600; margin-bottom:3px;">The Power of Covenant Belonging</div>
+              <div style="font-size:12px; color:#777;">Ensign · April 2024</div>
+              <div style="font-size:12px; color:#999; margin-top:6px; display:flex; gap:20px;">
+                <span>Prior version: Jan 8, 2026</span>
+                <span>New version: today</span>
+              </div>
+            </div>
+          </div>
+          <div class="wf-modal-footer">
+            <button class="wf-btn wf-btn-ghost">Cancel</button>
+            <button class="wf-btn wf-btn-primary">Create New Version</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       Annotations
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-annotations">
+    <h2>Annotations — Article Import Modal</h2>
+    <ol>
+      <li><strong>[1] Modal as overlay, not a page</strong> — The modal appears as an overlay on top of whichever screen the user came from (typically the Dashboard). The background is dimmed but visible. Pressing the ✕ or "Cancel" dismisses the modal and returns focus to the underlying page. There is no dedicated route for the modal itself — it's triggered by clicking "Import Article" in the nav. FR-20.</li>
+      <li><strong>[2] Allowlist hint is always visible</strong> — The input hint ("Only articles from churchofjesuschrist.org are supported") appears below the URL field in all states, not only on error. This sets expectation before the user tries an unsupported URL. The error state (State 3) repeats the constraint more prominently with a red inline message. FR-20.</li>
+      <li><strong>[3] Cancel is always available (except during fetch)</strong> — The ✕ and "Cancel" button are disabled during the fetch (State 2) to prevent partial state. In all other states they are active and dismiss the modal cleanly. FR-60.</li>
+      <li><strong>[4] Loading state disables all controls</strong> — While fetching, the URL input, buttons, and ✕ are all disabled / dimmed. The progress bar is indeterminate (CSS striped pattern) since we can't know exactly how long the strip-and-hash step will take. The modal is not dismissible by clicking the backdrop during this state. FR-60.</li>
+      <li><strong>[5] Fetch failure clearly offers two exits</strong> — State 4 gives the user two clear choices: (a) edit the URL and try again (primary button reads "Try Again", not "Import"), or (b) follow the underlined "Paste article text manually instead →" link to switch to State 5. The attempted URL is preserved in the input so the user doesn't have to retype it. FR-24.</li>
+      <li><strong>[6] Manual paste preserves the source URL</strong> — State 5 shows a read-only display of the attempted URL above the title and textarea fields. The URL will be stored in the article's metadata even though it was never successfully fetched — it records the user's intent and the origin. FR-25.</li>
+      <li><strong>[7] Manual paste uses double-newline paragraph splitting</strong> — The placeholder text in the textarea explains this convention ("Separate paragraphs with a blank line"). There is no rich-text input — plain text only. Each paragraph becomes a separately annotatable block (blockId = zero-indexed paragraph number). FR-21, Flow 8.</li>
+      <li><strong>[8] "← Back to URL" in manual paste</strong> — The left-side footer button in State 5 returns the user to the URL input (State 1) with their URL preserved. This is an escape hatch if they launched manual paste accidentally. It replaces the "Cancel" button's position; a separate "Cancel" (dismiss modal entirely) is not shown here to avoid three-button footer clutter — ✕ in the header still closes the modal.</li>
+      <li><strong>[9] Duplicate warning shows article metadata</strong> — State 6 displays the article's title and a compact metadata row (source, date, paragraph count). This lets the user confirm they are looking at the right article before choosing. The warning tone is amber (non-destructive) since both options lead safely to the Article View. FR-23.</li>
+      <li><strong>[10] "Re-import" on a duplicate is a no-op — communicated clearly</strong> — The warning notice explains that identical content means no new version is created. "Re-import" simply navigates to the existing Article View. This prevents user confusion ("did it import or not?"). FR-22.</li>
+      <li><strong>[11] New version notice is informational blue, not amber warning</strong> — State 7 uses a blue notice because creating a new version is the expected happy-path behaviour for changed content — it's not a warning. The prior version's date is shown so the user understands the timeline. The explicit "Create New Version" button requires user confirmation before any write occurs. FR-27.</li>
+      <li><strong>[12] Both choices on the duplicate screen lead to the same Article View</strong> — "Open Existing Copy" and "Re-import" both navigate to /articles/:articleId. The articleId is the same SHA-256 in both cases, so the destination is identical. The only difference is user intent / reassurance. FR-22, FR-23, Flow 9.</li>
+      <li><strong>[13] Modal title changes per state</strong> — "Import Article" (default/loading/error) → "Paste Article Text" (manual paste) → "Article Already Imported" (duplicate) → "Article Has Changed" (new version). The title tracks context so the user always knows what decision they are making.</li>
+    </ol>
+
+    <div style="margin-top:16px; padding-top:12px; border-top:1px solid #eee;">
+      <strong style="font-size:12px;">UX review checklist</strong>
+      <ul style="margin-top:8px; padding-left:18px; font-size:12px; color:#555; display:flex; flex-direction:column; gap:4px; line-height:1.5;">
+        <li>✅ Primary action (Import button) is visually prominent in every state</li>
+        <li>✅ Allowlist constraint communicated before and after error — not only on failure</li>
+        <li>✅ Loading state prevents accidental dismissal and shows progress</li>
+        <li>✅ Fetch failure offers fallback path (manual paste) without dead-ending the user</li>
+        <li>✅ Duplicate and new-version states give enough context to make an informed choice</li>
+        <li>✅ Cancel / ✕ is always available (except during active fetch)</li>
+        <li>✅ No destructive action on this modal — all paths either import or navigate to existing content</li>
+        <li>✅ Source URL preserved through manual paste flow (FR-25)</li>
+        <li>✅ Article metadata (title, date, paragraph count) shown in duplicate warning so user can confirm identity</li>
+      </ul>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Wireframe: Scripture Browser — Scripture Journal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #e8e8e8; color: #222; font-size: 14px; padding: 24px;
+    }
+
+    .wf-meta {
+      font-size: 11px; color: #888; margin-bottom: 8px; padding: 6px 10px;
+      background: #fff; border: 1px solid #ccc; border-radius: 3px;
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .wf-meta strong { color: #444; }
+
+    .wf-state-label {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: #555; margin: 32px 0 10px;
+      padding: 4px 8px; background: #d0d0d0; display: inline-block; border-radius: 3px;
+    }
+
+    .wf-browser {
+      background: #ddd; border: 1px solid #bbb; border-radius: 6px 6px 0 0;
+      padding: 8px 12px; display: flex; align-items: center; gap: 10px;
+    }
+    .wf-browser-dots { display: flex; gap: 5px; }
+    .wf-browser-dot { width: 11px; height: 11px; border-radius: 50%; background: #bbb; }
+    .wf-browser-url {
+      flex: 1; background: #f0f0f0; border: 1px solid #bbb;
+      border-radius: 3px; padding: 3px 10px; font-size: 12px; color: #555;
+    }
+
+    .wf-screen {
+      background: #f5f5f5; border: 1px solid #bbb;
+      border-top: none; border-radius: 0 0 6px 6px; overflow: hidden;
+    }
+
+    /* ── Nav ──────────────────────────────────────────── */
+    .wf-nav {
+      background: #fff; border-bottom: 2px solid #ccc;
+      padding: 0 24px; display: flex; align-items: center; height: 52px; gap: 20px;
+    }
+    .wf-nav-logo {
+      font-size: 16px; font-weight: 700; border: 2px solid #222;
+      padding: 3px 10px; border-radius: 3px;
+    }
+    .wf-nav-spacer { flex: 1; }
+    .wf-nav-link {
+      font-size: 13px; color: #444; padding: 4px 10px;
+      border: 1px solid #ccc; border-radius: 3px; background: #f5f5f5;
+    }
+    .wf-nav-link.active {
+      background: #222; color: #fff; border-color: #222;
+    }
+    .wf-nav-link.primary { background: #333; color: #fff; border-color: #333; }
+    .wf-nav-user {
+      font-size: 13px; color: #444; padding: 4px 10px;
+      border: 1px dashed #999; border-radius: 3px; display: flex;
+      align-items: center; gap: 5px;
+    }
+    .wf-nav-user::after { content: '▾'; font-size: 10px; }
+
+    /* ── Breadcrumb ───────────────────────────────────── */
+    .wf-breadcrumb {
+      padding: 12px 24px 0; font-size: 12px; color: #888;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .wf-breadcrumb a { color: #555; text-decoration: underline; cursor: pointer; }
+    .wf-breadcrumb-sep { color: #ccc; }
+    .wf-breadcrumb-current { color: #333; font-weight: 600; }
+
+    /* ── Page header ──────────────────────────────────── */
+    .wf-page-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      background: #fff;
+    }
+    .wf-page-title { font-size: 20px; font-weight: 700; color: #111; }
+    .wf-page-subtitle { font-size: 13px; color: #888; margin-top: 4px; }
+
+    /* ── Content area ─────────────────────────────────── */
+    .wf-content { padding: 28px 24px; }
+
+    /* ── LEVEL 1: Work cards ──────────────────────────── */
+    .work-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      max-width: 720px;
+    }
+    .work-card {
+      background: #fff; border: 1px solid #ccc; border-radius: 6px;
+      padding: 24px 20px; cursor: pointer;
+      display: flex; flex-direction: column; gap: 8px;
+      transition: none;
+    }
+    .work-card:hover { border-color: #888; }
+    .work-card-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: #aaa;
+    }
+    .work-card-title { font-size: 18px; font-weight: 700; color: #111; }
+    .work-card-meta { font-size: 12px; color: #888; }
+    .work-card-arrow {
+      margin-top: 8px; font-size: 18px; color: #bbb; align-self: flex-end;
+    }
+
+    /* ── LEVEL 2: Book list ───────────────────────────── */
+    .book-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-width: 720px;
+    }
+    .book-item {
+      background: #fff; border: 1px solid #ccc; border-radius: 4px;
+      padding: 12px 14px; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .book-item:hover { border-color: #888; background: #fafafa; }
+    .book-item-title { font-size: 13px; font-weight: 600; color: #222; }
+    .book-item-meta { font-size: 11px; color: #aaa; }
+    .book-item-arrow { font-size: 12px; color: #ccc; }
+
+    /* ── Bible sub-group header ───────────────────────── */
+    .book-group-label {
+      grid-column: 1 / -1;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: #888;
+      padding: 12px 0 4px;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 4px;
+    }
+    .book-group-label:first-child { padding-top: 0; }
+
+    /* ── LEVEL 3: Chapter grid ────────────────────────── */
+    .chapter-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      max-width: 720px;
+    }
+    .chapter-item {
+      background: #fff; border: 1px solid #ccc; border-radius: 4px;
+      padding: 10px 4px; text-align: center;
+      font-size: 14px; font-weight: 600; color: #333;
+      cursor: pointer;
+    }
+    .chapter-item:hover { border-color: #666; background: #f0f0f0; }
+    .chapter-item.has-entry {
+      background: #333; color: #fff; border-color: #333;
+    }
+    .chapter-item.has-entry:hover { background: #111; }
+
+    /* ── D&C section list ─────────────────────────────── */
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 6px;
+      max-width: 720px;
+    }
+    .section-item {
+      background: #fff; border: 1px solid #ccc; border-radius: 4px;
+      padding: 8px 4px; text-align: center;
+      font-size: 12px; font-weight: 600; color: #333;
+      cursor: pointer;
+    }
+    .section-item:hover { border-color: #666; }
+    .section-item.has-entry { background: #333; color: #fff; border-color: #333; }
+
+    /* Chapter legend ─────────────────────────────────── */
+    .chapter-legend {
+      display: flex; gap: 20px; margin-top: 20px;
+      font-size: 12px; color: #777; align-items: center;
+    }
+    .legend-swatch {
+      width: 20px; height: 20px; border-radius: 3px;
+      display: inline-block; vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    /* ── Annotations ──────────────────────────────────── */
+    .wf-annotations {
+      margin-top: 40px; background: #fff; border: 1px solid #ccc;
+      border-radius: 4px; padding: 20px 24px; max-width: 860px;
+    }
+    .wf-annotations h2 {
+      font-size: 14px; font-weight: 700; margin-bottom: 14px;
+      padding-bottom: 8px; border-bottom: 1px solid #eee;
+    }
+    .wf-annotations ol { padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .wf-annotations li { font-size: 13px; line-height: 1.6; color: #444; }
+    .wf-annotations li strong { color: #222; }
+
+    .ann { outline: 2px dashed #4a90d9; outline-offset: 3px; position: relative; }
+    .ann-badge {
+      position: absolute; top: -9px; right: -9px;
+      background: #4a90d9; color: #fff; border-radius: 50%;
+      width: 18px; height: 18px; font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wf-meta">
+    <span><strong>Screen:</strong> Scripture Browser</span>
+    <span><strong>Feature:</strong> Scripture Journal</span>
+    <span><strong>Routes:</strong> /scripture · /scripture/:work · /scripture/:work/:book</span>
+    <span><strong>Flow:</strong> 2</span>
+    <span><strong>Date:</strong> 2026-04-21</span>
+    <span><strong>Version:</strong> 2</span>
+    <span style="color:#c60;"><strong>Updated:</strong> PoGP single-chapter books skip grid; Browse Scripture nav = always Work selection</span>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       LEVEL 1 — Work selection (/scripture)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">Level 1 — Work selection (/scripture)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link active">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+
+    <div class="wf-page-header">
+      <div class="wf-page-title">Scripture</div>
+      <div class="wf-page-subtitle">Select a standard work to begin</div>
+    </div>
+
+    <div class="wf-content">
+      <div class="work-grid ann" style="position:relative;">
+        <span class="ann-badge">1</span>
+
+        <div class="work-card ann" style="position:relative;">
+          <span class="ann-badge">2</span>
+          <div class="work-card-label">Standard Works</div>
+          <div class="work-card-title">Holy Bible</div>
+          <div class="work-card-meta">King James Version · Old &amp; New Testament · 66 books</div>
+          <div class="work-card-arrow">→</div>
+        </div>
+
+        <div class="work-card">
+          <div class="work-card-label">Standard Works</div>
+          <div class="work-card-title">Book of Mormon</div>
+          <div class="work-card-meta">Another Testament of Jesus Christ · 15 books</div>
+          <div class="work-card-arrow">→</div>
+        </div>
+
+        <div class="work-card">
+          <div class="work-card-label">Standard Works</div>
+          <div class="work-card-title">Doctrine &amp; Covenants</div>
+          <div class="work-card-meta">138 sections + 2 Official Declarations</div>
+          <div class="work-card-arrow">→</div>
+        </div>
+
+        <div class="work-card">
+          <div class="work-card-label">Standard Works</div>
+          <div class="work-card-title">Pearl of Great Price</div>
+          <div class="work-card-meta">Moses · Abraham · JS-Matthew · JS-History · Articles of Faith</div>
+          <div class="work-card-arrow">→</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       LEVEL 2a — Book selection, Book of Mormon (/scripture/bom)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">Level 2a — Book selection, Book of Mormon (/scripture/bom)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture/bom</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link active">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+
+    <div class="wf-breadcrumb ann" style="position:relative;">
+      <span class="ann-badge">3</span>
+      <a>Scripture</a>
+      <span class="wf-breadcrumb-sep">›</span>
+      <span class="wf-breadcrumb-current">Book of Mormon</span>
+    </div>
+
+    <div class="wf-page-header">
+      <div class="wf-page-title">Book of Mormon</div>
+      <div class="wf-page-subtitle">Another Testament of Jesus Christ · Select a book</div>
+    </div>
+
+    <div class="wf-content">
+      <div class="book-list ann" style="position:relative; max-width:720px;">
+        <span class="ann-badge">4</span>
+
+        <div class="book-item">
+          <div><div class="book-item-title">1 Nephi</div><div class="book-item-meta">22 chapters</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">2 Nephi</div><div class="book-item-meta">33 chapters</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Jacob</div><div class="book-item-meta">7 chapters</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Enos</div><div class="book-item-meta">1 chapter</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Jarom</div><div class="book-item-meta">1 chapter</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Omni</div><div class="book-item-meta">1 chapter</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Words of Mormon</div><div class="book-item-meta">1 chapter</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Mosiah</div><div class="book-item-meta">29 chapters</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Alma</div><div class="book-item-meta">63 chapters</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Helaman</div><div class="book-item-meta">16 chapters</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">3 Nephi</div><div class="book-item-meta">30 chapters</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">4 Nephi</div><div class="book-item-meta">1 chapter</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Mormon</div><div class="book-item-meta">9 chapters</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Ether</div><div class="book-item-meta">15 chapters</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+        <div class="book-item">
+          <div><div class="book-item-title">Moroni</div><div class="book-item-meta">10 chapters</div></div>
+          <div class="book-item-arrow">›</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       LEVEL 2b — Bible (OT + NT grouping) (/scripture/bible)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">Level 2b — Book selection, Bible KJV — showing OT/NT grouping (/scripture/bible)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture/bible</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link active">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+    <div class="wf-breadcrumb">
+      <a>Scripture</a><span class="wf-breadcrumb-sep">›</span>
+      <span class="wf-breadcrumb-current">Holy Bible (KJV)</span>
+    </div>
+    <div class="wf-page-header">
+      <div class="wf-page-title">Holy Bible (KJV)</div>
+      <div class="wf-page-subtitle">King James Version · Select a book</div>
+    </div>
+
+    <div class="wf-content">
+      <div class="book-list ann" style="position:relative; max-width:720px;">
+        <span class="ann-badge">5</span>
+
+        <div class="book-group-label">Old Testament · 39 books</div>
+
+        <div class="book-item"><div><div class="book-item-title">Genesis</div><div class="book-item-meta">50 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item"><div><div class="book-item-title">Exodus</div><div class="book-item-meta">40 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item"><div><div class="book-item-title">Leviticus</div><div class="book-item-meta">27 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item"><div><div class="book-item-title">Numbers</div><div class="book-item-meta">36 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item"><div><div class="book-item-title">Deuteronomy</div><div class="book-item-meta">34 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item" style="opacity:.5;"><div><div class="book-item-title">Joshua</div><div class="book-item-meta">24 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item" style="opacity:.3; font-style:italic; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:12px; padding:12px;">
+          <span>· · · 33 more Old Testament books · · ·</span>
+        </div>
+
+        <div class="book-group-label">New Testament · 27 books</div>
+
+        <div class="book-item"><div><div class="book-item-title">Matthew</div><div class="book-item-meta">28 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item"><div><div class="book-item-title">Mark</div><div class="book-item-meta">16 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item"><div><div class="book-item-title">Luke</div><div class="book-item-meta">24 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item"><div><div class="book-item-title">John</div><div class="book-item-meta">21 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item"><div><div class="book-item-title">Acts</div><div class="book-item-meta">28 chapters</div></div><div class="book-item-arrow">›</div></div>
+        <div class="book-item" style="opacity:.3; font-style:italic; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:12px; padding:12px;">
+          <span>· · · 22 more New Testament books · · ·</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       LEVEL 3 — Chapter selection (Alma selected)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">Level 3 — Chapter selection, Alma (/scripture/bom/alma)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture/bom/alma</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link active">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+
+    <div class="wf-breadcrumb">
+      <a>Scripture</a><span class="wf-breadcrumb-sep">›</span>
+      <a>Book of Mormon</a><span class="wf-breadcrumb-sep">›</span>
+      <span class="wf-breadcrumb-current">Alma</span>
+    </div>
+
+    <div class="wf-page-header">
+      <div class="wf-page-title">Alma</div>
+      <div class="wf-page-subtitle">Book of Mormon · 63 chapters · Select a chapter</div>
+    </div>
+
+    <div class="wf-content">
+      <div class="chapter-grid ann" style="position:relative; max-width:720px;">
+        <span class="ann-badge">6</span>
+
+        <div class="chapter-item">1</div>
+        <div class="chapter-item">2</div>
+        <div class="chapter-item">3</div>
+        <div class="chapter-item">4</div>
+        <div class="chapter-item">5</div>
+        <div class="chapter-item">6</div>
+        <div class="chapter-item">7</div>
+        <div class="chapter-item">8</div>
+        <div class="chapter-item">9</div>
+        <div class="chapter-item">10</div>
+        <div class="chapter-item">11</div>
+        <div class="chapter-item">12</div>
+        <div class="chapter-item">13</div>
+        <div class="chapter-item">14</div>
+        <div class="chapter-item">15</div>
+        <div class="chapter-item">16</div>
+        <div class="chapter-item">17</div>
+        <div class="chapter-item">18</div>
+        <div class="chapter-item">19</div>
+        <div class="chapter-item">20</div>
+        <div class="chapter-item">21</div>
+        <div class="chapter-item">22</div>
+        <div class="chapter-item">23</div>
+        <div class="chapter-item">24</div>
+        <div class="chapter-item">25</div>
+        <div class="chapter-item">26</div>
+        <div class="chapter-item">27</div>
+        <div class="chapter-item">28</div>
+        <div class="chapter-item">29</div>
+        <div class="chapter-item">30</div>
+        <div class="chapter-item has-entry ann" style="position:relative;">
+          <span class="ann-badge">7</span>31
+        </div>
+        <div class="chapter-item has-entry">32</div>
+        <div class="chapter-item">33</div>
+        <div class="chapter-item">34</div>
+        <div class="chapter-item">35</div>
+        <div class="chapter-item">36</div>
+        <div class="chapter-item">37</div>
+        <div class="chapter-item">38</div>
+        <div class="chapter-item">39</div>
+        <div class="chapter-item">40</div>
+        <div class="chapter-item">41</div>
+        <div class="chapter-item">42</div>
+        <div class="chapter-item">43</div>
+        <div class="chapter-item">44</div>
+        <div class="chapter-item">45</div>
+        <div class="chapter-item">46</div>
+        <div class="chapter-item">47</div>
+        <div class="chapter-item">48</div>
+        <div class="chapter-item">49</div>
+        <div class="chapter-item">50</div>
+        <div class="chapter-item">51</div>
+        <div class="chapter-item">52</div>
+        <div class="chapter-item">53</div>
+        <div class="chapter-item">54</div>
+        <div class="chapter-item">55</div>
+        <div class="chapter-item">56</div>
+        <div class="chapter-item">57</div>
+        <div class="chapter-item">58</div>
+        <div class="chapter-item">59</div>
+        <div class="chapter-item">60</div>
+        <div class="chapter-item">61</div>
+        <div class="chapter-item">62</div>
+        <div class="chapter-item">63</div>
+      </div>
+
+      <div class="chapter-legend ann" style="position:relative;">
+        <span class="ann-badge">8</span>
+        <span>
+          <span class="legend-swatch" style="background:#333; display:inline-block;"></span>
+          Chapters with journal entries
+        </span>
+        <span>
+          <span class="legend-swatch" style="background:#fff; border:1px solid #ccc; display:inline-block;"></span>
+          Unread chapters
+        </span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       LEVEL 2c — D&C (sections, no book level)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">Level 2c — D&amp;C section selection (no book level — sections are the terminal unit)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture/dc</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link active">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+    <div class="wf-breadcrumb">
+      <a>Scripture</a><span class="wf-breadcrumb-sep">›</span>
+      <span class="wf-breadcrumb-current">Doctrine &amp; Covenants</span>
+    </div>
+    <div class="wf-page-header">
+      <div class="wf-page-title">Doctrine &amp; Covenants</div>
+      <div class="wf-page-subtitle">138 sections · 2 Official Declarations · Select a section</div>
+    </div>
+
+    <div class="wf-content">
+      <div class="section-grid ann" style="position:relative; max-width:720px;">
+        <span class="ann-badge">9</span>
+
+        <div class="section-item">1</div>
+        <div class="section-item">2</div>
+        <div class="section-item">3</div>
+        <div class="section-item">4</div>
+        <div class="section-item">5</div>
+        <div class="section-item">6</div>
+        <div class="section-item">7</div>
+        <div class="section-item">8</div>
+        <div class="section-item">9</div>
+        <div class="section-item">10</div>
+        <div class="section-item">11</div>
+        <div class="section-item">12</div>
+        <div class="section-item">13</div>
+        <div class="section-item">14</div>
+        <div class="section-item">15</div>
+        <div class="section-item">16</div>
+        <div class="section-item">17</div>
+        <div class="section-item">18</div>
+        <div class="section-item">19</div>
+        <div class="section-item">20</div>
+        <div class="section-item has-entry">76</div>
+        <div class="section-item has-entry">121</div>
+        <div class="section-item has-entry">122</div>
+        <div class="section-item">138</div>
+        <!-- Abbreviated for wireframe; production renders all 138 -->
+      </div>
+
+      <div style="margin-top:16px; padding-top:12px; border-top:1px solid #e0e0e0; max-width:720px;">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#aaa; margin-bottom:8px;">Official Declarations</div>
+        <div style="display:flex; gap:8px;">
+          <div class="section-item" style="padding:10px 16px; width:auto; font-size:12px; text-align:left;">OD 1</div>
+          <div class="section-item" style="padding:10px 16px; width:auto; font-size:12px; text-align:left;">OD 2</div>
+        </div>
+      </div>
+
+      <div class="chapter-legend">
+        <span><span class="legend-swatch" style="background:#333; display:inline-block;"></span> Sections with journal entries</span>
+        <span><span class="legend-swatch" style="background:#fff; border:1px solid #ccc; display:inline-block;"></span> Unread sections</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       LEVEL 2d — Pearl of Great Price (mixed: multi + single-chapter)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">Level 2d — Pearl of Great Price — multi-chapter books show grid; single-chapter books navigate directly (/scripture/pogp)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture/pogp</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link active ann" style="position:relative;" title="[10]">Browse Scripture
+        <span class="ann-badge">10</span>
+      </a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+    <div class="wf-breadcrumb">
+      <a>Scripture</a><span class="wf-breadcrumb-sep">›</span>
+      <span class="wf-breadcrumb-current">Pearl of Great Price</span>
+    </div>
+    <div class="wf-page-header">
+      <div class="wf-page-title">Pearl of Great Price</div>
+      <div class="wf-page-subtitle">Select a book</div>
+    </div>
+
+    <div class="wf-content">
+      <div class="book-list ann" style="position:relative; max-width:720px;">
+        <span class="ann-badge">11</span>
+
+        <!-- Multi-chapter: show chapter count → navigates to chapter grid -->
+        <div class="book-item">
+          <div>
+            <div class="book-item-title">Moses</div>
+            <div class="book-item-meta">8 chapters</div>
+          </div>
+          <div class="book-item-arrow">›</div>
+        </div>
+
+        <div class="book-item">
+          <div>
+            <div class="book-item-title">Abraham</div>
+            <div class="book-item-meta">5 chapters + Facsimiles</div>
+          </div>
+          <div class="book-item-arrow">›</div>
+        </div>
+
+        <div class="book-item">
+          <div>
+            <div class="book-item-title">Joseph Smith — History</div>
+            <div class="book-item-meta">2 chapters</div>
+          </div>
+          <div class="book-item-arrow">›</div>
+        </div>
+
+        <!-- Single-chapter: label says "1 chapter — opens directly" → skips chapter grid -->
+        <div class="book-item ann" style="position:relative;">
+          <span class="ann-badge">12</span>
+          <div>
+            <div class="book-item-title">Joseph Smith — Matthew</div>
+            <div class="book-item-meta" style="color:#aaa; font-style:italic;">1 chapter — opens directly</div>
+          </div>
+          <div class="book-item-arrow">›</div>
+        </div>
+
+        <div class="book-item">
+          <div>
+            <div class="book-item-title">Articles of Faith</div>
+            <div class="book-item-meta" style="color:#aaa; font-style:italic;">1 chapter — opens directly</div>
+          </div>
+          <div class="book-item-arrow">›</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       Annotations
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-annotations">
+    <h2>Annotations — Scripture Browser</h2>
+    <ol>
+      <li><strong>[1] 2×2 work grid</strong> — Four Standard Works presented as equal-weight cards. No hierarchy implied between them. A 2×2 grid fits the exact count and prevents any work appearing more prominent than another. FR-10.</li>
+      <li><strong>[2] Work card anatomy</strong> — Each card shows: a "Standard Works" label (consistent across all four), the work title, and a brief descriptor (testament count, book count, or unique structure note). The → arrow signals that clicking drills down. FR-11.</li>
+      <li><strong>[3] Breadcrumb</strong> — Present at every level below the Work selection. Each crumb is a clickable link back up the hierarchy. "Scripture ›" always returns to the Work grid. Consistent with the Chapter View breadcrumb pattern.</li>
+      <li><strong>[4] Book list — 3-column grid</strong> — Books displayed as compact cards showing title and chapter count. Three columns balances scannability with density. Chapter count helps the user orient themselves before drilling in.</li>
+      <li><strong>[5] Bible OT/NT grouping</strong> — The Bible's 66 books are grouped under "Old Testament" and "New Testament" section headers spanning all columns. Same 3-column grid within each group. The wireframe abbreviates with a "· · · N more books · · ·" row to show the pattern without rendering all 66 entries.</li>
+      <li><strong>[6] Chapter number grid</strong> — 10-column grid of chapter numbers. Dense but scannable — the numbers are the only meaningful label. Clicking any number navigates directly to that Chapter View. FR-11, FR-12.</li>
+      <li><strong>[7] Chapters with journal entries</strong> — Dark-filled chapter tiles indicate the user has at least one journal entry for that chapter, matching the calendar dot convention on the Dashboard. At a glance the user sees where they have been. This is derived from the UserIndex already maintained for the Dashboard.</li>
+      <li><strong>[8] Chapter legend</strong> — Small key below the grid explaining the dark-tile convention. Appears only on the chapter-selection level (Level 3), not on the book or work levels.</li>
+      <li><strong>[9] D&amp;C sections — skip the book level</strong> — D&amp;C has no traditional book subdivisions; sections are the terminal browsable unit. So clicking "Doctrine &amp; Covenants" on the Work grid goes directly to a section number grid (equivalent to Level 3 for other works), skipping Level 2 entirely. Official Declarations are listed separately below the numbered sections as they have a distinct identity. This means D&amp;C is a 2-level path (Work → Section) while other works are 3-level (Work → Book → Chapter).</li>
+      <li><strong>[10] "Browse Scripture" nav — always returns to Work selection</strong> — The nav link is highlighted as active on all three levels of the browser. Clicking it always navigates to /scripture (the Work grid), regardless of current depth. Up-one-level navigation is handled exclusively by the breadcrumb — the nav link is not a substitute for it. This keeps the nav behavior predictable: it's a home button for the scripture browser, not a back button.</li>
+      <li><strong>[11] Pearl of Great Price — mixed book structure</strong> — PoGP contains five books with unequal chapter counts: Moses (8 ch), Abraham (5 ch), JS-History (2 ch), JS-Matthew (1 ch), Articles of Faith (1 ch). The Level 2 book list shows all five using the same card format as BoM. Multi-chapter books display their chapter count; single-chapter books show "1 chapter" and are marked "(opens directly)" to set expectation.</li>
+      <li><strong>[12] Single-chapter books skip the chapter grid</strong> — When a book has exactly one chapter (JS-Matthew, Articles of Faith), clicking the book card navigates directly to the Chapter View at /scripture/pogp/&lt;book&gt;/1. There is no intermediate chapter-number grid to show — a grid of one tile would be meaningless. The "(opens directly)" label on the book card communicates this before the user clicks. FR-11.</li>
+    </ol>
+
+    <div style="margin-top:16px; padding-top:12px; border-top:1px solid #eee;">
+      <strong style="font-size:12px;">UX review checklist</strong>
+      <ul style="margin-top:8px; padding-left:18px; font-size:12px; color:#555; display:flex; flex-direction:column; gap:4px; line-height:1.5;">
+        <li>✅ Primary action (select a work) is immediately clear — no secondary actions on this screen</li>
+        <li>✅ Hierarchy is visually obvious: cards → list → number grid, each level simpler than the last</li>
+        <li>✅ Breadcrumb present at every sub-level for orientation and back-navigation</li>
+        <li>✅ D&amp;C's unique structure (no books) handled explicitly rather than with an awkward empty level</li>
+        <li>✅ Journal history visible at chapter level (dark tiles) without adding clutter at book/work levels</li>
+        <li>✅ PoGP single-chapter books (JS-Matthew, Articles of Faith) skip the chapter grid and navigate directly to Chapter View — resolved via [12]</li>
+        <li>✅ "Browse Scripture" nav stays active at all browser levels; clicking always returns to Work selection (/scripture) — resolved via [10]</li>
+      </ul>
+    </div>
+  </div>
+
+</body>
+</html>

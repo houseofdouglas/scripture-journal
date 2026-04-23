@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Wireframe: Chapter View — Scripture Journal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #e8e8e8;
+      color: #222;
+      font-size: 14px;
+      padding: 24px;
+    }
+
+    /* ── Meta ─────────────────────────────────────────────────── */
+    .wf-meta {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .wf-meta strong { color: #444; }
+
+    /* ── State label ──────────────────────────────────────────── */
+    .wf-state-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #555;
+      margin: 32px 0 10px;
+      padding: 4px 8px;
+      background: #d0d0d0;
+      display: inline-block;
+      border-radius: 3px;
+    }
+
+    /* ── Browser chrome ───────────────────────────────────────── */
+    .wf-browser {
+      background: #ddd;
+      border: 1px solid #bbb;
+      border-radius: 6px 6px 0 0;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .wf-browser-dots { display: flex; gap: 5px; }
+    .wf-browser-dot { width: 11px; height: 11px; border-radius: 50%; background: #bbb; }
+    .wf-browser-url {
+      flex: 1; background: #f0f0f0; border: 1px solid #bbb;
+      border-radius: 3px; padding: 3px 10px; font-size: 12px; color: #555;
+    }
+
+    /* ── Screen ───────────────────────────────────────────────── */
+    .wf-screen {
+      background: #f5f5f5;
+      border: 1px solid #bbb;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      overflow: hidden;
+    }
+
+    /* ── Global nav ───────────────────────────────────────────── */
+    .wf-nav {
+      background: #fff;
+      border-bottom: 2px solid #ccc;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      height: 52px;
+      gap: 20px;
+    }
+    .wf-nav-logo {
+      font-size: 16px; font-weight: 700; color: #222;
+      border: 2px solid #222; padding: 3px 10px; border-radius: 3px;
+    }
+    .wf-nav-spacer { flex: 1; }
+    .wf-nav-link {
+      font-size: 13px; color: #444; padding: 4px 10px;
+      border: 1px solid #ccc; border-radius: 3px;
+      background: #f5f5f5; cursor: pointer; white-space: nowrap;
+    }
+    .wf-nav-link.primary { background: #333; color: #fff; border-color: #333; }
+    .wf-nav-user {
+      font-size: 13px; color: #444; padding: 4px 10px;
+      border: 1px dashed #999; border-radius: 3px;
+      display: flex; align-items: center; gap: 5px; cursor: pointer;
+    }
+    .wf-nav-user::after { content: '▾'; font-size: 10px; }
+
+    /* ── Breadcrumb ───────────────────────────────────────────── */
+    .wf-breadcrumb {
+      padding: 12px 24px 0;
+      font-size: 12px;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .wf-breadcrumb a { color: #555; text-decoration: underline; cursor: pointer; }
+    .wf-breadcrumb-sep { color: #bbb; }
+    .wf-breadcrumb-current { color: #333; font-weight: 600; }
+
+    /* ── Chapter header ───────────────────────────────────────── */
+    .wf-chapter-header {
+      padding: 16px 24px 12px;
+      border-bottom: 1px solid #ddd;
+      background: #fff;
+    }
+    .wf-chapter-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 4px;
+    }
+    .wf-chapter-subtitle {
+      font-size: 13px;
+      color: #777;
+      font-style: italic;
+    }
+    .wf-chapter-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 24px;
+      border-bottom: 1px solid #e8e8e8;
+      background: #fafafa;
+    }
+    .wf-chapter-nav-btn {
+      font-size: 12px; color: #555;
+      padding: 5px 12px; border: 1px solid #ccc;
+      border-radius: 3px; background: #fff;
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+    }
+    .wf-chapter-nav-btn:disabled { color: #bbb; border-color: #e0e0e0; cursor: default; }
+    .wf-chapter-nav-center { font-size: 12px; color: #aaa; }
+
+    /* ── Content area ─────────────────────────────────────────── */
+    .wf-content-area {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    /* ── Verse row ────────────────────────────────────────────── */
+    /*
+      Layout: [gutter 36px] [verse-num 32px] [verse-text flex]
+      The gutter is always present — no layout shift on hover.
+    */
+    .verse-row {
+      display: grid;
+      grid-template-columns: 36px 32px 1fr;
+      gap: 0;
+      margin-bottom: 4px;
+      position: relative;
+    }
+    .verse-gutter {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 2px;
+    }
+    .verse-plus {
+      width: 22px; height: 22px;
+      border: 1px solid #999;
+      border-radius: 50%;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: #666;
+      cursor: pointer;
+      font-weight: 300;
+      line-height: 1;
+    }
+    .verse-plus.hidden { visibility: hidden; }
+    .verse-plus.active {
+      background: #333;
+      border-color: #333;
+      color: #fff;
+    }
+
+    .verse-num {
+      font-size: 11px;
+      color: #aaa;
+      font-weight: 600;
+      padding-top: 3px;
+      user-select: none;
+    }
+
+    /* SOURCE CONTENT FONT — serif (visually distinct from notes) */
+    .verse-text {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 16px;
+      line-height: 1.75;
+      color: #1a1a1a;
+      padding-bottom: 4px;
+    }
+
+    /* Hovered row highlight */
+    .verse-row.hovered { background: #f0f0f0; border-radius: 4px; }
+    .verse-row.has-note { margin-bottom: 2px; }
+
+    /* ── Inline note editor ───────────────────────────────────── */
+    .verse-editor-wrap {
+      grid-column: 3;
+      margin: 6px 0 12px;
+    }
+    .verse-editor {
+      background: #fff;
+      border: 1px solid #bbb;
+      border-radius: 4px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .verse-editor-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #888;
+      margin-bottom: 6px;
+    }
+    .verse-editor textarea {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 8px 10px;
+      font-size: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #222;
+      resize: vertical;
+      min-height: 72px;
+      line-height: 1.5;
+    }
+    .verse-editor-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+    }
+    .btn-save {
+      padding: 6px 16px;
+      background: #333;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 3px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-cancel {
+      padding: 6px 12px;
+      background: #fff;
+      color: #666;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .editor-hint {
+      font-size: 11px;
+      color: #aaa;
+      margin-left: auto;
+    }
+
+    /* ── Saved note block ─────────────────────────────────────── */
+    /* USER NOTE FONT — sans-serif (deliberately different from verse) */
+    .verse-note-wrap {
+      grid-column: 3;
+      margin-bottom: 12px;
+    }
+    .verse-note {
+      background: #f9f9f9;
+      border-left: 3px solid #999;
+      border-radius: 0 4px 4px 0;
+      padding: 8px 12px;
+      margin-bottom: 4px;
+    }
+    .verse-note-text {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #333;
+    }
+    .verse-note-meta {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 4px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .verse-note-meta-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      background: #e8e8e8;
+      color: #888;
+      padding: 1px 5px;
+      border-radius: 2px;
+    }
+
+    /* Add-another link under a saved note */
+    .verse-add-another {
+      font-size: 12px;
+      color: #888;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 0;
+      margin-bottom: 8px;
+    }
+    .verse-add-another:hover { color: #333; }
+
+    /* ── Error state ──────────────────────────────────────────── */
+    .verse-editor-error {
+      background: #fff8f8;
+      border: 1px solid #e0a0a0;
+      border-radius: 3px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: #a00;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-retry {
+      padding: 4px 12px;
+      background: #fff;
+      color: #a00;
+      border: 1px solid #e0a0a0;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ── Loading skeleton ─────────────────────────────────────── */
+    .skel {
+      background: linear-gradient(90deg, #e8e8e8 25%, #d8d8d8 50%, #e8e8e8 75%);
+      background-size: 200% 100%;
+      border-radius: 3px;
+      height: 14px;
+      margin-bottom: 6px;
+    }
+    .skel.short { width: 30%; }
+    .skel.medium { width: 65%; }
+    .skel.long { width: 90%; }
+    .skel.full { width: 100%; }
+
+    /* ── Font legend ──────────────────────────────────────────── */
+    .wf-font-legend {
+      background: #fff;
+      border: 1px dashed #bbb;
+      border-radius: 4px;
+      padding: 10px 14px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 24px;
+      font-size: 12px;
+      color: #666;
+    }
+    .wf-font-legend-item { display: flex; flex-direction: column; gap: 2px; }
+    .wf-font-legend-sample-serif {
+      font-family: Georgia, serif;
+      font-size: 14px;
+      color: #1a1a1a;
+    }
+    .wf-font-legend-sample-sans {
+      font-family: -apple-system, sans-serif;
+      font-size: 13px;
+      color: #444;
+    }
+    .wf-font-legend-label { font-size: 10px; text-transform: uppercase; color: #aaa; letter-spacing: .06em; }
+
+    /* ── Nav-away warning ────────────────────────────────────── */
+    .wf-nav-away-warning {
+      background: #fffbea;
+      border: 1px solid #e0c060;
+      border-radius: 4px;
+      padding: 10px 16px;
+      margin: 8px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: #555;
+    }
+    .wf-nav-away-warning strong { color: #333; }
+    .btn-leave {
+      padding: 5px 14px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 12px;
+      color: #666;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-stay {
+      padding: 5px 14px;
+      background: #333;
+      border: 1px solid #333;
+      border-radius: 3px;
+      font-size: 12px;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .wf-nav-away-actions { display: flex; gap: 8px; margin-left: auto; }
+
+    /* ── Past entry mode ─────────────────────────────────────── */
+    .wf-past-entry-banner {
+      background: #e8e8e8;
+      border-bottom: 2px solid #c8c8c8;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #666;
+    }
+    .wf-past-entry-banner-date { font-weight: 700; color: #333; }
+    .wf-past-entry-banner-link {
+      margin-left: auto;
+      font-size: 12px;
+      color: #666;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .screen-past { background: #ebebeb; }
+    .screen-past .wf-chapter-header { background: #e4e4e4; border-bottom-color: #ccc; }
+    .screen-past .wf-chapter-title { color: #444; }
+    .screen-past .verse-text { color: #666; }
+    .screen-past .verse-note { background: #e0e0e0; border-left-color: #aaa; }
+    .screen-past .verse-note-text { color: #555; }
+    .screen-past .verse-num { color: #bbb; }
+    .screen-past .wf-chapter-nav { background: #e8e8e8; }
+
+    /* ── Annotations section ──────────────────────────────────── */
+    .wf-annotations {
+      margin-top: 40px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 20px 24px;
+      max-width: 860px;
+    }
+    .wf-annotations h2 {
+      font-size: 14px; font-weight: 700;
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .wf-annotations ol {
+      padding-left: 20px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .wf-annotations li { font-size: 13px; line-height: 1.6; color: #444; }
+    .wf-annotations li strong { color: #222; }
+
+    /* ── Annotated outline ────────────────────────────────────── */
+    .ann { outline: 2px dashed #4a90d9; outline-offset: 3px; position: relative; }
+    .ann-badge {
+      position: absolute; top: -9px; right: -9px;
+      background: #4a90d9; color: #fff; border-radius: 50%;
+      width: 18px; height: 18px;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10; pointer-events: none;
+    }
+
+    /* Spacer between verse rows with and without notes */
+    .verse-spacer { height: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="wf-meta">
+    <span><strong>Screen:</strong> Chapter View</span>
+    <span><strong>Feature:</strong> Scripture Journal</span>
+    <span><strong>Route:</strong> /scripture/:work/:book/:chapter</span>
+    <span><strong>Flows:</strong> 2, 11</span>
+    <span><strong>Date:</strong> 2026-04-21</span>
+    <span><strong>Version:</strong> 2</span>
+    <span style="color:#c60;"><strong>Updated:</strong> no toggle on +; warn before nav-away; past entry = visually distinct</span>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 1: Default — reading, one saved note, one hover
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State: Default (reading — one saved note, one verse hovered)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture/bom/alma/32</div>
+  </div>
+
+  <div class="wf-screen">
+
+    <!-- Nav -->
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="wf-breadcrumb ann" style="position:relative;">
+      <span class="ann-badge">1</span>
+      <a>Book of Mormon</a>
+      <span class="wf-breadcrumb-sep">›</span>
+      <a>Alma</a>
+      <span class="wf-breadcrumb-sep">›</span>
+      <span class="wf-breadcrumb-current">Chapter 32</span>
+    </div>
+
+    <!-- Chapter header -->
+    <div class="wf-chapter-header">
+      <div class="wf-chapter-title">Alma 32</div>
+      <div class="wf-chapter-subtitle">Faith compared to a seed—Alma testifies of the word of God—Faith leads to perfect knowledge—Alma speaks of the tree of life.</div>
+    </div>
+
+    <!-- Prev / Next nav -->
+    <div class="wf-chapter-nav ann" style="position:relative;">
+      <span class="ann-badge">2</span>
+      <button class="wf-chapter-nav-btn">← Alma 31</button>
+      <span class="wf-chapter-nav-center">Chapter 32 of 63</span>
+      <button class="wf-chapter-nav-btn">Alma 33 →</button>
+    </div>
+
+    <!-- Content area -->
+    <div class="wf-content-area">
+
+      <!-- Font legend (wireframe annotation only) -->
+      <div class="wf-font-legend ann" style="position:relative;">
+        <span class="ann-badge">3</span>
+        <div class="wf-font-legend-item">
+          <span class="wf-font-legend-label">Source content font (serif)</span>
+          <span class="wf-font-legend-sample-serif">And now, as I said concerning faith...</span>
+        </div>
+        <div style="width:1px; background:#e0e0e0; flex-shrink:0;"></div>
+        <div class="wf-font-legend-item">
+          <span class="wf-font-legend-label">User note font (sans-serif)</span>
+          <span class="wf-font-legend-sample-sans">This reminds me of the concept of acting in faith...</span>
+        </div>
+      </div>
+
+      <!-- Verse 1 — normal state -->
+      <div class="verse-row">
+        <div class="verse-gutter"><div class="verse-plus hidden">+</div></div>
+        <div class="verse-num">1</div>
+        <div class="verse-text">And it came to pass that they did go forth, and began to preach the word of God unto the people, entering into their synagogues, and into their houses; yea, and even they did preach the word in their streets.</div>
+      </div>
+
+      <!-- Verse 2 — normal state -->
+      <div class="verse-row">
+        <div class="verse-gutter"><div class="verse-plus hidden">+</div></div>
+        <div class="verse-num">2</div>
+        <div class="verse-text">And Zeezrom lay sick at Sidon, with a burning fever, which was caused by the great tribulations of his mind on account of his wickedness, for he supposed that Alma and Amulek were no more; and he supposed that they had been slain because of his iniquity.</div>
+      </div>
+
+      <div class="verse-spacer"></div>
+
+      <!-- ── HOVERED VERSE (verse 21) ── -->
+      <div class="verse-row hovered ann" style="position:relative;">
+        <span class="ann-badge">4</span>
+        <div class="verse-gutter">
+          <div class="verse-plus">+</div>
+        </div>
+        <div class="verse-num">21</div>
+        <div class="verse-text">And now as I said concerning faith—faith is not to have a perfect knowledge of things; therefore if ye have faith ye hope for things which are not seen, which are true.</div>
+      </div>
+
+      <div class="verse-spacer"></div>
+
+      <!-- Verse 26 — normal -->
+      <div class="verse-row">
+        <div class="verse-gutter"><div class="verse-plus hidden">+</div></div>
+        <div class="verse-num">26</div>
+        <div class="verse-text">Now, as I said concerning faith—that it was not a perfect knowledge—even so it is with my words. Ye cannot know of their surety at first, unto perfection, any more than faith is a perfect knowledge.</div>
+      </div>
+
+      <div class="verse-spacer"></div>
+
+      <!-- ── VERSE WITH SAVED NOTE (verse 27) ── -->
+      <div class="verse-row has-note ann" style="position:relative;">
+        <span class="ann-badge">5</span>
+        <div class="verse-gutter"><div class="verse-plus hidden">+</div></div>
+        <div class="verse-num">27</div>
+        <div class="verse-text">But behold, if ye will awake and arouse your faculties, even to an experiment upon my words, and exercise a particle of faith, yea, even if ye can no more than desire to believe, let this desire work in you, even until ye believe in a manner that ye can give place for a portion of my words.</div>
+      </div>
+      <div class="verse-note-wrap">
+        <div class="verse-note">
+          <div class="verse-note-text">
+            The phrase "experiment upon my words" is striking — Alma is using scientific language to describe faith. The invitation isn't to believe blindly, but to test the hypothesis. This connects to my questions about the empirical nature of spiritual experience.
+          </div>
+          <div class="verse-note-meta">
+            <span class="verse-note-meta-label">Note</span>
+            <span>Today · 9:42 AM</span>
+          </div>
+        </div>
+        <div class="verse-add-another ann" style="position:relative;">
+          <span class="ann-badge" style="top:-6px; right:-6px;">6</span>
+          + Add another note to verse 27
+        </div>
+      </div>
+
+      <!-- Verse 28 — normal -->
+      <div class="verse-row">
+        <div class="verse-gutter"><div class="verse-plus hidden">+</div></div>
+        <div class="verse-num">28</div>
+        <div class="verse-text">Now, we will compare the word unto a seed. Now, if ye give place, that a seed may be planted in your heart, behold, if it be a true seed, or a good seed, if ye do not cast it out by your unbelief, that ye will resist the Spirit of the Lord, behold, it will begin to swell within your breasts...</div>
+      </div>
+
+      <div class="verse-spacer"></div>
+
+      <!-- Verse 40-41 — trailing -->
+      <div class="verse-row">
+        <div class="verse-gutter"><div class="verse-plus hidden">+</div></div>
+        <div class="verse-num">40</div>
+        <div class="verse-text">And thus, if ye will not nourish the word, looking forward with an eye of faith to the fruit thereof, ye can never pluck of the fruit of the tree of life.</div>
+      </div>
+      <div class="verse-row">
+        <div class="verse-gutter"><div class="verse-plus hidden">+</div></div>
+        <div class="verse-num">41</div>
+        <div class="verse-text">But if ye will nourish the word, yea, nourish the tree as it beginneth to grow, by your faith with great diligence, and with patience, looking forward to the fruit thereof, it shall take root; and behold it shall be a tree springing up unto everlasting life.</div>
+      </div>
+
+    </div><!-- /content-area -->
+
+    <!-- Bottom chapter nav -->
+    <div class="wf-chapter-nav" style="border-top:1px solid #e8e8e8; border-bottom:none;">
+      <button class="wf-chapter-nav-btn">← Alma 31</button>
+      <span class="wf-chapter-nav-center">Chapter 32 of 63</span>
+      <button class="wf-chapter-nav-btn">Alma 33 →</button>
+    </div>
+
+  </div><!-- /screen default -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 2: Inline note editor open (anchored to verse 21)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State: Note editor open — anchored to verse 21</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture/bom/alma/32</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+    <div class="wf-breadcrumb">
+      <a>Book of Mormon</a><span class="wf-breadcrumb-sep">›</span>
+      <a>Alma</a><span class="wf-breadcrumb-sep">›</span>
+      <span class="wf-breadcrumb-current">Chapter 32</span>
+    </div>
+    <div class="wf-chapter-header">
+      <div class="wf-chapter-title">Alma 32</div>
+      <div class="wf-chapter-subtitle">Faith compared to a seed — Alma testifies of the word of God.</div>
+    </div>
+    <div class="wf-chapter-nav">
+      <button class="wf-chapter-nav-btn">← Alma 31</button>
+      <span class="wf-chapter-nav-center">Chapter 32 of 63</span>
+      <button class="wf-chapter-nav-btn">Alma 33 →</button>
+    </div>
+
+    <div class="wf-content-area">
+
+      <!-- Verse 20 — above editor -->
+      <div class="verse-row">
+        <div class="verse-gutter"><div class="verse-plus hidden">+</div></div>
+        <div class="verse-num">20</div>
+        <div class="verse-text">Now of this thing ye must judge; behold, I say unto you, that it is on the one hand even as it is on the other; and it shall be unto every man according to his work.</div>
+      </div>
+
+      <!-- Verse 21 — editor open, "+" is active -->
+      <div class="verse-row has-note ann" style="position:relative;">
+        <span class="ann-badge">7</span>
+        <div class="verse-gutter">
+          <div class="verse-plus active">+</div>
+        </div>
+        <div class="verse-num">21</div>
+        <div class="verse-text">And now as I said concerning faith—faith is not to have a perfect knowledge of things; therefore if ye have faith ye hope for things which are not seen, which are true.</div>
+      </div>
+
+      <!-- Inline editor below verse 21 -->
+      <div class="verse-editor-wrap ann" style="position:relative;">
+        <span class="ann-badge">8</span>
+        <div class="verse-editor">
+          <div class="verse-editor-label">Note on verse 21</div>
+          <textarea placeholder="What does this verse mean to you today?">This definition of faith as hope for unseen truths resonates with </textarea>
+          <div class="verse-editor-actions">
+            <button class="btn-save">Save Note</button>
+            <button class="btn-cancel">Cancel</button>
+            <span class="editor-hint">Append-only · Cannot edit after saving</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verse 22 — below editor -->
+      <div class="verse-row">
+        <div class="verse-gutter"><div class="verse-plus hidden">+</div></div>
+        <div class="verse-num">22</div>
+        <div class="verse-text">And now, behold, I say unto you, and I would that ye should remember, that God is merciful unto all who believe on his name; therefore he desireth, in the first place, that ye should believe, yea, even on his word.</div>
+      </div>
+
+    </div>
+  </div><!-- /screen editor open -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 3: Save error — note text preserved, retry available
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State: Save failed — error inline, note text preserved</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture/bom/alma/32</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+    <div class="wf-breadcrumb">
+      <a>Book of Mormon</a><span class="wf-breadcrumb-sep">›</span>
+      <a>Alma</a><span class="wf-breadcrumb-sep">›</span>
+      <span class="wf-breadcrumb-current">Chapter 32</span>
+    </div>
+    <div class="wf-chapter-header">
+      <div class="wf-chapter-title">Alma 32</div>
+    </div>
+    <div class="wf-chapter-nav">
+      <button class="wf-chapter-nav-btn">← Alma 31</button>
+      <span class="wf-chapter-nav-center">Chapter 32 of 63</span>
+      <button class="wf-chapter-nav-btn">Alma 33 →</button>
+    </div>
+
+    <div class="wf-content-area">
+      <div class="verse-row has-note">
+        <div class="verse-gutter"><div class="verse-plus active">+</div></div>
+        <div class="verse-num">21</div>
+        <div class="verse-text">And now as I said concerning faith—faith is not to have a perfect knowledge of things; therefore if ye have faith ye hope for things which are not seen, which are true.</div>
+      </div>
+
+      <div class="verse-editor-wrap">
+        <div class="verse-editor">
+          <div class="verse-editor-label">Note on verse 21</div>
+          <textarea>This definition of faith as hope for unseen truths resonates with something I read last week about epistemology.</textarea>
+          <div class="verse-editor-actions">
+            <button class="btn-save">Save Note</button>
+            <button class="btn-cancel">Cancel</button>
+            <span class="editor-hint">Append-only · Cannot edit after saving</span>
+          </div>
+          <div class="verse-editor-error ann" style="position:relative;">
+            <span class="ann-badge">9</span>
+            ⚠ Could not save your note — connection error. Your text is preserved.
+            <button class="btn-retry">Retry</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /screen error -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 4: Loading (skeleton)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State: Loading (initial content fetch)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture/bom/alma/32</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+    <div class="wf-breadcrumb" style="color:#ccc;">
+      <span>Book of Mormon</span><span class="wf-breadcrumb-sep">›</span>
+      <span>Alma</span><span class="wf-breadcrumb-sep">›</span>
+      <span>Chapter 32</span>
+    </div>
+    <div class="wf-chapter-header">
+      <div style="height:26px; width:120px; background:#e0e0e0; border-radius:3px; margin-bottom:8px;"></div>
+      <div style="height:14px; width:480px; background:#ebebeb; border-radius:3px;"></div>
+    </div>
+    <div class="wf-chapter-nav">
+      <button class="wf-chapter-nav-btn" disabled>←</button>
+      <span class="wf-chapter-nav-center ann" style="position:relative;">
+        <span class="ann-badge">10</span>
+        Loading…
+      </span>
+      <button class="wf-chapter-nav-btn" disabled>→</button>
+    </div>
+    <div class="wf-content-area">
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <div><div class="skel full"></div><div class="skel long"></div></div>
+        <div><div class="skel full"></div><div class="skel medium"></div></div>
+        <div><div class="skel full"></div><div class="skel full"></div><div class="skel short"></div></div>
+        <div><div class="skel long"></div></div>
+        <div><div class="skel full"></div><div class="skel full"></div><div class="skel medium"></div></div>
+      </div>
+    </div>
+  </div><!-- /screen loading -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 5: Navigate-away warning (unsaved note + next chapter click)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State: Navigate-away warning (editor open, user clicked "Alma 33 →")</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/scripture/bom/alma/32</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+    <div class="wf-breadcrumb">
+      <a>Book of Mormon</a><span class="wf-breadcrumb-sep">›</span>
+      <a>Alma</a><span class="wf-breadcrumb-sep">›</span>
+      <span class="wf-breadcrumb-current">Chapter 32</span>
+    </div>
+    <div class="wf-chapter-header">
+      <div class="wf-chapter-title">Alma 32</div>
+      <div class="wf-chapter-subtitle">Faith compared to a seed.</div>
+    </div>
+
+    <!-- Chapter nav — "Alma 33 →" just clicked, warning appears below -->
+    <div class="wf-chapter-nav">
+      <button class="wf-chapter-nav-btn">← Alma 31</button>
+      <span class="wf-chapter-nav-center">Chapter 32 of 63</span>
+      <button class="wf-chapter-nav-btn" style="border-color:#e0c060; color:#888;">Alma 33 →</button>
+    </div>
+
+    <!-- Warning banner — inline, beneath the nav bar -->
+    <div class="wf-nav-away-warning ann" style="position:relative;">
+      <span class="ann-badge">11</span>
+      ⚠ <strong>You have an unsaved note on verse 21.</strong> If you leave, your draft will be lost.
+      <div class="wf-nav-away-actions">
+        <button class="btn-leave">Leave anyway</button>
+        <button class="btn-stay">Stay &amp; finish</button>
+      </div>
+    </div>
+
+    <div class="wf-content-area">
+      <!-- Editor still open, showing the unsaved draft -->
+      <div class="verse-row has-note">
+        <div class="verse-gutter"><div class="verse-plus active">+</div></div>
+        <div class="verse-num">21</div>
+        <div class="verse-text">And now as I said concerning faith—faith is not to have a perfect knowledge of things; therefore if ye have faith ye hope for things which are not seen, which are true.</div>
+      </div>
+      <div class="verse-editor-wrap">
+        <div class="verse-editor" style="border-color:#e0c060;">
+          <div class="verse-editor-label">Note on verse 21 — unsaved</div>
+          <textarea>This definition of faith as hope for unseen truths resonates with something I read last week about epistemology.</textarea>
+          <div class="verse-editor-actions">
+            <button class="btn-save">Save Note</button>
+            <button class="btn-cancel">Cancel</button>
+            <span class="editor-hint">Append-only · Cannot edit after saving</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /screen nav-away warning -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 6: Past Entry View — visually distinct / muted
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State: Past Entry View — read-only, visually muted (entry from Apr 17)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/entries/2026-04-17_dc121</div>
+  </div>
+
+  <div class="wf-screen screen-past">
+    <nav class="wf-nav" style="background:#e8e8e8; border-bottom-color:#c8c8c8;">
+      <div class="wf-nav-logo" style="border-color:#888; color:#666;">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+
+    <!-- Past entry banner — replaces breadcrumb, clearly signals read-only mode -->
+    <div class="wf-past-entry-banner ann" style="position:relative;">
+      <span class="ann-badge">12</span>
+      📅 Viewing journal entry from <span class="wf-past-entry-banner-date">Thursday, April 17, 2026</span>
+      &nbsp;·&nbsp; Read-only
+      <a class="wf-past-entry-banner-link">← Back to journal</a>
+    </div>
+
+    <div class="wf-chapter-header screen-past" style="background:#e4e4e4; border-bottom-color:#ccc;">
+      <div class="wf-chapter-title" style="color:#444;">D&amp;C 121</div>
+      <div class="wf-chapter-subtitle" style="color:#999;">Prayer and prophecy of Joseph Smith in Liberty Jail.</div>
+    </div>
+
+    <!-- No prev/next chapter nav in past entry view -->
+
+    <div class="wf-content-area">
+
+      <!-- Verse without annotation — muted -->
+      <div class="verse-row">
+        <div class="verse-gutter"><!-- no + icon in read-only --></div>
+        <div class="verse-num" style="color:#ccc;">1</div>
+        <div class="verse-text" style="color:#888;">O God, where art thou? And where is the pavilion that covereth thy hiding place?</div>
+      </div>
+
+      <div class="verse-spacer"></div>
+
+      <!-- Verse WITH saved note — annotation is key content here -->
+      <div class="verse-row has-note ann" style="position:relative;">
+        <span class="ann-badge">13</span>
+        <div class="verse-gutter"></div>
+        <div class="verse-num" style="color:#ccc;">36</div>
+        <div class="verse-text" style="color:#888;">That the rights of the priesthood are inseparably connected with the powers of heaven, and that the powers of heaven cannot be controlled nor handled only upon the principles of righteousness.</div>
+      </div>
+      <div class="verse-note-wrap">
+        <div class="verse-note" style="background:#ddd; border-left-color:#aaa;">
+          <div class="verse-note-text" style="color:#444;">Authority and character are inseparable here — you can't hold priesthood while living contrary to its principles. The office doesn't confer the power; the life does.</div>
+          <div class="verse-note-meta">
+            <span class="verse-note-meta-label" style="background:#ccc;">Note</span>
+            <span>April 17, 2026 · 8:15 AM</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="verse-row">
+        <div class="verse-gutter"></div>
+        <div class="verse-num" style="color:#ccc;">37</div>
+        <div class="verse-text" style="color:#888;">That they may be conferred upon us, it is true; but when we undertake to cover our sins, or to gratify our pride, our vain ambition, or to exercise control or dominion or compulsion upon the souls of the children of men, in any degree of unrighteousness, behold, the heavens withdraw themselves...</div>
+      </div>
+
+    </div>
+  </div><!-- /screen past entry -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       Annotations
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-annotations">
+    <h2>Annotations — Chapter View (v2)</h2>
+    <ol>
+      <li><strong>[1] Breadcrumb</strong> — Each level is a clickable link back to the Scripture Browser at that level (Work, Book, Chapter list). FR-11. Clicking "Alma" returns to the book's chapter list; clicking "Book of Mormon" returns to the work-level book list.</li>
+      <li><strong>[2] Prev / Next chapter</strong> — Appear at both top and bottom of the chapter (FR-71, SHOULD). "← Alma 31" is disabled on chapter 1 (no previous). "Alma 33 →" is disabled on the last chapter. Shows chapter number out of total to orient the user.</li>
+      <li><strong>[3] Font legend</strong> — Wireframe-only annotation illustrating the font distinction (NFR-40). Does NOT appear in production. Serif = source scripture text; sans-serif = user notes. Different weight/size alone is not sufficient.</li>
+      <li><strong>[4] Hover state</strong> — The "+" button appears in a reserved left gutter (36px wide). Always present but visually hidden until hover, preventing layout shift (NFR-41). Verse row gets a subtle tint to reinforce the affordance.</li>
+      <li><strong>[5] Verse with saved note</strong> — Note appears directly below its verse with a left border bar. Sans-serif font, smaller than verse text, with a "Note" badge and timestamp. FR-43, FR-45.</li>
+      <li><strong>[6] Add another note</strong> — Since annotations are append-only (BR-04), a second thought on the same verse uses this inline link to open a second editor. Notes stack chronologically under the verse.</li>
+      <li><strong>[7] Active "+" state — RESOLVED</strong> — When an editor is open, the "+" turns filled/dark. <strong>Clicking it again does nothing</strong> (Q1 resolved: only Cancel closes the editor). The filled state is a visual indicator of ownership, not a toggle.</li>
+      <li><strong>[8] Inline note editor</strong> — Anchored below the verse, within the text column. Hint "Append-only · Cannot edit after saving" sets expectation upfront. FR-41, FR-42, BR-04.</li>
+      <li><strong>[9] Save error</strong> — Error inside the editor box, below action buttons. Note text preserved in textarea. Retry re-attempts the save. FR-61.</li>
+      <li><strong>[10] Loading skeleton</strong> — Skeleton bars during initial fetch. Chapter nav disabled until content loads. FR-60.</li>
+      <li><strong>[11] Navigate-away warning — RESOLVED</strong> — When an editor has unsaved text and the user clicks a chapter nav button, an inline warning banner appears immediately below the nav bar (Q2 resolved: warn, don't silently discard). Editor stays open and highlighted. Two actions: "Leave anyway" (discards draft, navigates) and "Stay &amp; finish" (dismisses warning, returns focus to editor). The clicked nav button gets a subtle yellow border to show it triggered the warning.</li>
+      <li><strong>[12] Past entry banner — RESOLVED</strong> — Past Entry View replaces the breadcrumb with a full-width muted banner stating the entry date and "Read-only" (Q3 resolved: visually distinct, not just a banner on the same design). The entire screen background, header, and verse text are desaturated/muted. No "+" icons appear anywhere. URL is the entry route, not the content route.</li>
+      <li><strong>[13] Annotations in past entry view</strong> — Annotations are the primary content in this view — they're what the user came to read. They render the same structurally (left border bar, sans-serif, timestamp) but in a muted palette consistent with the read-only mode. No "Add another note" link.</li>
+    </ol>
+
+    <div style="margin-top:16px; padding-top:12px; border-top:1px solid #eee;">
+      <strong style="font-size:12px;">UX review checklist (v2)</strong>
+      <ul style="margin-top:8px; padding-left:18px; font-size:12px; color:#555; display:flex; flex-direction:column; gap:4px; line-height:1.5;">
+        <li>✅ Primary action ("+" on hover) discoverable without dominating reading</li>
+        <li>✅ No layout shift on hover — gutter always reserved</li>
+        <li>✅ Font distinction structurally enforced (serif vs sans-serif)</li>
+        <li>✅ Append-only expectation set inline in editor</li>
+        <li>✅ Save error preserves note text and offers retry</li>
+        <li>✅ Loading skeleton shown</li>
+        <li>✅ Navigate-away warning is inline (not a modal) — doesn't block the page</li>
+        <li>✅ Past Entry View is unmistakably different — muted palette, different URL, no "+" icons</li>
+        <li>✅ Past Entry View has a clear "Back to journal" escape</li>
+        <li>⚠️ Open: should "Leave anyway" in the nav-away warning also offer to save first? ("Save &amp; leave" as a third option) — consider during spec.</li>
+      </ul>
+    </div>
+  </div>
+        <li>✅ Loading state shown with skeleton</li>
+        <li>✅ Prev/next chapter navigation at both top and bottom</li>
+        <li>⚠️ Open: does clicking the active "+" button a second time close the editor, or is there only a Cancel button?</li>
+        <li>⚠️ Open: if the user navigates to the next chapter mid-edit, should they be warned about unsaved text?</li>
+        <li>⚠️ Open: should past-entry view of this same chapter look identical except with a date header and no "+" icons, or be a visually distinct "read-only" mode?</li>
+      </ul>
+    </div>
+  </div>
+
+</body>
+</html>

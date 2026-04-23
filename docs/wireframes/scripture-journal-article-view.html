@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Wireframe: Article View — Scripture Journal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #e8e8e8; color: #222; font-size: 14px; padding: 24px;
+    }
+
+    .wf-meta {
+      font-size: 11px; color: #888; margin-bottom: 8px; padding: 6px 10px;
+      background: #fff; border: 1px solid #ccc; border-radius: 3px;
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .wf-meta strong { color: #444; }
+
+    .wf-state-label {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: #555; margin: 32px 0 10px;
+      padding: 4px 8px; background: #d0d0d0; display: inline-block; border-radius: 3px;
+    }
+
+    /* ── Browser chrome ──────────────────────────────── */
+    .wf-browser {
+      background: #ddd; border: 1px solid #bbb; border-radius: 6px 6px 0 0;
+      padding: 8px 12px; display: flex; align-items: center; gap: 10px;
+    }
+    .wf-browser-dots { display: flex; gap: 5px; }
+    .wf-browser-dot { width: 11px; height: 11px; border-radius: 50%; background: #bbb; }
+    .wf-browser-url {
+      flex: 1; background: #f0f0f0; border: 1px solid #bbb;
+      border-radius: 3px; padding: 3px 10px; font-size: 12px; color: #555;
+    }
+
+    /* ── Screen shell ────────────────────────────────── */
+    .wf-screen {
+      background: #f5f5f5; border: 1px solid #bbb;
+      border-top: none; border-radius: 0 0 6px 6px; overflow: hidden;
+    }
+
+    /* ── Nav ──────────────────────────────────────────── */
+    .wf-nav {
+      background: #fff; border-bottom: 2px solid #ccc;
+      padding: 0 24px; display: flex; align-items: center; height: 52px; gap: 20px;
+    }
+    .wf-nav-logo {
+      font-size: 16px; font-weight: 700; border: 2px solid #222;
+      padding: 3px 10px; border-radius: 3px;
+    }
+    .wf-nav-spacer { flex: 1; }
+    .wf-nav-link {
+      font-size: 13px; color: #444; padding: 4px 10px;
+      border: 1px solid transparent; border-radius: 3px; cursor: default;
+    }
+    .wf-nav-user {
+      font-size: 13px; padding: 4px 10px; border: 1px solid #ccc;
+      border-radius: 3px; background: #f8f8f8;
+    }
+
+    /* ── Article header bar ──────────────────────────── */
+    .wf-article-header {
+      background: #fff; border-bottom: 1px solid #ddd;
+      padding: 16px 24px 14px;
+    }
+    .wf-back-link {
+      font-size: 12px; color: #666; margin-bottom: 10px;
+      display: inline-block;
+    }
+    .wf-article-title {
+      font-size: 22px; font-weight: 700; line-height: 1.25;
+      margin-bottom: 6px; font-family: Georgia, serif;
+    }
+    .wf-article-meta {
+      font-size: 12px; color: #888;
+      display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+    }
+    .wf-article-meta a { color: #666; font-family: monospace; font-size: 11px; }
+    .wf-version-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; background: #f0f0f0; border: 1px solid #ccc;
+      border-radius: 10px; padding: 2px 9px; color: #555;
+    }
+    .wf-entry-badge {
+      font-size: 11px; background: #222; color: #fff;
+      border-radius: 10px; padding: 2px 9px;
+    }
+
+    /* ── Content + gutter layout ─────────────────────── */
+    .wf-content-area {
+      max-width: 820px; margin: 0 auto;
+      padding: 28px 24px;
+    }
+    .wf-paragraph-row {
+      display: flex; align-items: flex-start; gap: 0;
+      margin-bottom: 22px; position: relative;
+    }
+    .wf-paragraph-gutter {
+      width: 36px; flex-shrink: 0;
+      display: flex; align-items: flex-start; padding-top: 3px;
+    }
+    .wf-plus-btn {
+      width: 22px; height: 22px; border: 1px solid #bbb;
+      border-radius: 3px; background: #f0f0f0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; cursor: default; color: #666; line-height: 1;
+    }
+    .wf-plus-ghost {
+      width: 22px; height: 22px; opacity: 0; /* hidden until hover */
+    }
+    .wf-para-index {
+      font-size: 11px; color: #bbb; padding-top: 4px; width: 22px;
+      text-align: center; font-variant-numeric: tabular-nums;
+    }
+    .wf-paragraph-body { flex: 1; }
+    .wf-paragraph-text {
+      font-family: Georgia, serif; font-size: 16px;
+      line-height: 1.75; color: #222;
+    }
+    .wf-paragraph-text.muted {
+      color: #888;
+    }
+
+    /* ── Inline annotation (saved note) ─────────────── */
+    .wf-annotation-saved {
+      margin-top: 10px; margin-left: 0;
+      background: #f8f8f8; border-left: 3px solid #999;
+      padding: 8px 12px; border-radius: 0 4px 4px 0;
+    }
+    .wf-annotation-saved-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: #aaa; margin-bottom: 4px;
+    }
+    .wf-annotation-saved-text {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px; line-height: 1.55; color: #333;
+    }
+
+    /* ── Inline note editor ──────────────────────────── */
+    .wf-editor {
+      margin-top: 10px;
+      border: 1px solid #bbb; border-radius: 4px;
+      background: #fff; overflow: hidden;
+    }
+    .wf-editor-anchor {
+      font-size: 11px; color: #888; padding: 6px 10px;
+      background: #f5f5f5; border-bottom: 1px solid #e8e8e8;
+      font-style: italic;
+    }
+    .wf-editor-textarea {
+      width: 100%; padding: 10px;
+      border: none; font-size: 13px; line-height: 1.6;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #222; background: #fff; resize: none; min-height: 80px;
+      outline: none;
+    }
+    .wf-editor-footer {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 8px; padding: 8px 10px; border-top: 1px solid #eee;
+      background: #fafafa;
+    }
+    .wf-btn {
+      padding: 6px 14px; border: 1px solid #bbb;
+      border-radius: 3px; background: #f0f0f0;
+      font-size: 12px; cursor: default; font-weight: 500;
+    }
+    .wf-btn-primary { background: #222; color: #fff; border-color: #222; }
+    .wf-btn-ghost { background: transparent; border-color: transparent; color: #666; }
+    .wf-btn-sm { padding: 4px 10px; font-size: 12px; }
+
+    /* ── Error banner ────────────────────────────────── */
+    .wf-editor-error {
+      font-size: 12px; color: #c00;
+      padding: 6px 10px; background: #fff5f5;
+      border-top: 1px solid #f0c0c0;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ── Version notice bar ──────────────────────────── */
+    .wf-version-bar {
+      background: #f0f4ff; border-bottom: 1px solid #c0ccee;
+      padding: 8px 24px; font-size: 12px; color: #3a55a0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .wf-version-bar a { color: #3a55a0; text-decoration: underline; cursor: default; }
+
+    /* ── Past entry mode ─────────────────────────────── */
+    .wf-past-header {
+      background: #f0f0f0; border-bottom: 1px solid #ccc;
+      padding: 8px 24px; font-size: 12px; color: #555;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .wf-past-badge {
+      font-size: 11px; background: #888; color: #fff;
+      border-radius: 10px; padding: 2px 9px;
+    }
+
+    /* ── Loading skeleton ────────────────────────────── */
+    .skel { background: #ddd; border-radius: 3px; animation: pulse 1.4s ease-in-out infinite; }
+    .skel-h { height: 16px; }
+    .skel-sm { height: 11px; }
+    .skel-lg { height: 72px; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+    .wf-skel-title { height: 28px; background: #ddd; border-radius: 3px; width: 68%; margin-bottom: 10px; }
+    .wf-skel-meta { height: 11px; background: #ddd; border-radius: 3px; width: 40%; margin-bottom: 24px; }
+
+    /* ── Annotations section ─────────────────────────── */
+    .wf-annotations {
+      margin-top: 40px; background: #fff; border: 1px solid #ccc;
+      border-radius: 4px; padding: 20px 24px; max-width: 860px;
+    }
+    .wf-annotations h2 {
+      font-size: 14px; font-weight: 700; margin-bottom: 14px;
+      padding-bottom: 8px; border-bottom: 1px solid #eee;
+    }
+    .wf-annotations ol { padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .wf-annotations li { font-size: 13px; line-height: 1.6; color: #444; }
+    .wf-annotations li strong { color: #222; }
+  </style>
+</head>
+<body>
+
+  <div class="wf-meta">
+    <span><strong>Screen:</strong> Article View</span>
+    <span><strong>Feature:</strong> Scripture Journal</span>
+    <span><strong>Date:</strong> 2026-04-21</span>
+    <span><strong>Version:</strong> 1</span>
+    <span><strong>Flows:</strong> 3, 9, 10, 11</span>
+    <span><strong>FRs:</strong> FR-27, FR-40 – FR-45, FR-50 – FR-53, FR-60, FR-61</span>
+    <span><strong>Route:</strong> /articles/:articleId</span>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 1 — Default: Reading (today's session, no notes yet)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 1 — Default: Reading (today, no notes yet)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/articles/a3f9c2...</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+
+    <div class="wf-article-header">
+      <div class="wf-back-link">← Dashboard</div>
+      <div class="wf-article-title">The Power of Covenant Belonging</div>
+      <div class="wf-article-meta">
+        <span>General Conference · April 2024</span>
+        <span>·</span>
+        <span>Imported Apr 21, 2026</span>
+        <span>·</span>
+        <span><a>churchofjesuschrist.org ↗</a></span>
+        <span class="wf-entry-badge">Today's session</span>
+      </div>
+    </div>
+
+    <div class="wf-content-area">
+
+      <!-- Paragraph 0 — hover state showing "+" -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-btn">+</div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            Brothers and sisters, I am grateful to be with you this Sabbath morning. As I have reflected on the theme of covenant belonging, I have felt impressed to speak about the sustaining power that comes from understanding our place in God's eternal family.
+          </div>
+        </div>
+      </div>
+
+      <!-- Paragraph 1 — no hover, "+" invisible -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            Each of us entered mortality carrying the imprint of divine parentage. We are not strangers assembled by chance. We are children of a Heavenly Father who knows our names, understands our struggles, and has prepared a path for our return to Him.
+          </div>
+        </div>
+      </div>
+
+      <!-- Paragraph 2 — no hover -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            The covenant path is not merely a set of obligations. It is a relationship — a living connection between us and our Savior, Jesus Christ. Every ordinance on that path is a declaration that we belong to Him and He to us.
+          </div>
+        </div>
+      </div>
+
+      <!-- Paragraph 3 -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            I have seen this belonging manifest in the lives of members across the world — in hospital rooms, in small branches meeting in rented spaces, in family prayer circles, and in quiet moments of personal scripture study. The Spirit confirms belonging when we are faithful to our covenants.
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; color:#aaa; text-align:center; margin-top:8px;">
+        · · · 4 more paragraphs · · ·
+      </div>
+
+      <div style="margin-top:16px; font-size:12px; color:#bbb; text-align:right;">
+        Hover any paragraph to add a note
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 2 — Note Editor Open (anchored to paragraph 1)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 2 — Note Editor Open (paragraph 1 active)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/articles/a3f9c2...</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+
+    <div class="wf-article-header">
+      <div class="wf-back-link">← Dashboard</div>
+      <div class="wf-article-title">The Power of Covenant Belonging</div>
+      <div class="wf-article-meta">
+        <span>General Conference · April 2024</span>
+        <span>·</span>
+        <span>Imported Apr 21, 2026</span>
+        <span class="wf-entry-badge">Today's session</span>
+      </div>
+    </div>
+
+    <div class="wf-content-area">
+
+      <!-- Paragraph 0 — no interaction -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text" style="color:#bbb;">
+            Brothers and sisters, I am grateful to be with you this Sabbath morning. As I have reflected on the theme of covenant belonging, I have felt impressed to speak about the sustaining power…
+          </div>
+        </div>
+      </div>
+
+      <!-- Paragraph 1 — editor OPEN -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter" style="padding-top:3px;">
+          <div class="wf-plus-btn" style="background:#ddd; border-color:#999;">+</div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            Each of us entered mortality carrying the imprint of divine parentage. We are not strangers assembled by chance. We are children of a Heavenly Father who knows our names, understands our struggles, and has prepared a path for our return to Him.
+          </div>
+          <div class="wf-editor">
+            <div class="wf-editor-anchor">Note on paragraph 2 of 8</div>
+            <textarea class="wf-editor-textarea" readonly>This reminds me of the talk from Elder Holland last year — we are not accidents of nature. The phrase "divine parentage" is worth sitting with. What does it change about how I see the people around me?</textarea>
+            <div class="wf-editor-footer">
+              <button class="wf-btn wf-btn-ghost">Cancel</button>
+              <button class="wf-btn wf-btn-primary">Save Note</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paragraph 2 — dimmed while editor is open -->
+      <div class="wf-paragraph-row" style="opacity:.45;">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            The covenant path is not merely a set of obligations. It is a relationship — a living connection between us and our Savior, Jesus Christ…
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 3 — Annotations Saved (today's notes visible inline)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 3 — Today's Saved Notes Inline</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/articles/a3f9c2...</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+
+    <div class="wf-article-header">
+      <div class="wf-back-link">← Dashboard</div>
+      <div class="wf-article-title">The Power of Covenant Belonging</div>
+      <div class="wf-article-meta">
+        <span>General Conference · April 2024</span>
+        <span>·</span>
+        <span>Imported Apr 21, 2026</span>
+        <span class="wf-entry-badge">Today's session · 2 notes</span>
+      </div>
+    </div>
+
+    <div class="wf-content-area">
+
+      <!-- Paragraph 0 — has a saved note -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-btn">+</div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            Brothers and sisters, I am grateful to be with you this Sabbath morning. As I have reflected on the theme of covenant belonging, I have felt impressed to speak about the sustaining power that comes from understanding our place in God's eternal family.
+          </div>
+          <div class="wf-annotation-saved">
+            <div class="wf-annotation-saved-label">Your note — Apr 21, 2026</div>
+            <div class="wf-annotation-saved-text">The phrase "sustaining power" — what does it take to feel sustained? Not just the idea but the lived experience of it.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paragraph 1 — has a saved note -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-btn">+</div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            Each of us entered mortality carrying the imprint of divine parentage. We are not strangers assembled by chance. We are children of a Heavenly Father who knows our names, understands our struggles, and has prepared a path for our return to Him.
+          </div>
+          <div class="wf-annotation-saved">
+            <div class="wf-annotation-saved-label">Your note — Apr 21, 2026</div>
+            <div class="wf-annotation-saved-text">This reminds me of the talk from Elder Holland last year — we are not accidents of nature. The phrase "divine parentage" is worth sitting with. What does it change about how I see the people around me?</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paragraph 2 — no note, hover -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            The covenant path is not merely a set of obligations. It is a relationship — a living connection between us and our Savior, Jesus Christ. Every ordinance on that path is a declaration that we belong to Him and He to us.
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; color:#aaa; text-align:center; margin-top:8px;">
+        · · · 5 more paragraphs · · ·
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 4 — Save Error (note text preserved)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 4 — Save Error (retry, note text preserved)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/articles/a3f9c2...</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+
+    <div class="wf-article-header">
+      <div class="wf-back-link">← Dashboard</div>
+      <div class="wf-article-title">The Power of Covenant Belonging</div>
+      <div class="wf-article-meta">
+        <span>General Conference · April 2024</span>
+        <span class="wf-entry-badge">Today's session</span>
+      </div>
+    </div>
+
+    <div class="wf-content-area">
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text" style="color:#bbb;">
+            Brothers and sisters, I am grateful to be with you this Sabbath morning…
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-btn" style="background:#ddd;">+</div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            Each of us entered mortality carrying the imprint of divine parentage. We are not strangers assembled by chance. We are children of a Heavenly Father who knows our names, understands our struggles, and has prepared a path for our return to Him.
+          </div>
+          <div class="wf-editor">
+            <div class="wf-editor-anchor">Note on paragraph 2 of 8</div>
+            <textarea class="wf-editor-textarea" readonly>This reminds me of the talk from Elder Holland last year — we are not accidents of nature. The phrase "divine parentage" is worth sitting with.</textarea>
+            <div class="wf-editor-error">
+              ⚠ Could not save your note. Your text is preserved. &nbsp;
+              <button class="wf-btn wf-btn-sm" style="margin-left:auto;">Retry</button>
+            </div>
+            <div class="wf-editor-footer">
+              <button class="wf-btn wf-btn-ghost">Keep Editing</button>
+              <button class="wf-btn wf-btn-primary" style="opacity:.5;" disabled>Save Note</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 5 — New Version Badge (previousVersionId set)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 5 — Versioned Article (previousVersionId set)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/articles/b7d1e4...</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+
+    <!-- Version notice bar — below nav, above article header -->
+    <div class="wf-version-bar">
+      ℹ &nbsp; <strong>Version 2</strong> — imported Apr 21, 2026. &nbsp;
+      <a>View previous version (Jan 8, 2026) →</a>
+      &nbsp;·&nbsp; Your annotations on the prior version are preserved there.
+    </div>
+
+    <div class="wf-article-header">
+      <div class="wf-back-link">← Dashboard</div>
+      <div class="wf-article-title">The Power of Covenant Belonging</div>
+      <div class="wf-article-meta">
+        <span>General Conference · April 2024</span>
+        <span>·</span>
+        <span>Imported Apr 21, 2026</span>
+        <span>·</span>
+        <span><a style="color:#666; font-family:monospace; font-size:11px;">churchofjesuschrist.org ↗</a></span>
+        <span class="wf-version-badge">Version 2</span>
+        <span class="wf-entry-badge">Today's session</span>
+      </div>
+    </div>
+
+    <div class="wf-content-area">
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-btn">+</div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            Brothers and sisters, I am grateful to be with you this Sabbath morning. As I have reflected on the theme of covenant belonging, I have felt impressed to speak about the sustaining power that comes from understanding our place in God's eternal family.
+          </div>
+        </div>
+      </div>
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text">
+            Each of us entered mortality carrying the imprint of divine parentage. We are not strangers assembled by chance…
+          </div>
+        </div>
+      </div>
+      <div style="font-size:12px; color:#aaa; text-align:center; margin-top:16px;">
+        · · · 6 more paragraphs · · ·
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 6 — Loading Skeleton
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 6 — Loading</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/articles/a3f9c2...</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+
+    <div class="wf-article-header">
+      <div class="wf-back-link" style="opacity:.3;">← Dashboard</div>
+      <div class="wf-skel-title skel"></div>
+      <div class="wf-skel-meta skel"></div>
+    </div>
+
+    <div class="wf-content-area">
+      <div style="display:flex; flex-direction:column; gap:22px;">
+        <div>
+          <div class="skel" style="height:14px; width:100%; margin-bottom:6px;"></div>
+          <div class="skel" style="height:14px; width:100%; margin-bottom:6px;"></div>
+          <div class="skel" style="height:14px; width:80%;"></div>
+        </div>
+        <div>
+          <div class="skel" style="height:14px; width:100%; margin-bottom:6px;"></div>
+          <div class="skel" style="height:14px; width:95%; margin-bottom:6px;"></div>
+          <div class="skel" style="height:14px; width:70%;"></div>
+        </div>
+        <div>
+          <div class="skel" style="height:14px; width:100%; margin-bottom:6px;"></div>
+          <div class="skel" style="height:14px; width:88%;"></div>
+        </div>
+        <div>
+          <div class="skel" style="height:14px; width:100%; margin-bottom:6px;"></div>
+          <div class="skel" style="height:14px; width:100%; margin-bottom:6px;"></div>
+          <div class="skel" style="height:14px; width:55%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 7 — Past Entry View (read-only)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 7 — Past Entry View (read-only)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/entries/2026-01-08_a3f9c2...</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-nav">
+      <div class="wf-nav-logo">SJ</div>
+      <div class="wf-nav-spacer"></div>
+      <div class="wf-nav-link">Browse Scripture</div>
+      <div class="wf-nav-link">Import Article</div>
+      <div class="wf-nav-user">peter ▾</div>
+    </div>
+
+    <!-- Past entry banner -->
+    <div class="wf-past-header">
+      <div>
+        <span class="wf-past-badge">Past Entry</span>
+        &nbsp; Viewing your study session from <strong>January 8, 2026</strong>. Read-only — this is the article as it existed when you annotated it.
+      </div>
+      <button class="wf-btn" style="font-size:12px;">Study Today →</button>
+    </div>
+
+    <div class="wf-article-header" style="background:#f8f8f8;">
+      <div class="wf-back-link">← Dashboard</div>
+      <div class="wf-article-title" style="color:#555;">The Power of Covenant Belonging</div>
+      <div class="wf-article-meta" style="color:#aaa;">
+        <span>General Conference · April 2024</span>
+        <span>·</span>
+        <span>Imported Jan 8, 2026</span>
+        <span class="wf-version-badge" style="background:#eee; color:#999; border-color:#ddd;">Version 1</span>
+      </div>
+    </div>
+
+    <div class="wf-content-area">
+
+      <!-- Paragraph 0 — has saved note, no "+" -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <!-- No "+" in past entry mode -->
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text muted">
+            Brothers and sisters, I am grateful to be with you this Sabbath morning. As I have reflected on the theme of covenant belonging, I have felt impressed to speak about the sustaining power that comes from understanding our place in God's eternal family.
+          </div>
+          <div class="wf-annotation-saved" style="border-left-color:#bbb; background:#f0f0f0;">
+            <div class="wf-annotation-saved-label" style="color:#bbb;">Your note — Jan 8, 2026</div>
+            <div class="wf-annotation-saved-text" style="color:#666;">The phrase "sustaining power" — what does it take to feel sustained? Not just the idea but the lived experience of it.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paragraph 1 — no note -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text muted">
+            Each of us entered mortality carrying the imprint of divine parentage. We are not strangers assembled by chance. We are children of a Heavenly Father who knows our names, understands our struggles, and has prepared a path for our return to Him.
+          </div>
+        </div>
+      </div>
+
+      <!-- Paragraph 2 — has a note -->
+      <div class="wf-paragraph-row">
+        <div class="wf-paragraph-gutter">
+          <div class="wf-plus-ghost"></div>
+        </div>
+        <div class="wf-paragraph-body">
+          <div class="wf-paragraph-text muted">
+            The covenant path is not merely a set of obligations. It is a relationship — a living connection between us and our Savior, Jesus Christ. Every ordinance on that path is a declaration that we belong to Him and He to us.
+          </div>
+          <div class="wf-annotation-saved" style="border-left-color:#bbb; background:#f0f0f0;">
+            <div class="wf-annotation-saved-label" style="color:#bbb;">Your note — Jan 8, 2026</div>
+            <div class="wf-annotation-saved-text" style="color:#666;">Ordinances as declarations, not merely rites. The language matters — "I belong to Him." Ownership language, but tender.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; color:#ccc; text-align:center; margin-top:8px;">
+        · · · 5 more paragraphs · · ·
+      </div>
+
+      <div style="margin-top:20px; padding-top:16px; border-top:1px solid #e0e0e0;
+                  display:flex; justify-content:center;">
+        <button class="wf-btn">Study this article today →</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       Annotations
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-annotations">
+    <h2>Annotations — Article View</h2>
+    <ol>
+      <li><strong>[1] Serif body / sans-serif notes — font family distinction</strong> — Article paragraph text renders in Georgia (serif) to signal "source content." Saved annotations and the note editor use the system sans-serif. This satisfies FR-45 and NFR-40 through font family contrast rather than just size or color difference. The distinction is especially important here because both text types appear adjacent within the same paragraph row.</li>
+      <li><strong>[2] Left gutter with "+" — same pattern as Chapter View</strong> — A narrow left gutter (36 px) holds the "+" button, which becomes visible on paragraph hover. Paragraphs that have no "+" visible use an invisible placeholder of the same width so text alignment is consistent across all rows. The "+" does not close the editor (only Cancel does) — consistent with the Chapter View decision. FR-40, FR-41.</li>
+      <li><strong>[3] Paragraph anchor label in the editor</strong> — The editor header shows "Note on paragraph N of M" (1-indexed for display, 0-indexed blockId internally). Articles don't have verse numbers, so this label provides the only positional context. FR-42.</li>
+      <li><strong>[4] "Today's session" badge in the article header</strong> — A small dark badge signals that a live journal entry exists for today. When note count > 0 it updates to "Today's session · N notes." This is the only place note count is surfaced inline on the reading screen. FR-50.</li>
+      <li><strong>[5] Other-paragraph dimming while editor is open</strong> — When an inline editor is open (State 2), non-active paragraphs are dimmed to 45% opacity. This focuses attention on the paragraph being annotated. Clicking a different paragraph's "+" is intentionally not shown — that action is blocked while an editor is open (user must Save or Cancel first). FR-41.</li>
+      <li><strong>[6] Save error — Retry in the error strip, not the footer</strong> — The error message and Retry button appear in a red strip between the textarea and the footer. "Keep Editing" replaces "Cancel" in the footer so the user understands the note text is safe. The primary "Save Note" button is disabled during error state to prevent double-submit confusion. FR-61.</li>
+      <li><strong>[7] Version notice bar (State 5)</strong> — When an article has a previousVersionId, a blue informational bar appears below the nav and above the article header. It states the current version number and import date, and provides a link to the prior version. Annotations made on the prior version are preserved there — stated explicitly to reassure the user nothing was lost. FR-27.</li>
+      <li><strong>[8] "Version N" badge in article meta</strong> — A small pill badge in the article header shows the version number (only when previousVersionId is set). Version 1 articles do not show a badge — the badge only appears to signal that multiple versions exist. FR-27.</li>
+      <li><strong>[9] Source URL link — opens in new tab</strong> — The article header includes a monospaced source URL with ↗ icon to indicate external link. This is informational (the content was fetched and preserved); it does not re-fetch or update the article. FR-25.</li>
+      <li><strong>[10] Past Entry View — read-only, muted palette</strong> — State 7 uses the same layout as the live session but with: (a) muted/desaturated paragraph text, (b) no "+" icons in the gutter, (c) a "Past Entry" banner above the article header stating the session date and a "Study Today →" shortcut, (d) annotations rendered with a lighter left border and desaturated background. The route is /entries/:entryId, not /articles/:articleId. FR-53.</li>
+      <li><strong>[11] "Study Today →" shortcut in past entry</strong> — A button at the top-right of the past entry banner and at the bottom of the content area navigates the user to /articles/:articleId as a fresh today's session. This is equivalent to clicking "Import Article" for an already-imported article — the find-or-create entry logic runs on first save. FR-53, Flow 4.</li>
+      <li><strong>[12] Back navigation — "← Dashboard" only</strong> — Unlike the Scripture Browser / Chapter View (which have a multi-level breadcrumb), Article View has a single flat back link to the Dashboard. Articles do not exist within a browseable hierarchy. Past Entry View uses the same back link but may also have a "← Day's Entries" if entered from the calendar day panel (not shown here).</li>
+      <li><strong>[13] No prev/next article navigation</strong> — Articles are independently imported items, not a linear sequence. There are no "previous article / next article" controls, unlike the chapter prev/next in Chapter View. FR-71 is scripture-specific.</li>
+    </ol>
+
+    <div style="margin-top:16px; padding-top:12px; border-top:1px solid #eee;">
+      <strong style="font-size:12px;">UX review checklist</strong>
+      <ul style="margin-top:8px; padding-left:18px; font-size:12px; color:#555; display:flex; flex-direction:column; gap:4px; line-height:1.5;">
+        <li>✅ Primary action (add a note) is discoverable via hover "+" — not buried in a menu</li>
+        <li>✅ Source content (serif) and notes (sans-serif) are visually distinct font families — FR-45, NFR-40</li>
+        <li>✅ Save error preserves note text and provides explicit Retry — FR-61</li>
+        <li>✅ Version badge and notice bar communicate article provenance clearly — FR-27</li>
+        <li>✅ Past Entry View is read-only with clear visual differentiation from live session</li>
+        <li>✅ Loading skeleton present so layout shift is minimised on content arrival</li>
+        <li>✅ Cancel always available in the note editor; modal/editor dismissible without data loss</li>
+        <li>✅ "Study Today →" shortcut in past entry view reduces friction to start a new session</li>
+      </ul>
+    </div>
+  </div>
+
+</body>
+</html>

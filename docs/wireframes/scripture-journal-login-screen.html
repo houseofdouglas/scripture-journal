@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Wireframe: Login Screen — Scripture Journal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #e8e8e8; color: #222; font-size: 14px; padding: 24px;
+    }
+
+    .wf-meta {
+      font-size: 11px; color: #888; margin-bottom: 8px; padding: 6px 10px;
+      background: #fff; border: 1px solid #ccc; border-radius: 3px;
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .wf-meta strong { color: #444; }
+
+    .wf-state-label {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: #555; margin: 32px 0 10px;
+      padding: 4px 8px; background: #d0d0d0; display: inline-block; border-radius: 3px;
+    }
+
+    /* ── Browser chrome ──────────────────────────────── */
+    .wf-browser {
+      background: #ddd; border: 1px solid #bbb; border-radius: 6px 6px 0 0;
+      padding: 8px 12px; display: flex; align-items: center; gap: 10px;
+    }
+    .wf-browser-dots { display: flex; gap: 5px; }
+    .wf-browser-dot { width: 11px; height: 11px; border-radius: 50%; background: #bbb; }
+    .wf-browser-url {
+      flex: 1; background: #f0f0f0; border: 1px solid #bbb;
+      border-radius: 3px; padding: 3px 10px; font-size: 12px; color: #555;
+    }
+
+    /* ── Screen shell ────────────────────────────────── */
+    .wf-screen {
+      background: #f5f5f5; border: 1px solid #bbb;
+      border-top: none; border-radius: 0 0 6px 6px; overflow: hidden;
+      min-height: 420px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px 24px;
+    }
+
+    /* ── Login card ──────────────────────────────────── */
+    .wf-login-card {
+      background: #fff; border: 1px solid #ccc; border-radius: 6px;
+      width: 380px; overflow: hidden;
+    }
+    .wf-login-header {
+      padding: 28px 32px 20px;
+      border-bottom: 1px solid #eee;
+      text-align: center;
+    }
+    .wf-login-logo {
+      font-size: 20px; font-weight: 700; border: 2px solid #222;
+      padding: 4px 14px; border-radius: 3px; display: inline-block;
+      margin-bottom: 14px;
+    }
+    .wf-login-title {
+      font-size: 17px; font-weight: 700; margin-bottom: 4px;
+    }
+    .wf-login-subtitle {
+      font-size: 12px; color: #888; line-height: 1.5;
+    }
+    .wf-login-body {
+      padding: 24px 32px;
+    }
+    .wf-login-footer {
+      padding: 14px 32px 20px;
+      text-align: center;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    /* ── Form elements ───────────────────────────────── */
+    .wf-field { margin-bottom: 18px; }
+    .wf-field:last-child { margin-bottom: 0; }
+    .wf-label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: #333; margin-bottom: 5px;
+    }
+    .wf-input {
+      width: 100%; padding: 9px 11px;
+      border: 1px solid #ccc; border-radius: 3px;
+      background: #fff; font-size: 13px; color: #555;
+    }
+    .wf-input.error { border-color: #c00; background: #fffafa; }
+    .wf-input.filled { color: #222; }
+    .wf-input.disabled { background: #f5f5f5; color: #bbb; }
+
+    /* ── Buttons ─────────────────────────────────────── */
+    .wf-btn-full {
+      width: 100%; padding: 10px 16px; border: 1px solid #222;
+      border-radius: 3px; background: #222; color: #fff;
+      font-size: 14px; font-weight: 600; cursor: default;
+      margin-top: 6px;
+    }
+    .wf-btn-full.disabled {
+      background: #aaa; border-color: #aaa; color: #eee;
+    }
+
+    /* ── Inline alerts ───────────────────────────────── */
+    .wf-alert {
+      border-radius: 4px; padding: 10px 14px;
+      font-size: 13px; line-height: 1.5; margin-bottom: 18px;
+    }
+    .wf-alert-error {
+      background: #fff5f5; border: 1px solid #f0c0c0; color: #900;
+    }
+    .wf-alert-warning {
+      background: #fffdf0; border: 1px solid #d4b800; color: #7a6500;
+    }
+    .wf-alert-info {
+      background: #f0f4ff; border: 1px solid #99a8cc; color: #3a55a0;
+    }
+    .wf-alert-icon { font-size: 14px; margin-right: 5px; }
+
+    /* ── Loading indicator ───────────────────────────── */
+    .wf-loading-dots {
+      display: inline-flex; gap: 4px; margin-left: 8px; vertical-align: middle;
+    }
+    .wf-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: #ccc;
+      display: inline-block;
+    }
+
+    /* ── Footer note ─────────────────────────────────── */
+    .wf-footer-note {
+      font-size: 11px; color: #aaa; line-height: 1.6;
+    }
+
+    /* ── Annotations ─────────────────────────────────── */
+    .wf-annotations {
+      margin-top: 40px; background: #fff; border: 1px solid #ccc;
+      border-radius: 4px; padding: 20px 24px; max-width: 860px;
+    }
+    .wf-annotations h2 {
+      font-size: 14px; font-weight: 700; margin-bottom: 14px;
+      padding-bottom: 8px; border-bottom: 1px solid #eee;
+    }
+    .wf-annotations ol { padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .wf-annotations li { font-size: 13px; line-height: 1.6; color: #444; }
+    .wf-annotations li strong { color: #222; }
+  </style>
+</head>
+<body>
+
+  <div class="wf-meta">
+    <span><strong>Screen:</strong> Login Screen</span>
+    <span><strong>Feature:</strong> Scripture Journal</span>
+    <span><strong>Date:</strong> 2026-04-21</span>
+    <span><strong>Version:</strong> 1</span>
+    <span><strong>Flows:</strong> 1, 7, 11</span>
+    <span><strong>FRs:</strong> FR-01 – FR-05, FR-08, NFR-11 – NFR-13, NFR-17</span>
+    <span><strong>Route:</strong> /login</span>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 1 — Default: Empty form
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 1 — Default: Empty Form</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/login</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-login-card">
+      <div class="wf-login-header">
+        <div class="wf-login-logo">SJ</div>
+        <div class="wf-login-title">Scripture Journal</div>
+        <div class="wf-login-subtitle">Sign in to your account</div>
+      </div>
+      <div class="wf-login-body">
+        <div class="wf-field">
+          <label class="wf-label">Username</label>
+          <div class="wf-input" style="color:#aaa;">your username</div>
+        </div>
+        <div class="wf-field">
+          <label class="wf-label">Password</label>
+          <div class="wf-input" style="color:#aaa;">••••••••</div>
+        </div>
+        <button class="wf-btn-full">Sign In</button>
+      </div>
+      <div class="wf-login-footer">
+        <div class="wf-footer-note">
+          Don't have an account? Contact the administrator.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 2 — Loading: Sign-in in progress
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 2 — Loading: Signing In</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/login</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-login-card">
+      <div class="wf-login-header">
+        <div class="wf-login-logo">SJ</div>
+        <div class="wf-login-title">Scripture Journal</div>
+        <div class="wf-login-subtitle">Sign in to your account</div>
+      </div>
+      <div class="wf-login-body">
+        <div class="wf-field">
+          <label class="wf-label">Username</label>
+          <div class="wf-input filled disabled">peter</div>
+        </div>
+        <div class="wf-field">
+          <label class="wf-label">Password</label>
+          <div class="wf-input filled disabled">••••••••••••</div>
+        </div>
+        <button class="wf-btn-full disabled" disabled>
+          Signing in
+          <span class="wf-loading-dots">
+            <span class="wf-dot"></span><span class="wf-dot"></span><span class="wf-dot"></span>
+          </span>
+        </button>
+      </div>
+      <div class="wf-login-footer">
+        <div class="wf-footer-note">Don't have an account? Contact the administrator.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 3 — Error: Invalid Credentials (401)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 3 — Error: Invalid Credentials (401)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/login</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-login-card">
+      <div class="wf-login-header">
+        <div class="wf-login-logo">SJ</div>
+        <div class="wf-login-title">Scripture Journal</div>
+        <div class="wf-login-subtitle">Sign in to your account</div>
+      </div>
+      <div class="wf-login-body">
+        <div class="wf-alert wf-alert-error">
+          <span class="wf-alert-icon">⚠</span>
+          Invalid username or password.
+        </div>
+        <div class="wf-field">
+          <label class="wf-label">Username</label>
+          <div class="wf-input filled error">peter</div>
+        </div>
+        <div class="wf-field">
+          <label class="wf-label">Password</label>
+          <div class="wf-input error" style="color:#aaa;">••••••••</div>
+        </div>
+        <button class="wf-btn-full">Sign In</button>
+      </div>
+      <div class="wf-login-footer">
+        <div class="wf-footer-note">Don't have an account? Contact the administrator.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 4 — Error: Rate Limited (429)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 4 — Error: Rate Limited (429)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/login</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-login-card">
+      <div class="wf-login-header">
+        <div class="wf-login-logo">SJ</div>
+        <div class="wf-login-title">Scripture Journal</div>
+        <div class="wf-login-subtitle">Sign in to your account</div>
+      </div>
+      <div class="wf-login-body">
+        <div class="wf-alert wf-alert-warning">
+          <span class="wf-alert-icon">⏱</span>
+          Too many sign-in attempts. Please wait a few minutes before trying again.
+        </div>
+        <div class="wf-field">
+          <label class="wf-label">Username</label>
+          <div class="wf-input filled disabled">peter</div>
+        </div>
+        <div class="wf-field">
+          <label class="wf-label">Password</label>
+          <div class="wf-input disabled" style="color:#bbb;">••••••••</div>
+        </div>
+        <button class="wf-btn-full disabled" disabled>Sign In</button>
+      </div>
+      <div class="wf-login-footer">
+        <div class="wf-footer-note">Don't have an account? Contact the administrator.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 5 — Session Expired Redirect
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State 5 — Session Expired (redirected mid-session)</div>
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">scripture-journal.app/login?return=%2Farticles%2Fa3f9c2...</div>
+  </div>
+  <div class="wf-screen">
+    <div class="wf-login-card">
+      <div class="wf-login-header">
+        <div class="wf-login-logo">SJ</div>
+        <div class="wf-login-title">Scripture Journal</div>
+        <div class="wf-login-subtitle">Sign in to your account</div>
+      </div>
+      <div class="wf-login-body">
+        <div class="wf-alert wf-alert-info">
+          <span class="wf-alert-icon">ℹ</span>
+          Your session has expired. Sign in again to continue where you left off.
+        </div>
+        <div class="wf-field">
+          <label class="wf-label">Username</label>
+          <div class="wf-input" style="color:#aaa;">your username</div>
+        </div>
+        <div class="wf-field">
+          <label class="wf-label">Password</label>
+          <div class="wf-input" style="color:#aaa;">••••••••</div>
+        </div>
+        <button class="wf-btn-full">Sign In</button>
+      </div>
+      <div class="wf-login-footer">
+        <div class="wf-footer-note">Don't have an account? Contact the administrator.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       Annotations
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-annotations">
+    <h2>Annotations — Login Screen</h2>
+    <ol>
+      <li><strong>[1] No navigation header</strong> — The Login Screen has no global nav bar. It is the only unauthenticated screen in Phase 1 (FR-97). The app logo appears inside the login card as the sole brand anchor. Adding a nav bar would imply the user has access to routes they do not.</li>
+      <li><strong>[2] Error message is deliberately vague</strong> — "Invalid username or password." Never specifies which field is wrong. This prevents username enumeration — an attacker cannot distinguish "that username doesn't exist" from "that password is wrong." Security requirement from Flow 7. Both fields receive the error border to reinforce that either could be the problem. NFR-17.</li>
+      <li><strong>[3] Username is retained on error; password is cleared</strong> — After a 401, the username field keeps its value so the user doesn't have to retype it. The password field is cleared, matching standard browser and native app conventions (prevents the plain-text password lingering in an input). The password field placeholder "••••••••" appears again to signal it is empty.</li>
+      <li><strong>[4] Rate limit (429) disables the form</strong> — When the server returns 429, both fields and the submit button are disabled. The amber warning message instructs the user to wait. This is a distinct visual state from the red 401 error — it communicates "the system is throttling you" rather than "your credentials are wrong." Flow 7, NFR-17.</li>
+      <li><strong>[5] Session-expired state uses a blue informational alert</strong> — When the user is redirected here because their JWT expired mid-session, the `?return=` query param is present in the URL and a blue info notice explains what happened. The form fields are empty (username not pre-filled — the user may want to log in as a different account). After successful login, the app redirects to the `return` destination. Flow 7, FR-04.</li>
+      <li><strong>[6] No "Forgot password" link</strong> — FR-95 explicitly excludes password reset via email (no email infrastructure in Phase 1). The footer note directs users to the administrator for account issues. Admin manually resets passwords via the admin CLI endpoint. This is intentional and should not be added as a "quick win" — it would require email infrastructure.</li>
+      <li><strong>[7] No "Sign up" or "Register" link</strong> — FR-06 specifies that accounts are admin-created only via CLI or admin endpoint, not a public form. The footer note ("Contact the administrator") is the correct affordance. A registration link would be misleading and non-functional.</li>
+      <li><strong>[8] Loading state disables all inputs and button</strong> — During the sign-in request, both fields and the button are disabled to prevent double-submit. The button label changes to "Signing in" with an animated dots indicator. FR-60.</li>
+      <li><strong>[9] Centered card layout — no surrounding chrome</strong> — The login card is centered horizontally and vertically on a gray background. There is no sidebar, header, or footer outside the card. This is the simplest possible layout — login is a single-purpose screen. Desktop only (FR-96), so a fixed 380 px card width is appropriate.</li>
+      <li><strong>[10] Password field uses browser-native masking</strong> — The wireframe shows "••••••••" as a placeholder convention. In production this is an <code>&lt;input type="password"&gt;</code> — the browser handles masking, show/hide toggle (browser-provided in modern browsers), and autofill. No custom show/hide toggle is designed here, but the browser's native one is acceptable.</li>
+      <li><strong>[11] Return URL preserved in the query string</strong> — When the router detects an unauthenticated visit to a protected route, it redirects to <code>/login?return=&lt;encoded-path&gt;</code>. After successful login, React Router reads this param and navigates to the original destination. The URL is visible in State 5's browser chrome to illustrate this. Flow 1, Flow 7.</li>
+    </ol>
+
+    <div style="margin-top:16px; padding-top:12px; border-top:1px solid #eee;">
+      <strong style="font-size:12px;">UX review checklist</strong>
+      <ul style="margin-top:8px; padding-left:18px; font-size:12px; color:#555; display:flex; flex-direction:column; gap:4px; line-height:1.5;">
+        <li>✅ Primary action (Sign In button) is the only action — visually dominant, full width</li>
+        <li>✅ Error message does not reveal which field is wrong — username enumeration prevented</li>
+        <li>✅ Rate limit is a distinct state from invalid credentials — different color, disables form</li>
+        <li>✅ Session-expiry redirect explained clearly with return-to destination preserved</li>
+        <li>✅ Loading state prevents double-submit</li>
+        <li>✅ No "Forgot password" or "Sign up" — both are correctly absent per FR-95, FR-06</li>
+        <li>✅ No navigation header — unauthenticated screen has no routes to offer</li>
+        <li>⚠️ No "Cancel" or back button — there is nowhere to go back to on an unauthenticated visit. This is correct; note it so it is not added by mistake later.</li>
+      </ul>
+    </div>
+  </div>
+
+</body>
+</html>

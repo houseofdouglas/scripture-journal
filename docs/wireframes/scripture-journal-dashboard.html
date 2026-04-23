@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Wireframe: Dashboard — Scripture Journal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #e8e8e8;
+      color: #222;
+      font-size: 14px;
+      padding: 24px;
+    }
+
+    /* ── Meta bar ─────────────────────────────────────────────── */
+    .wf-meta {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      display: flex;
+      gap: 24px;
+    }
+    .wf-meta strong { color: #444; }
+
+    /* ── State labels ─────────────────────────────────────────── */
+    .wf-state-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #555;
+      margin: 32px 0 10px;
+      padding: 4px 8px;
+      background: #d0d0d0;
+      display: inline-block;
+      border-radius: 3px;
+    }
+
+    /* ── Browser chrome ───────────────────────────────────────── */
+    .wf-browser {
+      background: #ddd;
+      border: 1px solid #bbb;
+      border-radius: 6px 6px 0 0;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .wf-browser-dots { display: flex; gap: 5px; }
+    .wf-browser-dot { width: 11px; height: 11px; border-radius: 50%; background: #bbb; }
+    .wf-browser-url {
+      flex: 1;
+      background: #f0f0f0;
+      border: 1px solid #bbb;
+      border-radius: 3px;
+      padding: 3px 10px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    /* ── Screen ───────────────────────────────────────────────── */
+    .wf-screen {
+      background: #f5f5f5;
+      border: 1px solid #bbb;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      min-height: 700px;
+      overflow: hidden;
+    }
+
+    /* ── Global nav ───────────────────────────────────────────── */
+    .wf-nav {
+      background: #fff;
+      border-bottom: 2px solid #ccc;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      height: 52px;
+      gap: 24px;
+    }
+    .wf-nav-logo {
+      font-size: 16px;
+      font-weight: 700;
+      color: #222;
+      border: 2px solid #222;
+      padding: 3px 10px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    .wf-nav-spacer { flex: 1; }
+    .wf-nav-link {
+      font-size: 13px;
+      color: #444;
+      text-decoration: none;
+      padding: 4px 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: #f5f5f5;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .wf-nav-link.primary {
+      background: #333;
+      color: #fff;
+      border-color: #333;
+    }
+    .wf-nav-user {
+      font-size: 13px;
+      color: #444;
+      padding: 4px 10px;
+      border: 1px dashed #999;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .wf-nav-user::after { content: '▾'; font-size: 10px; }
+
+    /* ── Page layout ──────────────────────────────────────────── */
+    .wf-page {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 0;
+      min-height: calc(700px - 52px);
+    }
+
+    /* ── Main content (entry list) ────────────────────────────── */
+    .wf-main {
+      padding: 28px 28px 28px 28px;
+      border-right: 1px solid #ddd;
+    }
+    .wf-page-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #222;
+      margin-bottom: 20px;
+    }
+    .wf-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #888;
+      margin-bottom: 12px;
+    }
+
+    /* ── Entry card ───────────────────────────────────────────── */
+    .wf-entry-card {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+    .wf-entry-date-block {
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 4px 6px;
+      background: #f9f9f9;
+    }
+    .wf-entry-date-month { font-size: 10px; text-transform: uppercase; color: #888; }
+    .wf-entry-date-day { font-size: 22px; font-weight: 700; line-height: 1.1; color: #222; }
+    .wf-entry-date-year { font-size: 10px; color: #aaa; }
+    .wf-entry-body {}
+    .wf-entry-content-type {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #999;
+      margin-bottom: 3px;
+    }
+    .wf-entry-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 5px;
+    }
+    .wf-entry-snippet {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .wf-entry-annotation-count {
+      font-size: 11px;
+      color: #888;
+      white-space: nowrap;
+      padding-top: 2px;
+    }
+
+    /* ── Sidebar ──────────────────────────────────────────────── */
+    .wf-sidebar {
+      padding: 28px 20px;
+      background: #fafafa;
+    }
+
+    /* ── Calendar ─────────────────────────────────────────────── */
+    .wf-calendar {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+    .wf-cal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .wf-cal-title { font-size: 13px; font-weight: 700; color: #222; }
+    .wf-cal-nav {
+      display: flex;
+      gap: 6px;
+    }
+    .wf-cal-nav button {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      width: 22px;
+      height: 22px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #444;
+      line-height: 1;
+    }
+    .wf-cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      text-align: center;
+    }
+    .wf-cal-dow {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #aaa;
+      padding: 3px 0;
+    }
+    .wf-cal-day {
+      font-size: 12px;
+      padding: 5px 2px;
+      border-radius: 3px;
+      color: #444;
+      cursor: default;
+    }
+    .wf-cal-day.empty { color: #ddd; }
+    .wf-cal-day.has-entry {
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .wf-cal-day.today {
+      border: 2px solid #888;
+      font-weight: 700;
+    }
+    .wf-cal-day.has-entry.today {
+      background: #333;
+      border-color: #333;
+    }
+
+    /* ── Annotations (doc section) ────────────────────────────── */
+    .wf-annotations {
+      margin-top: 40px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 20px 24px;
+      max-width: 860px;
+    }
+    .wf-annotations h2 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .wf-annotations ol {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .wf-annotations li {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #444;
+    }
+    .wf-annotations li strong { color: #222; }
+
+    /* ── Annotated element ────────────────────────────────────── */
+    .ann {
+      outline: 2px dashed #4a90d9;
+      outline-offset: 2px;
+      position: relative;
+    }
+    .ann-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #4a90d9;
+      color: #fff;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    /* ── Empty state ──────────────────────────────────────────── */
+    .wf-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 32px;
+      gap: 14px;
+    }
+    .wf-empty-icon {
+      width: 64px;
+      height: 64px;
+      background: #e0e0e0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #aaa;
+    }
+    .wf-empty-title { font-size: 16px; font-weight: 700; color: #333; }
+    .wf-empty-body { font-size: 13px; color: #777; max-width: 320px; line-height: 1.6; }
+    .wf-empty-actions { display: flex; gap: 12px; margin-top: 6px; }
+    .wf-btn {
+      padding: 8px 18px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f5f5f5;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+    }
+    .wf-btn.primary {
+      background: #333;
+      color: #fff;
+      border-color: #333;
+    }
+
+    /* ── Dropdown (user menu) ─────────────────────────────────── */
+    .wf-dropdown {
+      position: absolute;
+      top: 50px;
+      right: 24px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 3px 8px rgba(0,0,0,.12);
+      width: 160px;
+      z-index: 20;
+      overflow: hidden;
+    }
+    .wf-dropdown-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #333;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .wf-dropdown-item:last-child { border-bottom: none; }
+    .wf-dropdown-item.danger { color: #c00; }
+
+    /* ── Divider ──────────────────────────────────────────────── */
+    .wf-divider {
+      height: 1px;
+      background: #e0e0e0;
+      margin: 16px 0;
+    }
+
+    /* ── Multi-entry day group ───────────────────────────────── */
+    .wf-day-group {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .wf-day-group-header {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      background: #fafafa;
+      align-items: center;
+    }
+    .wf-day-group-date-block {
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 4px 6px;
+      background: #fff;
+    }
+    .wf-day-group-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #333;
+    }
+    .wf-day-group-sublabel {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 1px;
+    }
+    .wf-day-group-row {
+      display: grid;
+      grid-template-columns: 130px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px 10px 84px; /* indent to align with header text */
+      border-bottom: 1px solid #f4f4f4;
+      cursor: pointer;
+    }
+    .wf-day-group-row:last-child { border-bottom: none; }
+    .wf-day-group-row:hover { background: #f9f9f9; }
+    .wf-day-group-type {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #999;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wf-day-group-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #222;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .wf-day-group-count {
+      font-size: 11px;
+      color: #aaa;
+      white-space: nowrap;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Meta ──────────────────────────────────────────────────── -->
+  <div class="wf-meta">
+    <span><strong>Screen:</strong> Dashboard</span>
+    <span><strong>Feature:</strong> Scripture Journal</span>
+    <span><strong>Route:</strong> /</span>
+    <span><strong>Flows:</strong> 1, 4, 5, 12</span>
+    <span><strong>Date:</strong> 2026-04-21</span>
+    <span><strong>Version:</strong> 2</span>
+    <span style="color:#c60;"><strong>Updated:</strong> snippet = first annotation text; multi-entry days = grouped title list</span>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 1: Default (with journal entries)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State: Default (with entries)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div>
+      <div class="wf-browser-dot"></div>
+      <div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/</div>
+  </div>
+
+  <div class="wf-screen">
+
+    <!-- Global nav -->
+    <nav class="wf-nav" style="position:relative;">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link ann" style="position:relative;" title="[1]">
+        Browse Scripture
+        <span class="ann-badge">1</span>
+      </a>
+      <a class="wf-nav-link primary ann" style="position:relative;" title="[2]">
+        + Import Article
+        <span class="ann-badge">2</span>
+      </a>
+      <div class="wf-nav-user ann" style="position:relative;" title="[3]">
+        peter
+        <span class="ann-badge">3</span>
+      </div>
+    </nav>
+
+    <!-- Two-column layout -->
+    <div class="wf-page">
+
+      <!-- Main: Entry list -->
+      <div class="wf-main">
+        <div class="wf-page-title">My Journal</div>
+        <div class="wf-section-label">Recent Entries</div>
+
+        <!-- Apr 21 — MULTI-ENTRY DAY: grouped, titles only, no snippets -->
+        <div class="wf-day-group ann" style="position:relative;" title="[4]">
+          <span class="ann-badge">4</span>
+          <div class="wf-day-group-header">
+            <div class="wf-day-group-date-block">
+              <div class="wf-entry-date-month">Apr</div>
+              <div class="wf-entry-date-day">21</div>
+              <div class="wf-entry-date-year">2026</div>
+            </div>
+            <div>
+              <div class="wf-day-group-label">Tuesday, April 21 · Today</div>
+              <div class="wf-day-group-sublabel">2 entries</div>
+            </div>
+          </div>
+          <div class="wf-day-group-row">
+            <span class="wf-day-group-type">Scripture · BoM</span>
+            <span class="wf-day-group-title">Alma 32</span>
+            <span class="wf-day-group-count">3 notes</span>
+          </div>
+          <div class="wf-day-group-row">
+            <span class="wf-day-group-type">Article</span>
+            <span class="wf-day-group-title">The Miracle of the Atonement</span>
+            <span class="wf-day-group-count">1 note</span>
+          </div>
+        </div>
+
+        <!-- Apr 17 — SINGLE ENTRY: full card, snippet = first annotation text -->
+        <div class="wf-entry-card ann" style="position:relative;" title="[5]">
+          <span class="ann-badge">5</span>
+          <div class="wf-entry-date-block">
+            <div class="wf-entry-date-month">Apr</div>
+            <div class="wf-entry-date-day">17</div>
+            <div class="wf-entry-date-year">2026</div>
+          </div>
+          <div class="wf-entry-body">
+            <div class="wf-entry-content-type">Scripture · Doctrine & Covenants</div>
+            <div class="wf-entry-title">D&C 121</div>
+            <div class="wf-entry-snippet">"This is a reminder that authority and priesthood are tied to character, not position. 'When we undertake to cover our sins...' — this verse cuts deep."</div>
+          </div>
+          <div class="wf-entry-annotation-count">5 notes</div>
+        </div>
+
+        <!-- Apr 14 — SINGLE ENTRY: full card, snippet = first annotation text -->
+        <div class="wf-entry-card">
+          <div class="wf-entry-date-block">
+            <div class="wf-entry-date-month">Apr</div>
+            <div class="wf-entry-date-day">14</div>
+            <div class="wf-entry-date-year">2026</div>
+          </div>
+          <div class="wf-entry-body">
+            <div class="wf-entry-content-type">Scripture · Book of Mormon</div>
+            <div class="wf-entry-title">Alma 31</div>
+            <div class="wf-entry-snippet">"The Zoramites' prayer on the Rameumptom strikes me as a mirror for any rote religious practice. What am I reciting without meaning?"</div>
+          </div>
+          <div class="wf-entry-annotation-count">2 notes</div>
+        </div>
+
+        <!-- Apr 10 — SINGLE ENTRY -->
+        <div class="wf-entry-card">
+          <div class="wf-entry-date-block">
+            <div class="wf-entry-date-month">Apr</div>
+            <div class="wf-entry-date-day">10</div>
+            <div class="wf-entry-date-year">2026</div>
+          </div>
+          <div class="wf-entry-body">
+            <div class="wf-entry-content-type">Scripture · Bible (KJV)</div>
+            <div class="wf-entry-title">John 15</div>
+            <div class="wf-entry-snippet">"Abide in me — the vine metaphor is about sustenance, not just connection. Branches don't try to produce fruit; they receive life and fruit follows."</div>
+          </div>
+          <div class="wf-entry-annotation-count">4 notes</div>
+        </div>
+
+      </div><!-- /wf-main -->
+
+      <!-- Sidebar -->
+      <div class="wf-sidebar">
+
+        <!-- Calendar -->
+        <div class="wf-section-label">April 2026</div>
+        <div class="wf-calendar ann" style="position:relative;" title="[5]">
+          <span class="ann-badge">5</span>
+          <div class="wf-cal-header">
+            <div class="wf-cal-title">April 2026</div>
+            <div class="wf-cal-nav">
+              <button>‹</button>
+              <button>›</button>
+            </div>
+          </div>
+          <div class="wf-cal-grid">
+            <div class="wf-cal-dow">Su</div>
+            <div class="wf-cal-dow">Mo</div>
+            <div class="wf-cal-dow">Tu</div>
+            <div class="wf-cal-dow">We</div>
+            <div class="wf-cal-dow">Th</div>
+            <div class="wf-cal-dow">Fr</div>
+            <div class="wf-cal-dow">Sa</div>
+
+            <!-- Row 1 -->
+            <div class="wf-cal-day empty"></div>
+            <div class="wf-cal-day empty"></div>
+            <div class="wf-cal-day">1</div>
+            <div class="wf-cal-day">2</div>
+            <div class="wf-cal-day">3</div>
+            <div class="wf-cal-day">4</div>
+            <div class="wf-cal-day">5</div>
+            <!-- Row 2 -->
+            <div class="wf-cal-day">6</div>
+            <div class="wf-cal-day has-entry">7</div>
+            <div class="wf-cal-day">8</div>
+            <div class="wf-cal-day">9</div>
+            <div class="wf-cal-day has-entry">10</div>
+            <div class="wf-cal-day">11</div>
+            <div class="wf-cal-day">12</div>
+            <!-- Row 3 -->
+            <div class="wf-cal-day">13</div>
+            <div class="wf-cal-day has-entry">14</div>
+            <div class="wf-cal-day">15</div>
+            <div class="wf-cal-day">16</div>
+            <div class="wf-cal-day has-entry">17</div>
+            <div class="wf-cal-day">18</div>
+            <div class="wf-cal-day has-entry">19</div>
+            <!-- Row 4 -->
+            <div class="wf-cal-day">20</div>
+            <div class="wf-cal-day has-entry today">21</div>
+            <div class="wf-cal-day">22</div>
+            <div class="wf-cal-day">23</div>
+            <div class="wf-cal-day">24</div>
+            <div class="wf-cal-day">25</div>
+            <div class="wf-cal-day">26</div>
+            <!-- Row 5 -->
+            <div class="wf-cal-day">27</div>
+            <div class="wf-cal-day">28</div>
+            <div class="wf-cal-day">29</div>
+            <div class="wf-cal-day">30</div>
+            <div class="wf-cal-day empty"></div>
+            <div class="wf-cal-day empty"></div>
+            <div class="wf-cal-day empty"></div>
+          </div>
+        </div><!-- /calendar -->
+
+        <div class="wf-divider"></div>
+        <div class="wf-section-label">Quick Actions</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="wf-btn primary" style="width:100%;">Browse Scripture</button>
+          <button class="wf-btn" style="width:100%;">+ Import Article</button>
+        </div>
+
+      </div><!-- /sidebar -->
+
+    </div><!-- /wf-page -->
+
+    <!-- User menu dropdown (shown as static overlay for wireframe) -->
+    <div class="wf-dropdown ann" style="position:absolute; top:52px; right:24px;" title="[3]">
+      <div class="wf-dropdown-item">Change Password</div>
+      <div class="wf-dropdown-item danger">Log Out</div>
+    </div>
+
+  </div><!-- /wf-screen default -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 2: Empty (first-time user)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State: Empty (first-time user, no entries)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div>
+      <div class="wf-browser-dot"></div>
+      <div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+
+    <div class="wf-page">
+      <div class="wf-main">
+        <div class="wf-page-title">My Journal</div>
+        <div class="wf-empty ann" style="position:relative;" title="[6]">
+          <span class="ann-badge">6</span>
+          <div class="wf-empty-icon">📖</div>
+          <div class="wf-empty-title">Your journal is empty</div>
+          <div class="wf-empty-body">Start by reading a scripture chapter or importing a conference talk or article. Your notes will appear here.</div>
+          <div class="wf-empty-actions">
+            <button class="wf-btn primary">Browse Scripture</button>
+            <button class="wf-btn">Import Article</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-sidebar">
+        <div class="wf-section-label">April 2026</div>
+        <div class="wf-calendar">
+          <div class="wf-cal-header">
+            <div class="wf-cal-title">April 2026</div>
+            <div class="wf-cal-nav">
+              <button>‹</button>
+              <button>›</button>
+            </div>
+          </div>
+          <div class="wf-cal-grid">
+            <div class="wf-cal-dow">Su</div><div class="wf-cal-dow">Mo</div>
+            <div class="wf-cal-dow">Tu</div><div class="wf-cal-dow">We</div>
+            <div class="wf-cal-dow">Th</div><div class="wf-cal-dow">Fr</div>
+            <div class="wf-cal-dow">Sa</div>
+            <div class="wf-cal-day empty"></div><div class="wf-cal-day empty"></div>
+            <div class="wf-cal-day">1</div><div class="wf-cal-day">2</div>
+            <div class="wf-cal-day">3</div><div class="wf-cal-day">4</div>
+            <div class="wf-cal-day">5</div>
+            <div class="wf-cal-day">6</div><div class="wf-cal-day">7</div>
+            <div class="wf-cal-day">8</div><div class="wf-cal-day">9</div>
+            <div class="wf-cal-day">10</div><div class="wf-cal-day">11</div>
+            <div class="wf-cal-day">12</div>
+            <div class="wf-cal-day">13</div><div class="wf-cal-day">14</div>
+            <div class="wf-cal-day">15</div><div class="wf-cal-day">16</div>
+            <div class="wf-cal-day">17</div><div class="wf-cal-day">18</div>
+            <div class="wf-cal-day">19</div>
+            <div class="wf-cal-day">20</div>
+            <div class="wf-cal-day today" style="border:2px solid #888; font-weight:700;">21</div>
+            <div class="wf-cal-day">22</div><div class="wf-cal-day">23</div>
+            <div class="wf-cal-day">24</div><div class="wf-cal-day">25</div>
+            <div class="wf-cal-day">26</div>
+            <div class="wf-cal-day">27</div><div class="wf-cal-day">28</div>
+            <div class="wf-cal-day">29</div><div class="wf-cal-day">30</div>
+            <div class="wf-cal-day empty"></div><div class="wf-cal-day empty"></div>
+            <div class="wf-cal-day empty"></div>
+          </div>
+        </div>
+        <div class="wf-divider"></div>
+        <div class="wf-section-label">Quick Actions</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="wf-btn primary" style="width:100%;">Browse Scripture</button>
+          <button class="wf-btn" style="width:100%;">+ Import Article</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /wf-screen empty -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       STATE 3: Calendar day clicked (day entry list)
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-state-label">State: Calendar day selected (Apr 17 clicked)</div>
+
+  <div class="wf-browser">
+    <div class="wf-browser-dots">
+      <div class="wf-browser-dot"></div><div class="wf-browser-dot"></div><div class="wf-browser-dot"></div>
+    </div>
+    <div class="wf-browser-url">https://journal.example.com/</div>
+  </div>
+
+  <div class="wf-screen">
+    <nav class="wf-nav">
+      <div class="wf-nav-logo">Scripture Journal</div>
+      <div class="wf-nav-spacer"></div>
+      <a class="wf-nav-link">Browse Scripture</a>
+      <a class="wf-nav-link primary">+ Import Article</a>
+      <div class="wf-nav-user">peter</div>
+    </nav>
+    <div class="wf-page">
+      <div class="wf-main">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+          <button class="wf-btn" style="font-size:12px; padding:4px 10px;">← All Entries</button>
+          <div class="wf-page-title" style="margin-bottom:0;">Thursday, April 17, 2026</div>
+        </div>
+        <div class="wf-section-label">Entries for this day</div>
+
+        <div class="wf-entry-card ann" style="position:relative;" title="[7]">
+          <span class="ann-badge">7</span>
+          <div class="wf-entry-date-block">
+            <div class="wf-entry-date-month">Apr</div>
+            <div class="wf-entry-date-day">17</div>
+            <div class="wf-entry-date-year">2026</div>
+          </div>
+          <div class="wf-entry-body">
+            <div class="wf-entry-content-type">Scripture · Doctrine & Covenants</div>
+            <div class="wf-entry-title">D&C 121</div>
+            <div class="wf-entry-snippet">"O God, where art thou? And where is the pavilion that covereth thy hiding place? How long shall thy hand be stayed..."</div>
+          </div>
+          <div class="wf-entry-annotation-count">5 notes</div>
+        </div>
+      </div>
+
+      <div class="wf-sidebar">
+        <div class="wf-section-label">April 2026</div>
+        <div class="wf-calendar">
+          <div class="wf-cal-header">
+            <div class="wf-cal-title">April 2026</div>
+            <div class="wf-cal-nav"><button>‹</button><button>›</button></div>
+          </div>
+          <div class="wf-cal-grid">
+            <div class="wf-cal-dow">Su</div><div class="wf-cal-dow">Mo</div>
+            <div class="wf-cal-dow">Tu</div><div class="wf-cal-dow">We</div>
+            <div class="wf-cal-dow">Th</div><div class="wf-cal-dow">Fr</div>
+            <div class="wf-cal-dow">Sa</div>
+            <div class="wf-cal-day empty"></div><div class="wf-cal-day empty"></div>
+            <div class="wf-cal-day">1</div><div class="wf-cal-day">2</div>
+            <div class="wf-cal-day">3</div><div class="wf-cal-day">4</div><div class="wf-cal-day">5</div>
+            <div class="wf-cal-day">6</div><div class="wf-cal-day has-entry">7</div>
+            <div class="wf-cal-day">8</div><div class="wf-cal-day">9</div>
+            <div class="wf-cal-day has-entry">10</div><div class="wf-cal-day">11</div><div class="wf-cal-day">12</div>
+            <div class="wf-cal-day">13</div><div class="wf-cal-day has-entry">14</div>
+            <div class="wf-cal-day">15</div><div class="wf-cal-day">16</div>
+            <div class="wf-cal-day has-entry" style="outline:3px solid #333; outline-offset:1px; font-weight:700;">17</div>
+            <div class="wf-cal-day">18</div><div class="wf-cal-day has-entry">19</div>
+            <div class="wf-cal-day">20</div>
+            <div class="wf-cal-day has-entry today">21</div>
+            <div class="wf-cal-day">22</div><div class="wf-cal-day">23</div>
+            <div class="wf-cal-day">24</div><div class="wf-cal-day">25</div><div class="wf-cal-day">26</div>
+            <div class="wf-cal-day">27</div><div class="wf-cal-day">28</div>
+            <div class="wf-cal-day">29</div><div class="wf-cal-day">30</div>
+            <div class="wf-cal-day empty"></div><div class="wf-cal-day empty"></div><div class="wf-cal-day empty"></div>
+          </div>
+        </div>
+        <div class="wf-divider"></div>
+        <div class="wf-section-label">Quick Actions</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="wf-btn primary" style="width:100%;">Browse Scripture</button>
+          <button class="wf-btn" style="width:100%;">+ Import Article</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /state calendar day -->
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       Annotations
+       ════════════════════════════════════════════════════════════ -->
+  <div class="wf-annotations">
+    <h2>Annotations — Dashboard (v2)</h2>
+    <ol>
+      <li><strong>[1] Browse Scripture</strong> — Opens the Scripture Browser (Work → Book → Chapter). Persistent in global nav and sidebar Quick Actions. Both paths lead to the same destination.</li>
+      <li><strong>[2] Import Article (primary CTA)</strong> — Opens the Article Import Modal as an overlay. Styled as the primary action in the nav. Duplicated in sidebar Quick Actions. FR-20.</li>
+      <li><strong>[3] User menu</strong> — Dropdown contains "Change Password" and "Log Out". Shown here as a static overlay for wireframe purposes. FR-05, FR-07.</li>
+      <li><strong>[4] Multi-entry day group (RESOLVED)</strong> — When 2 or more journal entries exist for the same day, they collapse into a single dated group card. Header shows the date + "N entries". Each content piece appears as a compact row: content type · title · note count. No snippet text. Clicking a row navigates to Past Entry View for that specific entry. FR-52, FR-53.</li>
+      <li><strong>[5] Single-entry day card (RESOLVED)</strong> — When only one entry exists for a day, the full card is shown: date block, content type, title, snippet (= text of the user's <em>first saved annotation</em>), and note count. The snippet is annotation text, not source content text. This was a conscious decision — the annotation is more personally meaningful as a memory cue than the scripture text. Could become a user preference in a future phase.</li>
+      <li><strong>[6] Calendar</strong> — Dark-filled cells = days with at least one entry (FR-70, SHOULD). Today's date has an outline. Clicking a filled day filters the entry list to that day (State 3). Empty days are not clickable.</li>
+      <li><strong>[7] Empty state</strong> — Shown when no journal entries exist. Two equal-weight CTAs. Calendar renders but shows no filled days. FR-12 (first-time user flow).</li>
+      <li><strong>[8] Calendar day selected</strong> — When a day with multiple entries is clicked, the grouped card expands (or the list filters to that day). When a day with one entry is clicked, the full card for that day is shown. "← All Entries" returns to the full list.</li>
+    </ol>
+
+    <div style="margin-top:16px; padding-top:12px; border-top:1px solid #eee;">
+      <strong style="font-size:12px;">UX review checklist</strong>
+      <ul style="margin-top:8px; padding-left:18px; font-size:12px; color:#555; display:flex; flex-direction:column; gap:4px; line-height:1.5;">
+        <li>✅ Primary action visible in both nav and sidebar</li>
+        <li>✅ Single-entry days: annotation snippet gives a meaningful memory cue</li>
+        <li>✅ Multi-entry days: content titles visible at a glance without overwhelming with text</li>
+        <li>✅ Date grouping is clear — grouped card has a distinct header treatment</li>
+        <li>✅ Empty state handled</li>
+        <li>✅ Calendar day selection state shown</li>
+        <li>⚠️ Open: on a multi-entry grouped day clicked from the calendar, does the entry list expand inline or navigate to a filtered day view? (Current: filtered day view per Flow 5.)</li>
+      </ul>
+    </div>
+  </div>
+
+</body>
+</html>
