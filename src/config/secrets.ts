@@ -22,6 +22,12 @@ export async function getJwtSecret(): Promise<string> {
     return cachedJwtSecret;
   }
 
+  // Local dev shortcut: set JWT_SECRET directly in .env.local to skip SSM.
+  if (process.env.JWT_SECRET) {
+    cachedJwtSecret = process.env.JWT_SECRET;
+    return cachedJwtSecret;
+  }
+
   const paramName = `/scripture-journal/${env.ENV}/jwt-secret`;
 
   const response = await ssmClient.send(

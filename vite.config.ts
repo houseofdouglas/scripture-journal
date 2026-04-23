@@ -7,12 +7,21 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // Forward /api/* to your Lambda Function URL (or a local mock server).
-      // Set the VITE_API_URL env var, or update the target below.
+      // Forward /api/* to the local dev server (or a deployed Lambda URL).
       "/api": {
         target: process.env.VITE_API_URL ?? "http://localhost:4000",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+      // In production, /content/* and /users/* are served directly from S3 via
+      // CloudFront. Locally, the dev server proxies them to S3.
+      "/content": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
+      },
+      "/users": {
+        target: "http://localhost:4000",
+        changeOrigin: true,
       },
     },
   },
