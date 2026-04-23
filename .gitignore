@@ -29,3 +29,4 @@ cdk.context.json
 *.log
 npm-debug.log*
 yarn-debug.log*
+infra/.terraform/
