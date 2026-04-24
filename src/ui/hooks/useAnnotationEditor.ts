@@ -25,6 +25,7 @@ export interface UseAnnotationEditorResult {
   closeEditor: () => void;
   setEditorText: (text: string) => void;
   saveAnnotation: () => Promise<void>;
+  setContentTitle: (title: string) => void;
 }
 
 interface UseAnnotationEditorOptions {
@@ -41,6 +42,7 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
     status: "idle",
     errorMessage: null,
   });
+  const [contentTitle, setContentTitle] = useState(options.contentTitle);
   const [savedAnnotations, setSavedAnnotations] = useState<SavedAnnotation[]>([]);
 
   const openEditor = useCallback((blockId: number) => {
@@ -72,7 +74,7 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
       const result = await apiClient.post<AnnotateResponse>("/entries/annotate", {
         date: options.date,
         contentRef: options.contentRef,
-        contentTitle: options.contentTitle,
+        contentTitle,
         contentType: options.contentType,
         blockId,
         text,
@@ -99,7 +101,7 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
 
       setEditor((prev) => ({ ...prev, status: "error", errorMessage: message }));
     }
-  }, [editor, options]);
+  }, [editor, options, contentTitle]);
 
   return {
     openBlockId: editor.blockId,
@@ -111,5 +113,6 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
     closeEditor,
     setEditorText,
     saveAnnotation,
+    setContentTitle,
   };
 }

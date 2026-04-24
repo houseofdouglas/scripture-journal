@@ -1,6 +1,7 @@
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ParagraphList } from "../components/ParagraphList";
+import { useAnnotationEditor } from "../hooks/useAnnotationEditor";
 import type { Article } from "../../types";
 
 async function fetchArticle(articleId: string): Promise<Article | null> {
@@ -15,7 +16,18 @@ export function ArticleViewPage() {
   const [searchParams] = useSearchParams();
   const pastEntryDate = searchParams.get("entry-date"); // set when viewing a past entry
 
-  const { data: article, isLoading, isError } = useQuery({
+  const articleRef = `/content/articles/${articleId}.json`;
+  const today = new Date();
+  const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  
+  const annotation = useAnnotationEditor({
+    date,
+    contentRef: articleRef,
+    contentTitle: "Article", // Will be updated when article loads
+    contentType: "article",
+  });
+
+  const { data: article, isLoading, isError } = useQuery<Article | null>({
     queryKey: ["article", articleId],
     queryFn: () => fetchArticle(articleId!),
     staleTime: Infinity, // articles are immutable
@@ -34,6 +46,11 @@ export function ArticleViewPage() {
   }
 
   const isPastEntry = Boolean(pastEntryDate);
+  
+  // Update content title when article loads (for non-past entries)
+  if (!isPastEntry) {
+    annotation.setContentTitle(article.title);
+  }
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -95,7 +112,20 @@ export function ArticleViewPage() {
 
       {/* Content */}
       <div className={isPastEntry ? "opacity-60" : ""}>
-        <ParagraphList paragraphs={article.paragraphs} />
+        <ParagraphList
+          paragraphs={article.paragraphs}
+          annotation={{
+            openBlockId: annotation.openBlockId,
+            editorText: annotation.editorText,
+            isSaving: annotation.isSaving,
+            errorMessage: annotation.errorMessage,
+            savedAnnotations: annotation.savedAnnotations,
+            onOpen: annotation.openEditor,
+            onClose: annotation.closeEditor,
+            onTextChange: annotation.setEditorText,
+            onSave: annotation.saveAnnotation,
+          }}
+        />
       </div>
     </div>
   );
