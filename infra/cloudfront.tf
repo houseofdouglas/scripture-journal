@@ -40,7 +40,7 @@ resource "aws_cloudfront_distribution" "app" {
 
   # Origin 3: Lambda Function URL for write API
   origin {
-    domain_name = replace(aws_lambda_function_url.api.function_url, "https://", "")
+    domain_name = trimsuffix(replace(aws_lambda_function_url.api.function_url, "https://", ""), "/")
     origin_id   = "lambda-api"
 
     custom_origin_config {
