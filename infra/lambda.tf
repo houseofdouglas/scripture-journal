@@ -26,16 +26,24 @@ resource "aws_iam_role_policy" "lambda_s3" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "s3:GetObject",
-        "s3:PutObject",
-        "s3:HeadObject",
-        "s3:DeleteObject",
-      ]
-      Resource = "${aws_s3_bucket.app.arn}/*"
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:HeadObject",
+          "s3:DeleteObject",
+        ]
+        Resource = "${aws_s3_bucket.app.arn}/*"
+      },
+      {
+        # Required so GetObject 404s return NoSuchKey (404) instead of AccessDenied (403)
+        Effect   = "Allow"
+        Action   = ["s3:ListBucket"]
+        Resource = aws_s3_bucket.app.arn
+      }
+    ]
   })
 }
 
