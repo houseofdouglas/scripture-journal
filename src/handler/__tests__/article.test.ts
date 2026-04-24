@@ -31,10 +31,10 @@ async function req(app: ReturnType<typeof buildApp>, body?: unknown, token?: str
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  return app.request("/articles/import", {
+  return app.request("/api/articles/import", {
     method: "POST",
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? JSON.stringify(body) : (undefined as any),
   });
 }
 

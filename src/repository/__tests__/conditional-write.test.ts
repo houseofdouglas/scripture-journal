@@ -46,7 +46,7 @@ describe("conditionalWrite()", () => {
 
     expect(result).toEqual({ count: 1 });
 
-    const putCall = s3Mock.commandCalls(PutObjectCommand)[0];
+    const putCall = s3Mock.commandCalls(PutObjectCommand)[0]!;
     expect(putCall.args[0].input.IfNoneMatch).toBe("*");
     expect(putCall.args[0].input.IfMatch).toBeUndefined();
   });
@@ -64,7 +64,7 @@ describe("conditionalWrite()", () => {
 
     expect(result).toEqual({ count: 6 });
 
-    const putCall = s3Mock.commandCalls(PutObjectCommand)[0];
+    const putCall = s3Mock.commandCalls(PutObjectCommand)[0]!;
     expect(putCall.args[0].input.IfMatch).toBe('"etag-abc"');
     expect(putCall.args[0].input.IfNoneMatch).toBeUndefined();
   });

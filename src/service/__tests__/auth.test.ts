@@ -56,7 +56,7 @@ describe("login()", () => {
 
     // Verify JWT exp = iat + 86400
     const [, payloadB64] = result.token.split(".");
-    const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString());
+    const payload = JSON.parse(Buffer.from(payloadB64!, "base64url").toString());
     expect(payload.exp - payload.iat).toBe(86400);
   });
 

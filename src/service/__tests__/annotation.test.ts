@@ -40,7 +40,7 @@ function fakeEntry(annotations: Array<{ blockId: number; text: string; createdAt
     contentTitle: BASE_REQUEST.contentTitle,
     contentType: BASE_REQUEST.contentType,
     annotations,
-    updatedAt: annotations[annotations.length - 1].createdAt,
+    updatedAt: annotations[annotations.length - 1]!.createdAt,
   };
 }
 

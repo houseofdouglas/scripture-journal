@@ -32,7 +32,7 @@ export function ScriptureBrowserPage() {
 
   // D&C: skip book level — go straight to section grid
   if (work.slug === "doctrine-and-covenants") {
-    const dcBook = work.books[0];
+    const dcBook = work.books[0]!;
     return (
       <div>
         <Breadcrumb items={[{ label: "Scripture", to: "/scripture" }, { label: work.title }]} />

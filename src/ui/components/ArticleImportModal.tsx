@@ -137,7 +137,7 @@ export function ArticleImportModal({ onClose }: Props) {
                   placeholder="https://www.churchofjesuschrist.org/…"
                   required
                   value={state.url}
-                  onChange={(e) => setState({ ...state, url: e.target.value, error: undefined })}
+                   onChange={(e) => setState({ ...state, url: e.target.value, error: undefined as any })}
                   className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     state.error ? "border-red-400" : "border-gray-300"
                   }`}

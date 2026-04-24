@@ -44,7 +44,10 @@ export function TypeBadge({ type }: { type: "scripture" | "article" }) {
 }
 
 function formatDate(dateStr: string): string {
-  const [year, month, day] = dateStr.split("-").map(Number);
+  const [yearStr, monthStr, dayStr] = dateStr.split("-");
+  const year = +yearStr!;
+  const month = +monthStr!;
+  const day = +dayStr!;
   return new Date(year, month - 1, day).toLocaleDateString(undefined, {
     weekday: "long",
     month: "long",

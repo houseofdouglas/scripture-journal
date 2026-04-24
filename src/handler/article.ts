@@ -32,9 +32,9 @@ export function registerArticleRoutes(app: Hono<AppEnv>): void {
       return c.json(result, 200);
     } catch (err) {
       if (err instanceof ValidationError) {
-        const firstField = Object.keys(err.fields)[0];
+        const firstField = Object.keys(err.fields)[0]!;
         const errorCode = firstField === "url"
-          ? deriveUrlErrorCode(err.fields[firstField])
+          ? deriveUrlErrorCode(err.fields[firstField]!)
           : "VALIDATION_ERROR";
         return c.json(
           {

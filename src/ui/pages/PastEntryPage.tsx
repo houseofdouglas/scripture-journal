@@ -45,7 +45,10 @@ export function PastEntryPage() {
   const liveUrl = contentRefToRoute(entry.contentRef);
 
   const dateLabel = (() => {
-    const [y, m, d] = entry.date.split("-").map(Number);
+    const [yStr, mStr, dStr] = entry.date.split("-");
+    const y = +yStr!;
+    const m = +mStr!;
+    const d = +dStr!;
     return new Date(y, m - 1, d).toLocaleDateString(undefined, {
       weekday: "long",
       month: "long",

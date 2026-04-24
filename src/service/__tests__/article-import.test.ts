@@ -124,7 +124,7 @@ describe("importArticle()", () => {
 
       // Verify putArticle was called with non-empty paragraphs
       expect(mockPutArticle).toHaveBeenCalled();
-      const article = mockPutArticle.mock.calls[0][0];
+      const article = mockPutArticle.mock.calls[0]![0]!;
       expect(article.paragraphs.length).toBeGreaterThan(0);
       expect(article.paragraphs.every((p: { text: string }) => p.text.trim().length > 0)).toBe(true);
     });
@@ -186,11 +186,11 @@ describe("importArticle()", () => {
       await importArticle({ url: ALLOWED_URL, text, title: "Test Article" });
 
       expect(mockPutArticle).toHaveBeenCalled();
-      const article = mockPutArticle.mock.calls[0][0];
+      const article = mockPutArticle.mock.calls[0]![0]!;
       expect(article.paragraphs).toHaveLength(3);
-      expect(article.paragraphs[0].text).toBe("First paragraph.");
-      expect(article.paragraphs[1].text).toBe("Second paragraph.");
-      expect(article.paragraphs[2].text).toBe("Third paragraph.");
+      expect(article.paragraphs[0]!.text).toBe("First paragraph.");
+      expect(article.paragraphs[1]!.text).toBe("Second paragraph.");
+      expect(article.paragraphs[2]!.text).toBe("Third paragraph.");
     });
   });
 });

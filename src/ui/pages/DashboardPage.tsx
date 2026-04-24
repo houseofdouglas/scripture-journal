@@ -74,7 +74,7 @@ export function DashboardPage() {
           <div className="space-y-4">
             {Array.from(byDate.entries()).map(([date, dayEntries]) => {
               if (dayEntries.length === 1) {
-                return <EntryCard key={date} entry={dayEntries[0]} date={date} />;
+                return <EntryCard key={date} entry={dayEntries[0]!} date={date} />;
               }
               return <EntryDayGroup key={date} date={date} entries={dayEntries} />;
             })}

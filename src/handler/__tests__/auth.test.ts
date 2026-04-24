@@ -44,10 +44,13 @@ async function req(
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  return app.request(path, {
+  // Prepend /api since the app uses basePath("/api")
+  const fullPath = path.startsWith("/api") ? path : `/api${path}`;
+
+  return app.request(fullPath, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? JSON.stringify(body) : (undefined as any),
   });
 }
 

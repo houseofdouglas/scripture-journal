@@ -44,7 +44,7 @@ export async function conditionalWrite<T>(
       return next;
     } catch (err: unknown) {
       if (isPreconditionFailed(err) && attempt < MAX_RETRIES) {
-        await sleep(BACKOFF_MS[attempt]);
+        await sleep(BACKOFF_MS[attempt]!);
         continue;
       }
       if (isPreconditionFailed(err)) {

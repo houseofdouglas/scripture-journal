@@ -9,7 +9,10 @@ interface Props {
 
 /** Grouped multi-entry day — shows header + compact rows without snippet. */
 export function EntryDayGroup({ date, entries }: Props) {
-  const [year, month, day] = date.split("-").map(Number);
+  const [yearStr, monthStr, dayStr] = date.split("-");
+  const year = +yearStr!;
+  const month = +monthStr!;
+  const day = +dayStr!;
   const label = new Date(year, month - 1, day).toLocaleDateString(undefined, {
     weekday: "long",
     month: "long",

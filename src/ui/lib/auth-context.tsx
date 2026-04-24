@@ -54,7 +54,7 @@ function clearStorage(): void {
 function decodeJwtPayload(token: string): { sub: string; username: string } | null {
   try {
     const [, payloadB64] = token.split(".");
-    const json = atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/"));
+    const json = atob(payloadB64!.replace(/-/g, "+").replace(/_/g, "/"));
     return JSON.parse(json) as { sub: string; username: string };
   } catch {
     return null;

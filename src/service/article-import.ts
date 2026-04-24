@@ -34,7 +34,7 @@ export async function importArticle(request: ImportRequest): Promise<ImportRespo
     title = request.title;
   } else {
     // URL fetch mode
-    const html = await fetchHtml(request.url);
+    const html = await fetchHtml(request.url)!;
     const parsed = parseHtml(html);
     plainText = parsed.text;
     title = parsed.title;
@@ -57,7 +57,7 @@ export async function importArticle(request: ImportRequest): Promise<ImportRespo
   // Version check — look up URL index
   const urlIndex = await getArticleUrlIndex(request.url);
   if (urlIndex && urlIndex.versions.length > 0) {
-    const latestVersion = urlIndex.versions[urlIndex.versions.length - 1];
+    const latestVersion = urlIndex.versions[urlIndex.versions.length - 1]!;
     if (latestVersion.articleId !== articleId) {
       // New version detected — require confirmation
       if (!request.confirm) {
@@ -128,8 +128,8 @@ function parseHtml(html: string): ParsedContent {
     .querySelector('meta[property="og:title"]')
     ?.getAttribute("content")
     ?.trim();
-  const docTitle = doc.title?.trim();
-  const h1 = doc.querySelector("h1")?.textContent?.trim();
+  const docTitle = doc.title?.trim() ?? "";
+  const h1 = doc.querySelector("h1")?.textContent?.trim() ?? "";
   const firstParagraphSnippet =
     paragraphs[0] ? paragraphs[0].slice(0, 60) + (paragraphs[0].length > 60 ? "…" : "") : "";
 

@@ -143,11 +143,12 @@ async function updateUserIndex(
 
     // Update existing — update noteCount; only update snippet if it was the first annotation
     const updated = [...index.entries];
+    const existingEntry = updated[existingIdx]!;
     updated[existingIdx] = {
-      ...updated[existingIdx],
+      ...existingEntry,
       noteCount,
       // Preserve the original snippet unless this is the very first annotation
-      snippet: entry.annotations.length === 1 ? snippet : updated[existingIdx].snippet,
+      snippet: entry.annotations.length === 1 ? snippet : existingEntry.snippet,
     };
     return { entries: updated };
   });
