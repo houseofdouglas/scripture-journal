@@ -1,8 +1,5 @@
 # Copy to terraform.tfvars and fill in values.
 # terraform.tfvars is gitignored — never commit secrets.
 
-# Generate with: openssl rand -base64 48
-jwt_secret = "replace-me-with-openssl-rand-base64-48"
-
 # Populated after first apply:
 # cloudfront_domain = "d1234abcd.cloudfront.net"
