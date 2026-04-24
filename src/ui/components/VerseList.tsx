@@ -40,14 +40,15 @@ export function VerseList({ verses, annotation }: Props) {
                 {verse.text}
               </p>
 
-              {/* "+" button — only shown when no editor is open */}
+              {/* Add note button — visible at low opacity, prominent on hover */}
               {annotation && annotation.openBlockId === null && (
                 <button
                   onClick={() => annotation.onOpen(verse.number)}
                   aria-label="Add note"
-                  className="mt-0.5 flex-shrink-0 select-none text-sm font-medium text-gray-300 opacity-0 transition-opacity hover:text-blue-600 group-hover:opacity-100"
+                  title="Add note"
+                  className="mt-0.5 flex-shrink-0 select-none text-xs text-gray-300 opacity-40 transition-all hover:text-blue-500 hover:opacity-100 group-hover:opacity-100"
                 >
-                  +
+                  ✎
                 </button>
               )}
             </div>
