@@ -20,9 +20,7 @@
     "test:e2e:headed": "playwright test --project=chromium-headed",
     "test:e2e:ui": "playwright test --ui",
     "create-user": "tsx --env-file .env.local scripts/create-user.ts",
-    "create-user:deployed": "tsx --env-file .env scripts/create-user.ts",
-    "ingest-scripture": "tsx --env-file .env.local scripts/ingest-scripture.ts",
-    "ingest-scripture:deployed": "tsx --env-file .env scripts/ingest-scripture.ts"
+    "create-user:deployed": "tsx --env-file .env scripts/create-user.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.0.0",
