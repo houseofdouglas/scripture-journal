@@ -8,7 +8,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { env } from "../config/env";
 
-export const s3 = new S3Client({});
+export const s3 = new S3Client({ region: process.env.AWS_REGION ?? "us-east-1" });
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

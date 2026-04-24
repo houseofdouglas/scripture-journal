@@ -38,9 +38,12 @@ resource "aws_cloudfront_distribution" "app" {
     origin_access_control_id = aws_cloudfront_origin_access_control.app.id
   }
 
-  # Origin 3: Lambda Function URL for write API
+  # Origin 3: API Gateway HTTP API for write API
+  # API Gateway is publicly accessible — no OAC needed.
+  # CloudFront's AllViewerExceptHostHeader policy forwards the Authorization
+  # (JWT Bearer) header so Lambda's JWT middleware works correctly.
   origin {
-    domain_name = trimsuffix(replace(aws_lambda_function_url.api.function_url, "https://", ""), "/")
+    domain_name = trimsuffix(replace(aws_apigatewayv2_api.api.api_endpoint, "https://", ""), "/")
     origin_id   = "lambda-api"
 
     custom_origin_config {
@@ -68,7 +71,7 @@ resource "aws_cloudfront_distribution" "app" {
     origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-CORS-S3Origin
   }
 
-  # /api/* — write API routes proxied to Lambda Function URL (no caching)
+  # /api/* — API routes proxied to API Gateway (no caching)
   ordered_cache_behavior {
     path_pattern           = "/api/*"
     target_origin_id       = "lambda-api"
@@ -79,6 +82,20 @@ resource "aws_cloudfront_distribution" "app" {
 
     cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
     origin_request_policy_id = "b689b0a8-53d0-40ab-baf2-68738e2966ac" # Managed-AllViewerExceptHostHeader
+  }
+
+  # /users/* — per-user data (index, entries) served from the app-data bucket
+  ordered_cache_behavior {
+    path_pattern           = "/users/*"
+    target_origin_id       = "app-data"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+
+    # Short cache — user data changes on every annotation save
+    cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
+    origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-CORS-S3Origin
   }
 
   # /content/* — cached scripture and article JSON
@@ -121,4 +138,3 @@ resource "aws_cloudfront_distribution" "app" {
     # Replace with acm_certificate_arn + ssl_support_method = "sni-only" when a custom domain is added
   }
 }
-

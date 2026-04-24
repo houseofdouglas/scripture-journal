@@ -16,7 +16,10 @@ export type AppEnv = {
 // ── App factory ───────────────────────────────────────────────────────────────
 
 export function createApp(): Hono<AppEnv> {
-  const app = new Hono<AppEnv>();
+  // basePath="/api" so all routes are relative to /api (e.g. /auth/login → /api/auth/login).
+  // Hono strips the prefix before routing, so all route registrations and middleware
+  // path checks remain unchanged.
+  const app = new Hono<AppEnv>().basePath("/api");
 
   // CORS — restricted to the CloudFront domain when known, open otherwise.
   // CLOUDFRONT_DOMAIN is empty on the initial deploy and in local dev;
@@ -40,8 +43,8 @@ export function createApp(): Hono<AppEnv> {
     const path = c.req.path;
     const method = c.req.method;
 
-    // Login endpoint is public
-    if (method === "POST" && path === "/auth/login") {
+    // Login endpoint is public (path may or may not include the /api basePath prefix)
+    if (method === "POST" && (path === "/auth/login" || path === "/api/auth/login")) {
       return next();
     }
 

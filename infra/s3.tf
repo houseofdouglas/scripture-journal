@@ -38,7 +38,7 @@ resource "aws_s3_bucket_policy" "app" {
 }
 
 data "aws_iam_policy_document" "app_bucket" {
-  # CloudFront OAC read access (content/ prefix only — user data never served directly)
+  # CloudFront OAC read access — content/ (scripture JSON) and users/ (journal data)
   statement {
     sid    = "CloudFrontReadContent"
     effect = "Allow"
@@ -47,7 +47,10 @@ data "aws_iam_policy_document" "app_bucket" {
       identifiers = ["cloudfront.amazonaws.com"]
     }
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.app.arn}/content/*"]
+    resources = [
+      "${aws_s3_bucket.app.arn}/content/*",
+      "${aws_s3_bucket.app.arn}/users/*",
+    ]
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"

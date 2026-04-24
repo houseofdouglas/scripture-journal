@@ -29,10 +29,22 @@ await esbuild.build({
   external: ["@aws-sdk/*"],
 });
 
-// 3. Zip dist/index.js and dist/index.js.map
+// 3. Copy runtime assets that esbuild can't inline
+// jsdom's XMLHttpRequest implementation loads xhr-sync-worker.js as a separate
+// worker file via require.resolve(). esbuild bundles the referencing code but
+// can't inline the worker itself, so we ship it next to index.js.
+const xhrWorkerSrc = path.resolve(
+  projectRoot,
+  "node_modules/jsdom/lib/jsdom/living/xhr/xhr-sync-worker.js"
+);
+const xhrWorkerDest = path.join(distDir, "xhr-sync-worker.js");
+fs.copyFileSync(xhrWorkerSrc, xhrWorkerDest);
+console.log("Copied xhr-sync-worker.js");
+
+// 4. Zip dist/index.js, dist/index.js.map, and the worker
 console.log("Creating dist/lambda.zip...");
 try {
-  execSync("zip lambda.zip index.js index.js.map", {
+  execSync("zip lambda.zip index.js index.js.map xhr-sync-worker.js", {
     cwd: distDir,
     stdio: "inherit",
   });

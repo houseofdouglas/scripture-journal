@@ -11,7 +11,8 @@ export default defineConfig({
       "/api": {
         target: process.env.VITE_API_URL ?? "http://localhost:4000",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        // No rewrite — the dev server (and Lambda) expect the full /api/* path
+        // because Hono uses basePath("/api") to match production CloudFront routing.
       },
       // In production, /content/* and /users/* are served directly from S3 via
       // CloudFront. Locally, the dev server proxies them to S3.
