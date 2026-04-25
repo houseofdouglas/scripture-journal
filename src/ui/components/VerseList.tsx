@@ -26,20 +26,20 @@ export function VerseList({ verses, annotation }: Props) {
       {verses.map((verse) => (
         <li key={verse.number} data-verse={verse.number} className="group flex gap-3">
 
-          {/* Verse number — relative container so the add-note bubble can overlay it */}
-          <div className="relative shrink-0 pt-0.5">
+          {/* Verse number — fixed 2rem×2rem column so the bubble aligns exactly over it */}
+          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
             <span className="select-none text-xs font-semibold text-gray-400 tabular-nums">
               {verse.number}
             </span>
 
-            {/* Sky-blue circle overlaying the verse number on row hover.
-                Size: 2rem × 2rem (2× body font). Plus: 1.5rem (1.5× body font). */}
+            {/* Sky-blue circle: inset-0 fills the container exactly, flex centers the "+".
+                h-8/w-8 = 2rem (2× body font). font-size 1.5rem = 1.5× body font. */}
             {annotation && annotation.openBlockId === null && (
               <button
                 onClick={() => annotation.onOpen(verse.number)}
                 aria-label="Add note"
                 title="Add note"
-                className="absolute left-1/2 top-1/2 z-10 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-sky-100 text-blue-500 opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-sky-100 text-blue-500 opacity-0 transition-opacity group-hover:opacity-100"
                 style={{ fontSize: "1.5rem", lineHeight: 1 }}
               >
                 +
