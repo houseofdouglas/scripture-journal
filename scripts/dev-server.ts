@@ -14,7 +14,6 @@
  *   JWT_SECRET (direct value — skips SSM in local dev)
  */
 
-import "dotenv/config"; // load .env.local before anything else
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
