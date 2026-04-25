@@ -25,33 +25,33 @@ export function VerseList({ verses, annotation }: Props) {
     <ol className="space-y-4">
       {verses.map((verse) => (
         <li key={verse.number} data-verse={verse.number} className="group flex gap-3">
-          {/* Verse number */}
-          <span className="select-none pt-0.5 text-xs font-semibold text-gray-400 tabular-nums">
-            {verse.number}
-          </span>
+
+          {/* Verse number — relative container so the add-note bubble can overlay it */}
+          <div className="relative shrink-0 pt-0.5">
+            <span className="select-none text-xs font-semibold text-gray-400 tabular-nums">
+              {verse.number}
+            </span>
+
+            {/* Sky-blue circle overlaying the verse number on row hover.
+                Size: 2rem × 2rem (2× body font). Plus: 1.5rem (1.5× body font). */}
+            {annotation && annotation.openBlockId === null && (
+              <button
+                onClick={() => annotation.onOpen(verse.number)}
+                aria-label="Add note"
+                title="Add note"
+                className="absolute left-1/2 top-1/2 z-10 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-sky-100 text-blue-500 opacity-0 transition-opacity group-hover:opacity-100"
+                style={{ fontSize: "1.5rem", lineHeight: 1 }}
+              >
+                +
+              </button>
+            )}
+          </div>
 
           {/* Verse body */}
           <div className="flex-1">
-            <div className="flex items-start gap-2">
-              <p
-                className="flex-1 leading-relaxed text-gray-900"
-                style={{ fontFamily: "Georgia, serif" }}
-              >
-                {verse.text}
-              </p>
-
-              {/* Add note button — visible at low opacity, prominent on hover */}
-              {annotation && annotation.openBlockId === null && (
-                <button
-                  onClick={() => annotation.onOpen(verse.number)}
-                  aria-label="Add note"
-                  title="Add note"
-                  className="mt-0.5 flex-shrink-0 select-none text-xs text-blue-500 hover:bg-blue-50 rounded-full w-5 h-5 flex items-center justify-center transition-all"
-                >
-                  +
-                </button>
-              )}
-            </div>
+            <p className="leading-relaxed text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+              {verse.text}
+            </p>
 
             {/* Inline editor for this verse */}
             {annotation?.openBlockId === verse.number && (
