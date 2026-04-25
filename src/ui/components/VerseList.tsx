@@ -32,17 +32,25 @@ export function VerseList({ verses, annotation }: Props) {
               {verse.number}
             </span>
 
-            {/* Sky-blue circle: inset-0 fills the container exactly, flex centers the "+".
-                h-8/w-8 = 2rem (2× body font). font-size 1.5rem = 1.5× body font. */}
+            {/* Sky-blue circle overlaying the verse number on hover.
+                SVG plus avoids font-metric centering issues. */}
             {annotation && annotation.openBlockId === null && (
               <button
                 onClick={() => annotation.onOpen(verse.number)}
                 aria-label="Add note"
                 title="Add note"
-                className="absolute inset-0 flex items-center justify-center rounded-full bg-sky-100 text-blue-500 opacity-0 transition-opacity group-hover:opacity-100"
-                style={{ fontSize: "1.5rem", lineHeight: 1 }}
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-sky-100 opacity-0 transition-opacity group-hover:opacity-100"
               >
-                +
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <line x1="10" y1="3" x2="10" y2="17" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="3" y1="10" x2="17" y2="10" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
               </button>
             )}
           </div>
