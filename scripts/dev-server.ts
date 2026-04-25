@@ -20,9 +20,16 @@ import { Hono } from "hono";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import type { Readable } from "node:stream";
 
-// Import the Hono app factory — this also validates env vars via env.ts
+// Import the Hono app factory and route registrations (mirrors lambda.ts)
 import { createApp } from "../src/handler/app";
+import { registerAuthRoutes } from "../src/handler/auth";
+import { registerArticleRoutes } from "../src/handler/article";
+import { registerAnnotationRoutes } from "../src/handler/annotation";
+
 const apiApp = createApp();
+registerAuthRoutes(apiApp);
+registerArticleRoutes(apiApp);
+registerAnnotationRoutes(apiApp);
 
 const PORT = Number(process.env.DEV_API_PORT ?? 4000);
 const BUCKET = process.env.BUCKET_NAME!;
