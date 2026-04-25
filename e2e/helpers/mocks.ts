@@ -213,3 +213,233 @@ export async function mockAnnotateFailure(
     });
   });
 }
+
+// ---------------------------------------------------------------------------
+// Article mocks
+// ---------------------------------------------------------------------------
+
+const DEFAULT_ARTICLE = {
+  articleId: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+  sourceUrl: "https://www.churchofjesuschrist.org/study/manual/genesis/1?lang=eng",
+  title: "Genesis Chapter 1",
+  importedAt: "2026-04-20T10:30:00.000Z",
+  scope: "shared" as const,
+  paragraphs: [
+    { index: 0, text: "In the beginning God created the heaven and the earth." },
+    { index: 1, text: "And the earth was without form, and void; and darkness was upon the face of the deep." },
+    { index: 2, text: "And God said, Let there be light: and there was light." },
+  ],
+};
+
+export async function mockArticle(
+  page: Page,
+  article = DEFAULT_ARTICLE,
+  entryData?: { entryId: string; title: string; notes: unknown[] },
+): Promise<void> {
+  await page.route("**/content/articles/*.json", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(article),
+    });
+  });
+
+  if (entryData) {
+    await page.route("**/users/*/entries/*.json", (route) => {
+      if (route.request().url().includes(article.articleId)) {
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            id: entryData.entryId,
+            title: entryData.title,
+            notes: entryData.notes,
+          }),
+        });
+      }
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Past entry mocks
+// ---------------------------------------------------------------------------
+
+export async function mockPastEntry(
+  page: Page,
+  entryId: string,
+  contentRef: string,
+  title: string,
+  date: string,
+  notes: unknown[] = [],
+): Promise<void> {
+  await page.route(`**/users/*/entries/${entryId}.json`, (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: entryId,
+        contentRef,
+        title,
+        date,
+        notes,
+      }),
+    });
+  });
+}
+
+export async function mockEntryNotFound(
+  page: Page,
+  entryId: string,
+): Promise<void> {
+  await page.route(`**/users/*/entries/${entryId}.json`, (route) => {
+    route.fulfill({
+      status: 404,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "Entry not found" }),
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Change password mocks
+// ---------------------------------------------------------------------------
+
+export async function mockChangePasswordSuccess(page: Page): Promise<void> {
+  await page.route("**/api/auth/password", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ success: true }),
+    });
+  });
+}
+
+export async function mockChangePasswordFailure(
+  page: Page,
+  status = 500,
+): Promise<void> {
+  await page.route("**/api/auth/password", (route) => {
+    route.fulfill({
+      status,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: status === 401 ? "Unauthorized" : "Internal server error",
+      }),
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Article import mocks
+// ---------------------------------------------------------------------------
+
+export async function mockImportDuplicate(
+  page: Page,
+  articleId: string,
+  title: string,
+  importedAt: string,
+): Promise<void> {
+  await page.route("**/api/articles/import", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "DUPLICATE",
+        articleId,
+        title,
+        importedAt,
+      }),
+    });
+  });
+}
+
+export async function mockImportNewVersion(
+  page: Page,
+  url: string,
+  previousArticleId: string,
+  previousImportedAt: string,
+  title: string,
+): Promise<void> {
+  await page.route("**/api/articles/import", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "NEW_VERSION",
+        url,
+        previousArticleId,
+        previousImportedAt,
+        title,
+      }),
+    });
+  });
+}
+
+export async function mockImportVersionSuccess(
+  page: Page,
+  articleId: string,
+  title: string,
+  previousArticleId: string,
+  importedAt: string,
+): Promise<void> {
+  await page.route("**/api/articles/import", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "VERSION_IMPORTED",
+        articleId,
+        title,
+        previousArticleId,
+        importedAt,
+      }),
+    });
+  });
+}
+
+export async function mockImportSuccess(
+  page: Page,
+  articleId: string,
+  title: string,
+  importedAt: string,
+): Promise<void> {
+  await page.route("**/api/articles/import", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "IMPORTED",
+        articleId,
+        title,
+        importedAt,
+      }),
+    });
+  });
+}
+
+export async function mockImportDomainError(page: Page): Promise<void> {
+  await page.route("**/api/articles/import", (route) => {
+    route.fulfill({
+      status: 400,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: "DOMAIN_NOT_ALLOWED",
+        fields: { url: "Domain not in allowlist" },
+      }),
+    });
+  });
+}
+
+export async function mockImportFetchFailure(page: Page): Promise<void> {
+  await page.route("**/api/articles/import", (route) => {
+    route.fulfill({
+      status: 400,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: "FETCH_FAILED",
+        fields: { url: "Could not fetch the article" },
+      }),
+    });
+  });
+}

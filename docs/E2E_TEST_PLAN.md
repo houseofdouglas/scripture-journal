@@ -20,16 +20,16 @@
 ### 1. Article View Tests (`e2e/article-view.spec.ts`)
 
 **Test Cases:**
-- [ ] Unauthenticated visit to `/articles/:id` redirects to login
-- [ ] Article view shows article title in serif font
-- [ ] Article view shows source link (clickable)
-- [ ] Article view shows import date
-- [ ] Article view shows annotation count badge
-- [ ] Non-existent article shows "Article not found" with link to dashboard
-- [ ] Clicking article entry card navigates to article view
-- [ ] Back button from article view navigates to dashboard
-- [ ] Article with multiple paragraphs renders correctly
-- [ ] Annotations display with timestamps
+- [x] Unauthenticated visit to `/articles/:id` redirects to login
+- [x] Article view shows article title in serif font
+- [x] Article view shows source link (clickable)
+- [x] Article view shows import date
+- [x] Article view shows annotation count badge
+- [x] Non-existent article shows "Article not found" with link to dashboard
+- [x] Clicking article entry card navigates to article view
+- [x] Back button from article view navigates to dashboard
+- [x] Article with multiple paragraphs renders correctly
+- [x] Annotations display with timestamps
 
 **Mock Functions Needed:**
 ```typescript
@@ -44,15 +44,15 @@ async function mockArticle(page, articleData) {
 ### 2. Past Entry Tests (`e2e/past-entry.spec.ts`)
 
 **Test Cases:**
-- [ ] Unauthenticated visit to `/entries/:entryId` redirects to login
-- [ ] Loading state display (skeleton loaders)
-- [ ] 404 handling (entry not found) with dashboard link
-- [ ] Past entry banner displays correct date format
-- [ ] "Study Today" link navigates to scripture chapter
-- [ ] "Study Today" is absent for article entries
-- [ ] Annotation list renders with timestamps
-- [ ] Multiple annotations display correctly
-- [ ] Clicking dashboard link returns to dashboard
+- [x] Unauthenticated visit to `/entries/:entryId` redirects to login
+- [x] Loading state display (skeleton loaders)
+- [x] 404 handling (entry not found) with dashboard link
+- [x] Past entry banner displays correct date format
+- [x] "Study Today" link navigates to scripture chapter
+- [x] "Study Today" is absent for article entries
+- [x] Annotation list renders with timestamps
+- [x] Multiple annotations display correctly
+- [x] Clicking dashboard link returns to dashboard
 
 **Mock Functions Needed:**
 ```typescript
@@ -66,16 +66,16 @@ async function mockPastEntry(page, entryData) {
 ### 3. Change Password Tests (`e2e/change-password.spec.ts`)
 
 **Test Cases:**
-- [ ] Unauthenticated visit to `/change-password` redirects to login
-- [ ] Client-side validation: passwords don't match
-- [ ] Client-side validation: new password same as current
-- [ ] Success state after password change (alert shown)
-- [ ] Form fields reset after successful password change
-- [ ] 401 error for wrong current password
-- [ ] Server error handling
-- [ ] Cancel button returns to dashboard
-- [ ] Current password field cleared on 401 error
-- [ ] Form disabled during loading state
+- [x] Unauthenticated visit to `/change-password` redirects to login
+- [x] Client-side validation: passwords don't match
+- [x] Client-side validation: new password same as current
+- [x] Success state after password change (alert shown)
+- [x] Form fields reset after successful password change
+- [x] 401 error for wrong current password
+- [x] Server error handling
+- [x] Cancel button returns to dashboard
+- [x] Current password field cleared on 401 error
+- [x] Form disabled during loading state
 
 **Mock Functions Needed:**
 ```typescript
@@ -99,26 +99,26 @@ async function mockChangePasswordFailure(page, status) {
 **Missing Test Cases:**
 
 #### Domain Restrictions
-- [ ] Domain not in allowlist shows error
-- [ ] Error message displays specific domain restriction
+- [x] Domain not in allowlist shows error
+- [x] Error message displays specific domain restriction
 
 #### Fetch Failures
-- [ ] Network timeout shows fetch failed message
-- [ ] "Paste article text manually" link available
-- [ ] Clicking manual paste link switches to manual mode
+- [x] Network timeout shows fetch failed message
+- [x] "Paste article text manually" link available
+- [x] Clicking manual paste link switches to manual mode
 
 #### Duplicate Detection
-- [ ] Duplicate article shows "Already imported" modal
-- [ ] "Open Existing" button navigates to article
-- [ ] "Cancel" button closes modal
+- [x] Duplicate article shows "Already imported" modal
+- [x] "Open Existing" button navigates to article
+- [x] "Cancel" button closes modal
 
 #### New Version Detection
-- [ ] Updated article shows "New version" modal
-- [ ] Shows previous import date
-- [ ] Informs user annotations are preserved
-- [ ] "Create New Version" button works
-- [ ] "Open Previous Version" button works
-- [ ] "Cancel" button closes modal
+- [x] Updated article shows "New version" modal
+- [x] Shows previous import date
+- [x] Informs user annotations are preserved
+- [x] "Create New Version" button works
+- [x] "Open Previous Version" button works
+- [x] "Cancel" button closes modal
 
 **Mock Functions Needed:**
 ```typescript
@@ -139,13 +139,13 @@ async function mockImportVersionSuccess(page, articleId, title, previousArticleI
 
 ## Implementation Priority
 
-**Phase 1 - High Priority:**
-1. Article view tests (most critical missing feature)
-2. Change password tests (security-related)
+**Phase 1 - High Priority (COMPLETED):**
+1. Article view tests (most critical missing feature) ✓
+2. Change password tests (security-related) ✓
 
-**Phase 2 - Medium Priority:**
-3. Past entry tests
-4. Article import duplicates/new versions
+**Phase 2 - Medium Priority (COMPLETED):**
+3. Past entry tests ✓
+4. Article import duplicates/new versions ✓
 
 **Phase 3 - Nice to Have:**
 5. End-to-end flow tests (e.g., import article → view → annotate)
@@ -158,13 +158,13 @@ async function mockImportVersionSuccess(page, articleId, title, previousArticleI
 - No changes needed currently
 
 ### Update `e2e/helpers/mocks.ts`
-- [ ] Add `mockArticle()` helper
-- [ ] Add `mockPastEntry()` helper
-- [ ] Add `mockChangePasswordSuccess()` helper
-- [ ] Add `mockChangePasswordFailure()` helper
-- [ ] Add `mockImportDuplicate()` helper
-- [ ] Add `mockImportNewVersion()` helper
-- [ ] Add `mockImportVersionSuccess()` helper
+- [x] Add `mockArticle()` helper
+- [x] Add `mockPastEntry()` helper
+- [x] Add `mockChangePasswordSuccess()` helper
+- [x] Add `mockChangePasswordFailure()` helper
+- [x] Add `mockImportDuplicate()` helper
+- [x] Add `mockImportNewVersion()` helper
+- [x] Add `mockImportVersionSuccess()` helper
 
 ---
 
@@ -179,6 +179,9 @@ npm run test:e2e:ui
 
 # Run specific file
 npx playwright test e2e/article-view.spec.ts
+npx playwright test e2e/past-entry.spec.ts
+npx playwright test e2e/change-password.spec.ts
+npx playwright test e2e/article-import.spec.ts
 
 # Run in headed mode for debugging
 npm run test:e2e:headed
@@ -188,7 +191,7 @@ npm run test:e2e:headed
 
 ## Acceptance Criteria
 
-- [ ] All missing E2E tests pass
+- [x] All missing E2E tests pass
 - [ ] Test coverage >= 80% for service layer
 - [ ] No flaky tests (deterministic mocks)
 - [ ] CI/CD integration (Playwright runs on PRs)
