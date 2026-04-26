@@ -1,11 +1,11 @@
-# ── ACM Certificate ───────────────────────────────────────────────────────────
+# ── ACM Wildcard Certificate ──────────────────────────────────────────────────
 
 resource "aws_acm_certificate" "app" {
-  domain_name       = "notes.xzvf.mobi"
+  domain_name       = "*.xzvf.mobi"
   validation_method = "DNS"
 
   subject_alternative_names = [
-    "notes.xzvf.mobi"
+    "xzvf.mobi"
   ]
 
   lifecycle {
@@ -13,7 +13,7 @@ resource "aws_acm_certificate" "app" {
   }
 
   tags = {
-    Name = "scripture-journal-app-cert-${var.env}"
+    Name = "scripture-journal-wildcard-cert-${var.env}"
   }
 }
 
@@ -44,11 +44,11 @@ resource "aws_acm_certificate_validation" "app" {
   depends_on = [aws_route53_record.cert_validation]
 }
 
-# ── Route53 Alias Record ───────────────────────────────────────────────────────
+# ── Route53 Alias Records ─────────────────────────────────────────────────────
 
 resource "aws_route53_record" "app" {
   zone_id = var.route53_zone_id
-  name    = "notes.xzvf.mobi"
+  name    = var.custom_domain
   type    = "A"
 
   alias {
@@ -58,16 +58,24 @@ resource "aws_route53_record" "app" {
   }
 }
 
-# ── CloudFront Distribution — Update to use ACM Certificate ──────────────────
+# Optional: IPv6 AAAA record for CloudFront
+resource "aws_route53_record" "app_ipv6" {
+  zone_id = var.route53_zone_id
+  name    = var.custom_domain
+  type    = "AAAA"
 
-# Update the existing distribution's viewer_certificate block from the cloudfront.tf file
-# This requires modifying cloudfront.tf to use:
+  alias {
+    name                   = aws_cloudfront_distribution.app.domain_name
+    zone_id                = aws_cloudfront_distribution.app.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+# ── Wildcard Certificate Benefits ─────────────────────────────────────────────
 #
-#   viewer_certificate {
-#     acm_certificate_arn            = aws_acm_certificate.app.arn
-#     ssl_support_method             = "sni-only"
-#     minimum_protocol_version       = "TLSv1.2_2021"
-#   }
+# This wildcard certificate covers:
+#   - notes.xzvf.mobi (scripture journal application)
+#   - *.xzvf.mobi (any other subdomain)
+#   - xzvf.mobi (root domain, included in SANs)
 #
-# And add this to the distribution block:
-#   aliases = ["notes.xzvf.mobi"]
+# You can now host multiple services under xzvf.mobi without creating new certs.
