@@ -31,3 +31,15 @@ variable "cloudfront_domain" {
       terraform apply -var="cloudfront_domain=$(terraform output -raw cloudfront_domain)"
   EOT
 }
+
+variable "route53_zone_id" {
+  type        = string
+  default     = "Z09637711ZOOUGKI57DYD"
+  description = "Route53 hosted zone ID for xzvf.mobi domain."
+}
+
+variable "custom_domain" {
+  type        = string
+  default     = "notes.xzvf.mobi"
+  description = "Custom domain name for the CloudFront distribution."
+}

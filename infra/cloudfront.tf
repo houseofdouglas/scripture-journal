@@ -23,6 +23,7 @@ resource "aws_cloudfront_distribution" "app" {
   price_class         = "PriceClass_100" # US/EU/Canada only — lowest cost
 
   comment = "scripture-journal-${var.env}"
+  aliases = [var.custom_domain]
 
   # Origin 1: SPA static files
   origin {
@@ -134,7 +135,10 @@ resource "aws_cloudfront_distribution" "app" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
-    # Replace with acm_certificate_arn + ssl_support_method = "sni-only" when a custom domain is added
+    acm_certificate_arn      = aws_acm_certificate.app.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
+
+  depends_on = [aws_acm_certificate_validation.app]
 }

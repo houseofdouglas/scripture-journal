@@ -1,5 +1,10 @@
+output "custom_domain" {
+  description = "Custom domain name for the application."
+  value       = var.custom_domain
+}
+
 output "cloudfront_domain" {
-  description = "CloudFront distribution domain — use this to access the app."
+  description = "CloudFront distribution domain."
   value       = aws_cloudfront_distribution.app.domain_name
 }
 
