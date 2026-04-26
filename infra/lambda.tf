@@ -82,6 +82,7 @@ resource "aws_lambda_function" "api" {
       ADMIN_USERNAME    = "peter"
       # CORS origin — restricted to the custom domain (notes.xzvf.mobi)
       CLOUDFRONT_DOMAIN = var.custom_domain
+      JWT_SECRET_ARN    = aws_ssm_parameter.jwt_secret.arn
     }
   }
 }
