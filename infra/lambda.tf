@@ -80,9 +80,8 @@ resource "aws_lambda_function" "api" {
       BUCKET_NAME       = aws_s3_bucket.app.bucket
       ENV               = var.env
       ADMIN_USERNAME    = "peter"
-      # Populated via -var="cloudfront_domain=..." after the first apply.
-      # Empty on initial deploy — app.ts CORS falls back to "*" when unset.
-      CLOUDFRONT_DOMAIN = var.cloudfront_domain
+      # CORS origin — restricted to the custom domain (notes.xzvf.mobi)
+      CLOUDFRONT_DOMAIN = var.custom_domain
     }
   }
 }
