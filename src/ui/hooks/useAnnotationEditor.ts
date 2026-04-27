@@ -1,6 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { apiClient, ApiError } from "../lib/api-client";
 import type { AnnotateResponse } from "../../types";
+import { useAuth } from "../lib/auth-context";
 
 export interface SavedAnnotation {
   blockId: number;
@@ -13,6 +14,15 @@ interface EditorState {
   text: string;
   status: "idle" | "saving" | "error";
   errorMessage: string | null;
+}
+
+export interface EntryData {
+  id: string;
+  contentRef: string;
+  title: string;
+  date: string;
+  notes: unknown[];
+  savedAnnotations?: SavedAnnotation[];
 }
 
 export interface UseAnnotationEditorResult {
@@ -33,9 +43,11 @@ interface UseAnnotationEditorOptions {
   contentRef: string;
   contentTitle: string;
   contentType: "scripture" | "article";
+  entryId?: string;
 }
 
 export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnnotationEditorResult {
+  const { user } = useAuth();
   const [editor, setEditor] = useState<EditorState>({
     blockId: null,
     text: "",
@@ -44,6 +56,39 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
   });
   const [contentTitle, setContentTitle] = useState(options.contentTitle);
   const [savedAnnotations, setSavedAnnotations] = useState<SavedAnnotation[]>([]);
+
+  useEffect(() => {
+    if (options.contentTitle) {
+      setContentTitle(options.contentTitle);
+    }
+  }, [options.contentTitle]);
+
+  useEffect(() => {
+    const fetchEntry = async () => {
+      if (!user) return;
+      
+      try {
+        const match = options.contentRef.match(/content\/articles\/([^/]+)\.json$/);
+        const articleId = match ? match[1] : options.contentRef.split("/").pop();
+        const entryId = articleId || options.entryId;
+        
+        if (!entryId) return;
+        
+        const url = `/users/${user.userId}/entries/${entryId}.json`;
+        
+        const res = await fetch(url);
+        if (res.ok) {
+          const data: EntryData = await res.json();
+          if (data.savedAnnotations) {
+            setSavedAnnotations(data.savedAnnotations);
+          }
+        }
+      } catch {
+        // Silently fail if entry not found
+      }
+    };
+    fetchEntry();
+  }, [options.contentRef, options.entryId, user]);
 
   const openEditor = useCallback((blockId: number) => {
     setEditor((prev) => {
