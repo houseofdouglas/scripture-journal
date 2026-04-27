@@ -39,6 +39,15 @@ export function ArticleViewPage() {
     enabled: Boolean(articleId),
   });
 
+  const isPastEntry = Boolean(pastEntryDate);
+
+  // Must be before early returns — hooks cannot be called conditionally
+  useEffect(() => {
+    if (article && !isPastEntry) {
+      annotation.setContentTitle(article.title);
+    }
+  }, [article?.title, isPastEntry]);
+
   if (isLoading) return <ArticleSkeleton />;
   if (isError) return <div className="text-red-600">Failed to load article.</div>;
   if (!article) {
@@ -49,14 +58,6 @@ export function ArticleViewPage() {
       </div>
     );
   }
-
-  const isPastEntry = Boolean(pastEntryDate);
-
-  useEffect(() => {
-    if (article && !isPastEntry) {
-      annotation.setContentTitle(article.title);
-    }
-  }, [article?.title, isPastEntry]);
 
   return (
     <div className="mx-auto max-w-2xl">
