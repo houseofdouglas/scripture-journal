@@ -14,7 +14,7 @@ interface Props {
     editorText: string;
     isSaving: boolean;
     errorMessage: string | null;
-    savedAnnotations: SavedAnnotation[];
+    savedAnnotations?: SavedAnnotation[];
     onOpen: (blockId: number) => void;
     onClose: () => void;
     onTextChange: (text: string) => void;
@@ -47,17 +47,25 @@ export function ParagraphList({ paragraphs, annotation }: Props) {
       )}
       {paragraphs.map((p) => (
         <div key={p.index} data-paragraph-index={p.index} className="group flex gap-3 leading-relaxed text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
-          {/* Add note button in left gutter */}
-          {annotation && annotation.openBlockId === null && (
-            <button
-              onClick={() => annotation.onOpen(p.index)}
-              aria-label="Add note"
-              title="Add note"
-              className="mt-1 flex-shrink-0 select-none text-xs text-blue-500 hover:bg-blue-50 rounded-full w-5 h-5 flex items-center justify-center transition-all"
-            >
-              +
-            </button>
-          )}
+          {/* Left gutter — paragraph number with SVG plus overlay on hover */}
+          <div className="relative flex h-8 w-8 shrink-0 items-start justify-center pt-1">
+            <span className="select-none text-xs font-semibold text-gray-400 tabular-nums">
+              {p.index + 1}
+            </span>
+            {annotation && annotation.openBlockId === null && (
+              <button
+                onClick={() => annotation.onOpen(p.index)}
+                aria-label="Add note"
+                title="Add note"
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-sky-100 opacity-0 transition-opacity group-hover:opacity-100"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <line x1="10" y1="3" x2="10" y2="17" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="3" y1="10" x2="17" y2="10" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
+          </div>
           <div className="flex-1">
             <p>{p.text}</p>
 
@@ -75,7 +83,7 @@ export function ParagraphList({ paragraphs, annotation }: Props) {
 
             {/* Saved annotations beneath this paragraph */}
             {annotation?.savedAnnotations
-              .filter((a) => a.blockId === p.index)
+              ?.filter((a) => a.blockId === p.index)
               .map((a, i) => (
                 <SavedAnnotationDisplay key={i} text={a.text} createdAt={a.createdAt} />
               ))}
