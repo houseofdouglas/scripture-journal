@@ -99,7 +99,6 @@ export function ArticleImportModal({ onClose }: Props) {
       });
     } else {
       // IMPORTED or VERSION_IMPORTED
-      onClose();
       navigate(`/articles/${result.articleId}`);
     }
   }
@@ -249,7 +248,7 @@ export function ArticleImportModal({ onClose }: Props) {
               </div>
               <div className="flex gap-3">
                 <button
-                  onClick={() => { onClose(); navigate(`/articles/${state.articleId}`); }}
+                  onClick={() => navigate(`/articles/${state.articleId}`)}
                   className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
                 >
                   Open Existing
@@ -283,7 +282,7 @@ export function ArticleImportModal({ onClose }: Props) {
                   Create New Version
                 </button>
                 <button
-                  onClick={() => { onClose(); navigate(`/articles/${state.previousArticleId}`); }}
+                  onClick={() => navigate(`/articles/${state.previousArticleId}`)}
                   className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                 >
                   Open Previous Version
