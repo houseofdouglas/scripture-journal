@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ParagraphList } from "../components/ParagraphList";
@@ -17,7 +18,7 @@ export function ArticleViewPage() {
   const [searchParams] = useSearchParams();
   const pastEntryDate = searchParams.get("entry-date"); // set when viewing a past entry
 
-  const articleRef = `/content/articles/${articleId}.json`;
+  const articleRef = `content/articles/${articleId}.json`;
   const today = new Date();
   const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   
@@ -50,11 +51,12 @@ export function ArticleViewPage() {
   }
 
   const isPastEntry = Boolean(pastEntryDate);
-  
-  // Update content title when article loads (for non-past entries)
-  if (!isPastEntry) {
-    annotation.setContentTitle(article.title);
-  }
+
+  useEffect(() => {
+    if (article && !isPastEntry) {
+      annotation.setContentTitle(article.title);
+    }
+  }, [article?.title, isPastEntry]);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -124,7 +126,7 @@ export function ArticleViewPage() {
       {/* Content */}
       <div className={isPastEntry ? "opacity-60" : ""}>
         <ParagraphList
-          paragraphs={article.paragraphs}
+          paragraphs={article.paragraphs ?? []}
           annotation={{
             openBlockId: annotation.openBlockId,
             editorText: annotation.editorText,

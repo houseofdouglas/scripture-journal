@@ -83,12 +83,8 @@ export function ArticleImportModal({ onClose }: Props) {
 
   function handleImportResponse(result: ImportResponse, url: string) {
     if (result.status === "DUPLICATE") {
-      setState({
-        mode: "duplicate",
-        articleId: result.articleId,
-        title: result.title,
-        importedAt: result.importedAt,
-      });
+      // Spec: client navigates to the existing article on duplicate
+      navigate(`/articles/${result.articleId}`);
     } else if (result.status === "NEW_VERSION") {
       setState({
         mode: "new-version",
