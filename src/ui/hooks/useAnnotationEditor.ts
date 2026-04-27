@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, ApiError } from "../lib/api-client";
 import type { AnnotateResponse } from "../../types";
 import { useAuth } from "../lib/auth-context";
@@ -48,6 +49,7 @@ interface UseAnnotationEditorOptions {
 
 export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnnotationEditorResult {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [editor, setEditor] = useState<EditorState>({
     blockId: null,
     text: "",
@@ -131,6 +133,7 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
         { blockId: result.annotation.blockId, text: result.annotation.text, createdAt: result.annotation.createdAt },
       ]);
       setEditor({ blockId: null, text: "", status: "idle", errorMessage: null });
+      queryClient.invalidateQueries({ queryKey: ["userIndex"] });
     } catch (err) {
       // On 401: api-client redirects; just preserve error state
       if (err instanceof ApiError && err.status === 401) {
