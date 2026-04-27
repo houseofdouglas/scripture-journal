@@ -76,6 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser({ token, expiresAt, username: payload.username, userId: payload.sub });
   }, []);
 
+  // Expose login to window for E2E tests
+  if (typeof window !== "undefined" && !window.__AUTH_LOGIN__) {
+    window.__AUTH_LOGIN__ = login;
+  }
+
   const logout = useCallback(() => {
     clearStorage();
     setUser(null);

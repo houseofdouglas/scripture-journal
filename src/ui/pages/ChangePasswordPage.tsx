@@ -170,14 +170,15 @@ export function ChangePasswordPage() {
           >
             {isLoading ? "Saving…" : "Update password"}
           </button>
-          <button
-            type="button"
-            disabled={isLoading}
-            onClick={() => navigate("/")}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:text-gray-400"
-          >
-            Cancel
-          </button>
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={() => navigate("/")}
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:text-gray-400"
+              aria-label="Cancel"
+            >
+              Cancel
+            </button>
         </div>
       </form>
     </div>

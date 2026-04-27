@@ -22,14 +22,29 @@ interface Props {
   };
 }
 
+const getAnnotationCountText = (count: number): string => {
+  if (count === 0) return "0 notes";
+  if (count === 1) return "1 note";
+  return `${count} notes`;
+};
+
 /**
  * Paragraph rendering component with annotation support.
  * Article text renders in a serif font (Georgia).
  * Annotation "+" editor is layered on.
  */
 export function ParagraphList({ paragraphs, annotation }: Props) {
+  const annotationCount = annotation?.savedAnnotations?.length ?? 0;
+
   return (
     <div className="space-y-4">
+      {annotationCount > 0 && (
+        <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
+          <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium">
+            {getAnnotationCountText(annotationCount)}
+          </span>
+        </div>
+      )}
       {paragraphs.map((p) => (
         <div key={p.index} data-paragraph-index={p.index} className="group flex gap-3 leading-relaxed text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
           {/* Add note button in left gutter */}

@@ -6,6 +6,7 @@ import type { Article } from "../../types";
 
 async function fetchArticle(articleId: string): Promise<Article | null> {
   const res = await fetch(`/content/articles/${articleId}.json`);
+  console.log("[fetchArticle] articleId:", articleId, "status:", res.status);
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json() as Promise<Article>;
@@ -29,7 +30,10 @@ export function ArticleViewPage() {
 
   const { data: article, isLoading, isError } = useQuery<Article | null>({
     queryKey: ["article", articleId],
-    queryFn: () => fetchArticle(articleId!),
+    queryFn: () => {
+      console.log("[useQuery] fetching article:", articleId);
+      return fetchArticle(articleId!);
+    },
     staleTime: Infinity, // articles are immutable
     enabled: Boolean(articleId),
   });
@@ -54,6 +58,13 @@ export function ArticleViewPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      {/* Dashboard link */}
+      <div className="mb-4">
+        <Link to="/" className="text-sm text-gray-500 hover:text-gray-700">
+          ← Dashboard
+        </Link>
+      </div>
+
       {/* Past entry banner */}
       {isPastEntry && (
         <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
