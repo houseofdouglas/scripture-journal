@@ -113,8 +113,16 @@ function parseHtml(html: string): ParsedContent {
   const dom = new JSDOM(html);
   const doc = dom.window.document;
 
-  // Extract paragraphs
-  const paragraphEls = doc.querySelectorAll("p");
+  // Scope to article body — prefer specific content containers over the full document
+  // to avoid pulling in navigation, sidebars, and footers.
+  // churchofjesuschrist.org uses .body-block; fall back to <article>, then <main>, then <body>.
+  const contentRoot =
+    doc.querySelector(".body-block") ??
+    doc.querySelector("article") ??
+    doc.querySelector("main") ??
+    doc.body;
+
+  const paragraphEls = contentRoot?.querySelectorAll("p") ?? [];
   const paragraphs: string[] = [];
   paragraphEls.forEach((p) => {
     const text = p.textContent?.trim() ?? "";

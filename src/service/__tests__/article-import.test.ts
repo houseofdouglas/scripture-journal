@@ -118,15 +118,66 @@ describe("importArticle()", () => {
       const result = await importArticle({ url: ALLOWED_URL });
 
       if (result.status === "IMPORTED") {
-        // Title derived from <h1> since no og:title or <title>
         expect(result.title).toContain("Article Title");
       }
 
-      // Verify putArticle was called with non-empty paragraphs
       expect(mockPutArticle).toHaveBeenCalled();
       const article = mockPutArticle.mock.calls[0]![0]!;
       expect(article.paragraphs.length).toBeGreaterThan(0);
       expect(article.paragraphs.every((p: { text: string }) => p.text.trim().length > 0)).toBe(true);
+    });
+
+    it("scopes to .body-block and excludes nav paragraphs", async () => {
+      const html = `
+        <html><body>
+          <nav><p>Home</p><p>Contents</p><p>Saturday Morning Session</p></nav>
+          <div class="body-block">
+            <p>In the beginning of the article.</p>
+            <p>Second article paragraph.</p>
+          </div>
+          <footer><p>Footer text</p></footer>
+        </body></html>
+      `;
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(html, { status: 200, headers: { "Content-Type": "text/html" } })
+      );
+
+      mockGetArticle.mockResolvedValue(null);
+      mockGetUrlIndex.mockResolvedValue(null);
+
+      await importArticle({ url: ALLOWED_URL });
+
+      expect(mockPutArticle).toHaveBeenCalled();
+      const article = mockPutArticle.mock.calls[0]![0]!;
+      expect(article.paragraphs).toHaveLength(2);
+      expect(article.paragraphs[0]!.text).toBe("In the beginning of the article.");
+      expect(article.paragraphs[1]!.text).toBe("Second article paragraph.");
+    });
+
+    it("falls back to <article> when no .body-block present", async () => {
+      const html = `
+        <html><body>
+          <nav><p>Nav item</p></nav>
+          <article>
+            <p>Article content only.</p>
+          </article>
+        </body></html>
+      `;
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(html, { status: 200, headers: { "Content-Type": "text/html" } })
+      );
+
+      mockGetArticle.mockResolvedValue(null);
+      mockGetUrlIndex.mockResolvedValue(null);
+
+      await importArticle({ url: ALLOWED_URL });
+
+      expect(mockPutArticle).toHaveBeenCalled();
+      const article = mockPutArticle.mock.calls[0]![0]!;
+      expect(article.paragraphs).toHaveLength(1);
+      expect(article.paragraphs[0]!.text).toBe("Article content only.");
     });
   });
 
