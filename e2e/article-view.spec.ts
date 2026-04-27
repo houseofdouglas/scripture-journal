@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { seedAuth } from "./helpers/auth";
-import { mockArticle } from "./helpers/mocks";
+import { mockArticle, mockUserIndex } from "./helpers/mocks";
 
 const ARTICLE_URL = "/articles/a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2";
 
@@ -22,10 +22,13 @@ test("unauthenticated visit to /articles/:id redirects to login", async ({
 test("article view shows article title in serif font", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockArticle(page);
 
   await page.goto(ARTICLE_URL);
-  await expect(page.getByText(/Genesis Chapter 1/i)).toBeVisible();
+  const html = await page.content();
+  console.log("HTML:", html.substring(0, 500));
+  await expect(page.getByText(/Genesis Chapter 1/i)).toBeVisible({ timeout: 15000 });
 
   const titleFont = await page
     .getByText(/Genesis Chapter 1/i)
@@ -36,6 +39,7 @@ test("article view shows article title in serif font", async ({ page }) => {
 test("article view shows source link (clickable)", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockArticle(page);
 
   await page.goto(ARTICLE_URL);
@@ -50,6 +54,7 @@ test("article view shows source link (clickable)", async ({ page }) => {
 test("article view shows import date", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockArticle(page);
 
   await page.goto(ARTICLE_URL);
@@ -59,6 +64,7 @@ test("article view shows import date", async ({ page }) => {
 test("article view shows annotation count badge", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockArticle(
     page,
     undefined,
@@ -84,6 +90,7 @@ test("non-existent article shows Article not found with link to dashboard", asyn
 }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
 
   const notFoundId = "/articles/nonexistentarticleid123";
   await page.route(`**/content/articles/${notFoundId.split("/").pop()}.json`, (route) => {
@@ -104,6 +111,7 @@ test("clicking article entry card navigates to article view", async ({
 }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockArticle(page);
 
   await page.goto("/");

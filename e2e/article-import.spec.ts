@@ -7,13 +7,12 @@ import {
   mockImportVersionSuccess,
   mockImportDomainError,
   mockImportFetchFailure,
+  mockUserIndex,
 } from "./helpers/mocks";
 
 // Helper to open the import modal
 async function openImportModal(page: any) {
-  await page.goto("/");
-  await page.getByRole("button", { name: /menu/i }).click();
-  await page.getByRole("button", { name: /import article/i }).click();
+  await page.goto("/import");
 }
 
 // ---------------------------------------------------------------------------
@@ -23,6 +22,7 @@ async function openImportModal(page: any) {
 test("domain not in allowlist shows error", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportDomainError(page);
 
   await openImportModal(page);
@@ -36,6 +36,7 @@ test("domain not in allowlist shows error", async ({ page }) => {
 test("error message displays specific domain restriction", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportDomainError(page);
 
   await openImportModal(page);
@@ -53,6 +54,7 @@ test("error message displays specific domain restriction", async ({ page }) => {
 test("network timeout shows fetch failed message", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportFetchFailure(page);
 
   await openImportModal(page);
@@ -66,6 +68,7 @@ test("network timeout shows fetch failed message", async ({ page }) => {
 test("paste article text manually link available", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportFetchFailure(page);
 
   await openImportModal(page);
@@ -79,6 +82,7 @@ test("paste article text manually link available", async ({ page }) => {
 test("clicking manual paste link switches to manual mode", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportFetchFailure(page);
 
   await openImportModal(page);
@@ -98,6 +102,7 @@ test("clicking manual paste link switches to manual mode", async ({ page }) => {
 test("duplicate article shows already imported modal", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportDuplicate(
     page,
     "article-duplicate-123",
@@ -116,6 +121,7 @@ test("duplicate article shows already imported modal", async ({ page }) => {
 test("open existing button navigates to article", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportDuplicate(
     page,
     "article-duplicate-123",
@@ -136,6 +142,7 @@ test("open existing button navigates to article", async ({ page }) => {
 test("cancel button closes modal", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportDuplicate(
     page,
     "article-duplicate-123",
@@ -160,6 +167,7 @@ test("cancel button closes modal", async ({ page }) => {
 test("updated article shows new version modal", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportNewVersion(
     page,
     "https://www.churchofjesuschrist.org/genesis/1",
@@ -179,6 +187,7 @@ test("updated article shows new version modal", async ({ page }) => {
 test("shows previous import date", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportNewVersion(
     page,
     "https://www.churchofjesuschrist.org/genesis/1",
@@ -198,6 +207,7 @@ test("shows previous import date", async ({ page }) => {
 test("informs user annotations preserved", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportNewVersion(
     page,
     "https://www.churchofjesuschrist.org/genesis/1",
@@ -219,6 +229,7 @@ test("informs user annotations preserved", async ({ page }) => {
 test("create new version button works", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportVersionSuccess(
     page,
     "article-new-version-456",
@@ -240,6 +251,7 @@ test("create new version button works", async ({ page }) => {
 test("open previous version button works", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportNewVersion(
     page,
     "https://www.churchofjesuschrist.org/genesis/1",
@@ -261,6 +273,7 @@ test("open previous version button works", async ({ page }) => {
 test("cancel button closes modal new version", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
+  await mockUserIndex(page, []);
   await mockImportNewVersion(
     page,
     "https://www.churchofjesuschrist.org/genesis/1",

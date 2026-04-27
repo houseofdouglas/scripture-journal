@@ -46,14 +46,19 @@ export async function seedAuth(
   // auth-context uses new Date(expiresAt) — must be an ISO string
   const expiresAtIso = new Date(expiresAt * 1000).toISOString();
 
+  const expires = new Date(expiresAt * 1000).toISOString();
+
   await page.evaluate(
-    ([token, expires, uname, uid]) => {
+    ([token, expiresAt, uname, uid]) => {
       localStorage.setItem("jwt", token);
-      localStorage.setItem("jwt_expires_at", expires);
+      localStorage.setItem("jwt_expires_at", expiresAt);
       localStorage.setItem("jwt_username", uname);
       localStorage.setItem("jwt_user_id", uid);
+      if ((window as any).__AUTH_LOGIN__) {
+        (window as any).__AUTH_LOGIN__(token, expiresAt);
+      }
     },
-    [jwt, expiresAtIso, username, userId] as const,
+    [jwt, expires, username, userId] as const,
   );
 }
 

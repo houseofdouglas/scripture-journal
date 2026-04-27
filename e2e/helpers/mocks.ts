@@ -236,27 +236,57 @@ export async function mockArticle(
   article = DEFAULT_ARTICLE,
   entryData?: { entryId: string; title: string; notes: unknown[] },
 ): Promise<void> {
-  await page.route("**/content/articles/*.json", (route) => {
-    route.fulfill({
+  await page.route("**/content/articles/*.json", async (route) => {
+    console.log("[mockArticle] matching content route for URL:", route.request().url());
+    const body = JSON.stringify(article);
+    await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify(article),
+      body: body,
     });
+    console.log("[mockArticle] fulfilled response");
   });
 
   if (entryData) {
-    await page.route("**/users/*/entries/*.json", (route) => {
-      if (route.request().url().includes(article.articleId)) {
-        route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            id: entryData.entryId,
-            title: entryData.title,
-            notes: entryData.notes,
-          }),
-        });
-      }
+    const savedAnnotations = entryData.notes.map((note: any) => ({
+      blockId: note.blockId,
+      text: note.text,
+      createdAt: note.createdAt,
+    }));
+
+    const entryResponse = {
+      id: entryData.entryId,
+      contentRef: `content/articles/${article.articleId}.json`,
+      title: entryData.title,
+      date: new Date().toISOString().split("T")[0],
+      notes: entryData.notes,
+      savedAnnotations,
+    };
+
+    await page.route(`**/users/*/entries/${entryData.entryId}.json`, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(entryResponse),
+      });
+    });
+
+    // Also mock articleId as entryId for ArticleViewPage
+    await page.route(`**/users/*/entries/${article.articleId}.json`, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(entryResponse),
+      });
+    });
+  } else {
+    // For tests that don't pass entryData, just mock a simple entry
+    await page.route(`**/users/*/entries/*.json`, (route) => {
+      route.fulfill({
+        status: 404,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Entry not found" }),
+      });
     });
   }
 }
