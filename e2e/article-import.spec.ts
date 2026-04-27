@@ -8,12 +8,48 @@ import {
   mockImportDomainError,
   mockImportFetchFailure,
   mockUserIndex,
+  mockArticle,
 } from "./helpers/mocks";
 
 // Helper to open the import modal
 async function openImportModal(page: any) {
   await page.goto("/import");
 }
+
+// ---------------------------------------------------------------------------
+// Successful import tests
+// ---------------------------------------------------------------------------
+
+test("fresh import navigates to article", async ({ page }) => {
+  await page.goto("/login");
+  await seedAuth(page);
+  await mockUserIndex(page, []);
+  await mockImportSuccess(
+    page,
+    "article-fresh-789",
+    "Genesis Chapter 1",
+    "2026-04-22T10:30:00.000Z",
+  );
+  await mockArticle(page, {
+    articleId: "article-fresh-789",
+    sourceUrl: "https://www.churchofjesuschrist.org/genesis/1",
+    title: "Genesis Chapter 1",
+    importedAt: "2026-04-22T10:30:00.000Z",
+    scope: "shared" as const,
+    paragraphs: [
+      { index: 0, text: "In the beginning God created the heaven and the earth." },
+      { index: 1, text: "And the earth was without form, and void; and darkness was upon the face of the deep." },
+    ],
+  });
+
+  await openImportModal(page);
+
+  await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
+  await page.getByRole("button", { name: /import/i }).click();
+
+  await expect(page).toHaveURL("/articles/article-fresh-789");
+  await expect(page.getByText(/Genesis Chapter 1/i)).toBeVisible();
+});
 
 // ---------------------------------------------------------------------------
 // Domain restrictions tests
@@ -128,6 +164,17 @@ test("open existing button navigates to article", async ({ page }) => {
     "Genesis Chapter 1",
     "2026-04-15T10:30:00.000Z",
   );
+  await mockArticle(page, {
+    articleId: "article-duplicate-123",
+    sourceUrl: "https://www.churchofjesuschrist.org/genesis/1",
+    title: "Genesis Chapter 1",
+    importedAt: "2026-04-15T10:30:00.000Z",
+    scope: "shared" as const,
+    paragraphs: [
+      { index: 0, text: "In the beginning God created the heaven and the earth." },
+      { index: 1, text: "And the earth was without form, and void; and darkness was upon the face of the deep." },
+    ],
+  });
 
   await openImportModal(page);
 
@@ -237,6 +284,18 @@ test("create new version button works", async ({ page }) => {
     "article-previous-123",
     "2026-04-20T10:30:00.000Z",
   );
+  await mockArticle(page, {
+    articleId: "article-new-version-456",
+    sourceUrl: "https://www.churchofjesuschrist.org/genesis/1",
+    title: "Genesis Chapter 1",
+    importedAt: "2026-04-20T10:30:00.000Z",
+    scope: "shared" as const,
+    paragraphs: [
+      { index: 0, text: "In the beginning God created the heaven and the earth." },
+      { index: 1, text: "And the earth was without form, and void; and darkness was upon the face of the deep." },
+    ],
+    previousVersionId: "article-previous-123",
+  });
 
   await openImportModal(page);
 
@@ -259,6 +318,17 @@ test("open previous version button works", async ({ page }) => {
     "2026-04-10T10:30:00.000Z",
     "Genesis Chapter 1",
   );
+  await mockArticle(page, {
+    articleId: "article-previous-123",
+    sourceUrl: "https://www.churchofjesuschrist.org/genesis/1",
+    title: "Genesis Chapter 1",
+    importedAt: "2026-04-10T10:30:00.000Z",
+    scope: "shared" as const,
+    paragraphs: [
+      { index: 0, text: "In the beginning God created the heaven and the earth." },
+      { index: 1, text: "And the earth was without form, and void; and darkness was upon the face of the deep." },
+    ],
+  });
 
   await openImportModal(page);
 
