@@ -19,6 +19,10 @@ playwright-report/
 cdk.out/
 cdk.context.json
 
+# Terraform
+tfplan
+*.tfplan
+
 # Editor / OS
 .DS_Store
 .idea/
