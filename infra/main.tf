@@ -28,3 +28,6 @@ provider "aws" {
     }
   }
 }
+
+# Used to build ARNs that include the AWS account ID (e.g. CloudFront IAM policy)
+data "aws_caller_identity" "current" {}

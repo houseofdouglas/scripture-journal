@@ -1,6 +1,6 @@
 # Spec: Browse Articles
 
-**Status**: DRAFT
+**Status**: APPROVED
 **Created**: 2026-04-27
 **Last Updated**: 2026-04-27
 **Related Specs**: article-import, auth, annotation

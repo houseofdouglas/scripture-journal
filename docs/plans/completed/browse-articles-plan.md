@@ -7,13 +7,13 @@
 
 ## Progress
 
-- [ ] BA-01 — Add ArticleIndex type and Zod schema
-- [ ] BA-02 — Repository: read and update ArticleIndex
-- [ ] BA-03 — Infra: CloudFront invalidation permission and env var
-- [ ] BA-04 — Service: maintain ArticleIndex after successful import
-- [ ] BA-05 — Tests: service and handler coverage for index maintenance
-- [ ] BA-06 — UI: useArticleIndex query hook
-- [ ] BA-07 — UI: ArticleBrowserPage, Nav link, and route
+- [x] BA-01 — Add ArticleIndex type and Zod schema
+- [x] BA-02 — Repository: read and update ArticleIndex
+- [x] BA-03 — Infra: CloudFront invalidation permission and env var
+- [x] BA-04 — Service: maintain ArticleIndex after successful import
+- [x] BA-05 — Tests: service and handler coverage for index maintenance
+- [x] BA-06 — UI: useArticleIndex query hook
+- [x] BA-07 — UI: ArticleBrowserPage, Nav link, and route
 
 ## Dependency Map
 

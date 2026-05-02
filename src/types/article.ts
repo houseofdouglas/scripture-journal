@@ -108,3 +108,27 @@ export type ImportResponse = z.infer<typeof ImportResponseSchema>;
 export function articleContentRef(articleId: string): string {
   return `content/articles/${articleId}.json`;
 }
+
+// ── Article Index ─────────────────────────────────────────────────────────────
+
+/**
+ * One entry in the article index — enough data to render a browse card.
+ * Full article content lives at content/articles/<articleId>.json.
+ */
+export const ArticleIndexEntrySchema = z.object({
+  articleId: z.string().length(64),       // SHA-256 hex
+  title: z.string().min(1),
+  sourceUrl: z.string().url(),
+  importedAt: z.string().datetime(),      // ISO 8601
+});
+export type ArticleIndexEntry = z.infer<typeof ArticleIndexEntrySchema>;
+
+/**
+ * S3 key: content/articles/index.json
+ * One entry per source URL (latest version only). Pre-sorted newest-first.
+ * Updated (with conditional write + retry) on every successful article import.
+ */
+export const ArticleIndexSchema = z.object({
+  articles: z.array(ArticleIndexEntrySchema),
+});
+export type ArticleIndex = z.infer<typeof ArticleIndexSchema>;

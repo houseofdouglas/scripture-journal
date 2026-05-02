@@ -11,6 +11,9 @@ const EnvSchema = z.object({
    *  Optional — defaults to "*" on first deploy before CloudFront exists,
    *  and for local dev (where there is no CloudFront). */
   CLOUDFRONT_DOMAIN: z.string().default(""),
+  /** CloudFront distribution ID used to issue cache invalidations after article import.
+   *  Optional in local dev (invalidation is skipped when blank). */
+  CLOUDFRONT_DISTRIBUTION_ID: z.string().default(""),
 });
 
 type Env = z.infer<typeof EnvSchema>;

@@ -12,6 +12,7 @@ Specs are the source of truth. Code is derived from specs.
 
 | Spec | File | Summary | Acceptance Report |
 |------|------|---------|---|
+| Browse Articles | [browse-articles.md](browse-articles.md) | Card-grid browser at `/articles`, ArticleIndex in S3, CloudFront invalidation on import, client-side search | [2026-05-02](../plans/completed/browse-articles-acceptance-2026-05-02.md) |
 | Article Import | [article-import.md](article-import.md) | Import from churchofjesuschrist.org, SHA-256 content-addressing, duplicate/version detection, manual paste fallback | [2026-04-26](../plans/completed/article-import-acceptance-2026-04-26.md) |
 | Dashboard | [dashboard.md](dashboard.md) | Entry list (single vs. grouped day cards), calendar view, past entry read-only view | [2026-04-26](../plans/completed/dashboard-acceptance-2026-04-26.md) |
 | Annotation | [annotation.md](annotation.md) | Inline "+" note editor, journal entry find-or-create, append-only saves, S3 conditional write with retry | [2026-04-26](../plans/completed/annotation-acceptance-2026-04-26.md) |

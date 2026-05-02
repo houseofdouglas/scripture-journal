@@ -16,6 +16,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { ScriptureBrowserPage } from "./pages/ScriptureBrowserPage";
 import { ChapterViewPage } from "./pages/ChapterViewPage";
 import { ArticleImportPage } from "./pages/ArticleImportPage";
+import { ArticleBrowserPage } from "./pages/ArticleBrowserPage";
 import { ArticleViewPage } from "./pages/ArticleViewPage";
 import { PastEntryPage } from "./pages/PastEntryPage";
 
@@ -91,6 +92,14 @@ function AppShell() {
             element={
               <ProtectedRoute>
                 <ArticleImportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/articles"
+            element={
+              <ProtectedRoute>
+                <ArticleBrowserPage />
               </ProtectedRoute>
             }
           />

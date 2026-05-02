@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
 
 /**
@@ -32,12 +32,31 @@ export function Nav() {
 
       {/* Centre links */}
       <div className="flex gap-6 text-sm text-gray-700">
-        <Link to="/scripture" className="hover:text-gray-900">
+        <NavLink
+          to="/scripture"
+          className={({ isActive }) =>
+            isActive ? "font-semibold text-gray-900" : "hover:text-gray-900"
+          }
+        >
           Browse Scripture
-        </Link>
-        <Link to="/import" className="hover:text-gray-900">
+        </NavLink>
+        <NavLink
+          to="/articles"
+          end
+          className={({ isActive }) =>
+            isActive ? "font-semibold text-gray-900" : "hover:text-gray-900"
+          }
+        >
+          Browse Articles
+        </NavLink>
+        <NavLink
+          to="/import"
+          className={({ isActive }) =>
+            isActive ? "font-semibold text-gray-900" : "hover:text-gray-900"
+          }
+        >
           Import Article
-        </Link>
+        </NavLink>
       </div>
 
       {/* User dropdown */}

@@ -47,6 +47,21 @@ resource "aws_iam_role_policy" "lambda_s3" {
   })
 }
 
+# CloudFront: CreateInvalidation on the app distribution
+resource "aws_iam_role_policy" "lambda_cloudfront" {
+  name = "scripture-journal-lambda-cloudfront-${var.env}"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["cloudfront:CreateInvalidation"]
+      Resource = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.app.id}"
+    }]
+  })
+}
+
 # SSM: GetParameter on the JWT secret only
 resource "aws_iam_role_policy" "lambda_ssm" {
   name = "scripture-journal-lambda-ssm-${var.env}"
@@ -77,12 +92,13 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      BUCKET_NAME       = aws_s3_bucket.app.bucket
-      ENV               = var.env
-      ADMIN_USERNAME    = "peter"
+      BUCKET_NAME                = aws_s3_bucket.app.bucket
+      ENV                        = var.env
+      ADMIN_USERNAME             = "peter"
       # CORS origin — restricted to the custom domain (notes.xzvf.mobi)
-      CLOUDFRONT_DOMAIN = var.custom_domain
-      JWT_SECRET_ARN    = aws_ssm_parameter.jwt_secret.arn
+      CLOUDFRONT_DOMAIN          = var.custom_domain
+      JWT_SECRET_ARN             = aws_ssm_parameter.jwt_secret.arn
+      CLOUDFRONT_DISTRIBUTION_ID = aws_cloudfront_distribution.app.id
     }
   }
 }

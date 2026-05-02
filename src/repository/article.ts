@@ -1,10 +1,12 @@
 import crypto from "crypto";
-import { ArticleSchema, ArticleUrlIndexSchema } from "../types";
-import type { Article, ArticleUrlIndex } from "../types";
+import { ArticleSchema, ArticleUrlIndexSchema, ArticleIndexSchema } from "../types";
+import type { Article, ArticleUrlIndex, ArticleIndex } from "../types";
 import { getObject, putObject } from "./s3-client";
 import { conditionalWrite } from "./conditional-write";
 
 // ── Key helpers ───────────────────────────────────────────────────────────────
+
+const ARTICLE_INDEX_KEY = "content/articles/index.json";
 
 function articleKey(articleId: string): string {
   return `content/articles/${articleId}.json`;
@@ -72,5 +74,33 @@ export async function updateArticleUrlIndex(
         { articleId, importedAt },
       ],
     };
+  });
+}
+
+/**
+ * Fetch the article browse index.
+ * Returns null if the index does not exist yet (no articles imported).
+ */
+export async function getArticleIndex(): Promise<{ data: ArticleIndex; etag: string } | null> {
+  const result = await getObject<unknown>(ARTICLE_INDEX_KEY);
+  if (!result) return null;
+  return { data: ArticleIndexSchema.parse(result.data), etag: result.etag };
+}
+
+/**
+ * Atomically update the article browse index using a read-modify-write.
+ *
+ * The `mutate` function receives the current index (never null — a missing
+ * index is normalised to `{ articles: [] }` before calling `mutate`).
+ * Retries up to 3 times on 412 Precondition Failed; throws WriteConflictError
+ * on persistent conflict.
+ */
+export async function updateArticleIndex(
+  mutate: (current: ArticleIndex) => ArticleIndex
+): Promise<void> {
+  await conditionalWrite<unknown>(ARTICLE_INDEX_KEY, (raw) => {
+    const current: ArticleIndex =
+      raw !== null ? ArticleIndexSchema.parse(raw) : { articles: [] };
+    return mutate(current);
   });
 }

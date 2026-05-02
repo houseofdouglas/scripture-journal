@@ -12,7 +12,8 @@
 **Layer**: Types
 **Estimate**: 30min
 **Depends on**: none
-**Status**: PENDING
+**Status**: DONE
+**Completed**: 2026-05-02
 
 ### What to build
 Add `ArticleIndexEntrySchema`, `ArticleIndexSchema`, and their inferred TypeScript types to `src/types/article.ts`. Export them from `src/types/index.ts`. The schema validates the shape of `content/articles/index.json` at read time: an object with an `articles` array, each entry having `articleId` (64-char hex), `title` (non-empty string), `sourceUrl` (valid URL), and `importedAt` (ISO 8601 datetime).
@@ -32,7 +33,8 @@ Add `ArticleIndexEntrySchema`, `ArticleIndexSchema`, and their inferred TypeScri
 **Layer**: Repository
 **Estimate**: 1hr
 **Depends on**: BA-01
-**Status**: PENDING
+**Status**: DONE
+**Completed**: 2026-05-02
 
 ### What to build
 Add two functions to `src/repository/article.ts`:
@@ -58,7 +60,8 @@ The S3 key is the constant `content/articles/index.json`.
 **Layer**: Config + Infra
 **Estimate**: 1hr
 **Depends on**: none
-**Status**: PENDING
+**Status**: DONE
+**Completed**: 2026-05-02
 
 ### What to build
 Two parts:
@@ -84,7 +87,8 @@ Two parts:
 **Layer**: Service
 **Estimate**: 1hr
 **Depends on**: BA-02, BA-03
-**Status**: PENDING
+**Status**: DONE
+**Completed**: 2026-05-02
 
 ### What to build
 Modify `writeArticle()` in `src/service/article-import.ts`. After `putArticle` and `updateArticleUrlIndex` succeed:
@@ -113,7 +117,8 @@ The response returned to the handler is unchanged.
 **Layer**: Test
 **Estimate**: 1hr
 **Depends on**: BA-04
-**Status**: PENDING
+**Status**: DONE
+**Completed**: 2026-05-02
 
 ### What to build
 Update `src/service/__tests__/article-import.test.ts` to mock `updateArticleIndex` (from the repository) and a CloudFront `CloudFrontClient`. Add test cases:
@@ -143,7 +148,8 @@ Check `src/handler/__tests__/article.test.ts` — the handler response contract 
 **Layer**: UI
 **Estimate**: 30min
 **Depends on**: BA-01
-**Status**: PENDING
+**Status**: DONE
+**Completed**: 2026-05-02
 
 ### What to build
 Create `src/ui/lib/queries/articles.ts` with a `useArticleIndex()` hook using TanStack Query. The hook fetches `content/articles/index.json` from the CloudFront origin (same base URL pattern as scripture queries). On 404, return `{ articles: [] }` — not an error. On other non-2xx or parse failure, surface as an error. Use `staleTime: 0` (no caching — the index is invalidated at CloudFront after each import, so we always want a fresh fetch when the page loads).
@@ -164,7 +170,8 @@ Create `src/ui/lib/queries/articles.ts` with a `useArticleIndex()` hook using Ta
 **Layer**: UI
 **Estimate**: 2hr
 **Depends on**: BA-06
-**Status**: PENDING
+**Status**: DONE
+**Completed**: 2026-05-02
 
 ### What to build
 Three small changes wired together:

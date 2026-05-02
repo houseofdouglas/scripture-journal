@@ -1,13 +1,21 @@
 import crypto from "crypto";
 import { JSDOM } from "jsdom";
+import {
+  CloudFrontClient,
+  CreateInvalidationCommand,
+} from "@aws-sdk/client-cloudfront";
 import type { Article, ImportRequest, ImportResponse } from "../types";
 import {
   getArticle,
   putArticle,
   getArticleUrlIndex,
   updateArticleUrlIndex,
+  updateArticleIndex,
 } from "../repository/article";
 import { ValidationError } from "./errors";
+import { env } from "../config/env";
+
+const cloudfront = new CloudFrontClient({ region: "us-east-1" });
 
 const ALLOWED_HOSTS = new Set(["churchofjesuschrist.org", "www.churchofjesuschrist.org"]);
 const FETCH_TIMEOUT_MS = 10_000;
@@ -174,6 +182,17 @@ async function writeArticle(
 
   await putArticle(article);
   await updateArticleUrlIndex(sourceUrl, articleId, importedAt);
+  await updateArticleIndex((current) => {
+    const entry = { articleId, title, sourceUrl, importedAt };
+    if (previousVersionId) {
+      // Version import: replace the existing entry for this URL, prepend new one
+      const filtered = current.articles.filter((a) => a.sourceUrl !== sourceUrl);
+      return { articles: [entry, ...filtered] };
+    }
+    // Fresh import: prepend
+    return { articles: [entry, ...current.articles] };
+  });
+  await invalidateArticleIndex(articleId);
 
   if (previousVersionId) {
     return {
@@ -186,4 +205,22 @@ async function writeArticle(
   }
 
   return { status: "IMPORTED", articleId, title, importedAt };
+}
+
+/**
+ * Issue a CloudFront invalidation for the article index so the updated
+ * list is immediately visible after an import.
+ * No-ops when CLOUDFRONT_DISTRIBUTION_ID is not set (local dev / tests).
+ */
+async function invalidateArticleIndex(callerReference: string): Promise<void> {
+  if (!env.CLOUDFRONT_DISTRIBUTION_ID) return;
+  await cloudfront.send(
+    new CreateInvalidationCommand({
+      DistributionId: env.CLOUDFRONT_DISTRIBUTION_ID,
+      InvalidationBatch: {
+        CallerReference: callerReference,
+        Paths: { Quantity: 1, Items: ["/content/articles/index.json"] },
+      },
+    })
+  );
 }
