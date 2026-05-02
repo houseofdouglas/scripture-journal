@@ -1,0 +1,97 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+
+    {
+      "Sid": "CloudWatchLogsReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:FilterLogEvents",
+        "logs:GetLogEvents",
+        "logs:ListTagsLogGroup",
+        "logs:StartQuery",
+        "logs:StopQuery",
+        "logs:GetQueryResults",
+        "logs:GetLogGroupFields",
+        "logs:GetLogRecord"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:818371815071:log-group:/aws/lambda/scripture-journal-*",
+        "arn:aws:logs:us-east-1:818371815071:log-group:/aws/lambda/scripture-journal-*:*"
+      ]
+    },
+
+    {
+      "Sid": "CloudWatchMetricsReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:GetMetricData",
+        "cloudwatch:GetMetricStatistics",
+        "cloudwatch:ListMetrics",
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:GetDashboard",
+        "cloudwatch:ListDashboards"
+      ],
+      "Resource": "*"
+    },
+
+    {
+      "Sid": "LambdaReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:GetFunction",
+        "lambda:GetFunctionConfiguration",
+        "lambda:ListFunctions",
+        "lambda:ListVersionsByFunction",
+        "lambda:GetFunctionConcurrency",
+        "lambda:ListTags"
+      ],
+      "Resource": [
+        "arn:aws:lambda:us-east-1:818371815071:function:scripture-journal-api-dev",
+        "arn:aws:lambda:us-east-1:818371815071:function:scripture-journal-api-prod"
+      ]
+    },
+
+    {
+      "Sid": "APIGatewayReadOnly",
+      "Effect": "Allow",
+      "Action": "apigateway:GET",
+      "Resource": [
+        "arn:aws:apigateway:us-east-1::/apis",
+        "arn:aws:apigateway:us-east-1::/apis/*"
+      ]
+    },
+
+    {
+      "Sid": "CloudFrontReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "cloudfront:GetDistribution",
+        "cloudfront:GetDistributionConfig",
+        "cloudfront:ListDistributions",
+        "cloudfront:GetInvalidation",
+        "cloudfront:ListInvalidations"
+      ],
+      "Resource": "*"
+    },
+
+    {
+      "Sid": "S3BucketInspection",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetBucketTagging",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": [
+        "arn:aws:s3:::scripture-journal-app-818371815071-dev",
+        "arn:aws:s3:::scripture-journal-app-818371815071-prod",
+        "arn:aws:s3:::scripture-journal-spa-818371815071-dev",
+        "arn:aws:s3:::scripture-journal-spa-818371815071-prod"
+      ]
+    }
+
+  ]
+}
