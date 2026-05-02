@@ -155,7 +155,7 @@ Zod constraints: both required, `newPassword` min 8 chars, `newPassword !== curr
 
 **409 Conflict**:
 ```typescript
-{ error: "USERNAME_TAKEN"; message: "Username already exists" }
+{ error: "USERNAME_TAKEN"; message: string; fields: { username: string } }
 ```
 
 ---

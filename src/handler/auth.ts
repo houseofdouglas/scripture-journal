@@ -126,7 +126,7 @@ export function registerAuthRoutes(app: Hono<AppEnv>): void {
             message: err.message,
             fields: { username: "This username is already taken" },
           },
-          422
+          409
         );
       }
       throw err;

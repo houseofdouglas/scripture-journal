@@ -188,7 +188,7 @@ describe("POST /admin/users", () => {
     expect(body.userId).toBe("new-user-uuid");
   });
 
-  it("returns 422 when username already taken", async () => {
+  it("returns 409 when username already taken", async () => {
     mockVerifyToken.mockResolvedValue({ ...FAKE_PAYLOAD, username: "peter" });
     mockIsAdmin.mockReturnValue(true);
     mockCreateUser.mockRejectedValue(new UsernameTakenError("takenuser"));
@@ -202,7 +202,7 @@ describe("POST /admin/users", () => {
       "admin-token"
     );
 
-    expect(res.status).toBe(422);
+    expect(res.status).toBe(409);
     const body = await res.json() as Record<string, unknown>;
     expect(body.error).toBe("USERNAME_TAKEN");
   });
