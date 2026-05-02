@@ -50,6 +50,12 @@ export async function getObject<T>(key: string): Promise<GetObjectResult<T> | nu
  * @param data      Value to serialize as JSON
  * @param ifMatch   If provided, sets `If-Match` header (optimistic concurrency)
  * @param ifNoneMatch  If provided, sets `If-None-Match` header (e.g. "*" to prevent overwrites)
+ *
+ * Cache-Control behaviour:
+ *   - `users/` prefix: `no-store` — per-user data must never be browser-cached;
+ *     without this header browsers apply heuristic caching and serve stale notes.
+ *   - All other keys: no Cache-Control set (CloudFront manages caching via its
+ *     cache policy and invalidations).
  */
 export async function putObject<T>(
   key: string,
@@ -62,6 +68,10 @@ export async function putObject<T>(
     Body: JSON.stringify(data),
     ContentType: "application/json",
   };
+
+  if (key.startsWith("users/")) {
+    input.CacheControl = "no-store";
+  }
 
   if (options.ifMatch) input.IfMatch = options.ifMatch;
   if (options.ifNoneMatch) input.IfNoneMatch = options.ifNoneMatch;

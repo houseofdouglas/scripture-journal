@@ -94,7 +94,8 @@ resource "aws_cloudfront_distribution" "app" {
     cached_methods         = ["GET", "HEAD"]
     compress               = true
 
-    # Short cache — user data changes on every annotation save
+    # CachingDisabled: no CloudFront cache.
+    # Cache-Control: no-store is set on S3 objects at write time (see s3-client.ts).
     cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
     origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-CORS-S3Origin
   }
