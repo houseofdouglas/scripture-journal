@@ -69,7 +69,10 @@ export async function putObject<T>(
     ContentType: "application/json",
   };
 
-  if (key.startsWith("users/")) {
+  // User data and the article browse index must never be browser-cached.
+  // Without Cache-Control, browsers apply heuristic caching based on
+  // Last-Modified, causing stale notes and missing articles to appear.
+  if (key.startsWith("users/") || key === "content/articles/index.json") {
     input.CacheControl = "no-store";
   }
 
