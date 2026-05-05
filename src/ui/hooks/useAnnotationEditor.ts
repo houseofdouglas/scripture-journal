@@ -66,9 +66,11 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
   }, [options.contentTitle]);
 
   useEffect(() => {
+    setSavedAnnotations([]);
+    setEditor({ blockId: null, text: "", status: "idle", errorMessage: null });
     const fetchEntry = async () => {
       if (!user) return;
-      
+
       try {
         const match = options.contentRef.match(/content\/articles\/([^/]+)\.json$/);
         const articleId = match ? match[1] : options.contentRef.split("/").pop();
