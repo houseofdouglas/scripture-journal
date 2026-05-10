@@ -112,14 +112,18 @@ export function ArticleViewPage() {
           )}
         </div>
         <div className="flex items-center gap-3 text-xs text-gray-400">
-          <a
-            href={article.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-gray-600 hover:underline"
-          >
-            Source ↗
-          </a>
+          {article.sourceUrl.startsWith("pdf-import:") ? (
+            <span>PDF</span>
+          ) : (
+            <a
+              href={article.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-gray-600 hover:underline"
+            >
+              Source ↗
+            </a>
+          )}
           <span>Imported {new Date(article.importedAt).toLocaleDateString()}</span>
         </div>
       </div>

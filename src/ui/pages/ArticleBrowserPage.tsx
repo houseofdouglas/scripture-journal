@@ -14,6 +14,7 @@ function formatDate(iso: string): string {
 
 /** Extract the hostname from a URL, e.g. "churchofjesuschrist.org". */
 function domain(url: string): string {
+  if (url.startsWith("pdf-import:")) return "PDF";
   try {
     return new URL(url).hostname;
   } catch {

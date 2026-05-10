@@ -17,19 +17,16 @@ import { env } from "../config/env";
 
 const cloudfront = new CloudFrontClient({ region: "us-east-1" });
 
-const ALLOWED_HOSTS = new Set(["churchofjesuschrist.org", "www.churchofjesuschrist.org"]);
 const FETCH_TIMEOUT_MS = 10_000;
 const USER_AGENT = "ScriptureJournal/1.0";
 
 // ── Main entry point ──────────────────────────────────────────────────────────
 
 export async function importArticle(request: ImportRequest): Promise<ImportResponse> {
-  // Validate allowlist
-  const host = new URL(request.url).hostname;
-  if (!ALLOWED_HOSTS.has(host)) {
-    throw new ValidationError({
-      url: `Domain "${host}" is not on the allowlist. Only churchofjesuschrist.org is permitted.`,
-    });
+  // PDF mode — no URL; process text directly
+  if (!request.url) {
+    const { text, title } = request as { text: string; title: string };
+    return importPdfContent(text, title);
   }
 
   // Determine plain text + title
@@ -41,8 +38,8 @@ export async function importArticle(request: ImportRequest): Promise<ImportRespo
     plainText = request.text;
     title = request.title;
   } else {
-    // URL fetch mode
-    const html = await fetchHtml(request.url)!;
+    // URL fetch mode — any URL is accepted
+    const html = await fetchHtml(request.url);
     const parsed = parseHtml(html);
     plainText = parsed.text;
     title = parsed.title;
@@ -84,6 +81,24 @@ export async function importArticle(request: ImportRequest): Promise<ImportRespo
 
   // Fresh import
   return writeArticle(request.url, articleId, title, plainText, undefined);
+}
+
+async function importPdfContent(text: string, title: string): Promise<ImportResponse> {
+  const articleId = crypto.createHash("sha256").update(text).digest("hex");
+
+  const existing = await getArticle(articleId);
+  if (existing) {
+    return {
+      status: "DUPLICATE",
+      articleId: existing.articleId,
+      title: existing.title,
+      importedAt: existing.importedAt,
+    };
+  }
+
+  // Synthetic sourceUrl unique to this content — no URL version history for PDFs
+  const sourceUrl = `pdf-import:${articleId}`;
+  return writeArticle(sourceUrl, articleId, title, text, undefined);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

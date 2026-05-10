@@ -15,7 +15,7 @@ export type ArticleParagraph = z.infer<typeof ArticleParagraphSchema>;
  */
 export const ArticleSchema = z.object({
   articleId: z.string().length(64), // SHA-256 hex
-  sourceUrl: z.string().url(),
+  sourceUrl: z.string().min(1), // URL for web imports; "pdf-import:<articleId>" for PDFs
   title: z.string().min(1),
   importedAt: z.string().datetime(),
   scope: z.literal("shared"), // Phase 1: always shared
@@ -37,7 +37,7 @@ export type ArticleUrlVersion = z.infer<typeof ArticleUrlVersionSchema>;
  * versions[] ordered oldest → newest; last entry = current version.
  */
 export const ArticleUrlIndexSchema = z.object({
-  sourceUrl: z.string().url(),
+  sourceUrl: z.string().min(1),
   versions: z.array(ArticleUrlVersionSchema).min(1),
 });
 export type ArticleUrlIndex = z.infer<typeof ArticleUrlIndexSchema>;
@@ -60,7 +60,15 @@ const ImportManualModeSchema = z.object({
   confirm: z.boolean().optional(),
 });
 
-export const ImportRequestSchema = z.union([ImportUrlModeSchema, ImportManualModeSchema]);
+/** PDF mode: { text, title } — no URL; server generates a synthetic sourceUrl */
+const ImportPdfModeSchema = z.object({
+  text: z.string().min(1),
+  title: z.string().min(1),
+  url: z.undefined().optional(),
+  confirm: z.undefined().optional(),
+});
+
+export const ImportRequestSchema = z.union([ImportUrlModeSchema, ImportManualModeSchema, ImportPdfModeSchema]);
 export type ImportRequest = z.infer<typeof ImportRequestSchema>;
 
 /** 200 — article was newly stored */
@@ -118,7 +126,7 @@ export function articleContentRef(articleId: string): string {
 export const ArticleIndexEntrySchema = z.object({
   articleId: z.string().length(64),       // SHA-256 hex
   title: z.string().min(1),
-  sourceUrl: z.string().url(),
+  sourceUrl: z.string().min(1),
   importedAt: z.string().datetime(),      // ISO 8601
 });
 export type ArticleIndexEntry = z.infer<typeof ArticleIndexEntrySchema>;

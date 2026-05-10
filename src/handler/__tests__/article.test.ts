@@ -68,22 +68,25 @@ describe("POST /articles/import", () => {
     expect(body.status).toBe("IMPORTED");
   });
 
-  it("returns 422 DOMAIN_NOT_ALLOWED for disallowed URL", async () => {
+  it("returns 200 IMPORTED for PDF mode (no url)", async () => {
     mockVerifyToken.mockResolvedValue(FAKE_PAYLOAD);
-    mockImportArticle.mockRejectedValue(
-      new ValidationError({ url: 'Domain "example.com" is not on the allowlist.' })
-    );
+    mockImportArticle.mockResolvedValue({
+      status: "IMPORTED",
+      articleId: "f".repeat(64),
+      title: "My PDF Article",
+      importedAt: "2026-05-01T10:00:00Z",
+    });
 
     const app = buildApp();
     const res = await req(
       app,
-      { url: "https://example.com/article" },
+      { text: "Paragraph one.\n\nParagraph two.", title: "My PDF Article" },
       "valid-token"
     );
 
-    expect(res.status).toBe(422);
+    expect(res.status).toBe(200);
     const body = await res.json() as Record<string, unknown>;
-    expect(body.error).toBe("DOMAIN_NOT_ALLOWED");
+    expect(body.status).toBe("IMPORTED");
   });
 
   it("returns 422 FETCH_FAILED on timeout", async () => {

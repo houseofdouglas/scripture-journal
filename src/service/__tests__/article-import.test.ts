@@ -45,7 +45,7 @@ const mockUpdateIndex = vi.mocked(articleRepo.updateArticleIndex);
 const cfSend = (cfModule as unknown as { __cloudFrontSend: ReturnType<typeof vi.fn> }).__cloudFrontSend;
 
 const ALLOWED_URL = "https://www.churchofjesuschrist.org/study/scriptures/bofm/alma/32";
-const DISALLOWED_URL = "https://example.com/article";
+const ANY_URL = "https://example.com/some-article";
 const PREVIOUS_ID = "c".repeat(64);
 
 describe("importArticle()", () => {
@@ -57,17 +57,18 @@ describe("importArticle()", () => {
     cfSend.mockResolvedValue({});
   });
 
-  // ── Domain allowlist ─────────────────────────────────────────────────────────
+  // ── Any-domain support ───────────────────────────────────────────────────────
 
-  describe("domain allowlist", () => {
-    it("throws ValidationError for disallowed domain without making a fetch", async () => {
-      const fetchSpy = vi.spyOn(globalThis, "fetch");
+  describe("any-domain support", () => {
+    it("accepts URLs from any domain", async () => {
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response("<html><body><p>Article content.</p></body></html>", { status: 200 })
+      );
+      mockGetArticle.mockResolvedValue(null);
+      mockGetUrlIndex.mockResolvedValue(null);
 
-      await expect(
-        importArticle({ url: DISALLOWED_URL })
-      ).rejects.toThrow(ValidationError);
-
-      expect(fetchSpy).not.toHaveBeenCalled();
+      const result = await importArticle({ url: ANY_URL });
+      expect(["IMPORTED", "DUPLICATE"]).toContain(result.status);
     });
   });
 
@@ -314,6 +315,52 @@ describe("importArticle()", () => {
       expect(article.paragraphs[0]!.text).toBe("First paragraph.");
       expect(article.paragraphs[1]!.text).toBe("Second paragraph.");
       expect(article.paragraphs[2]!.text).toBe("Third paragraph.");
+    });
+  });
+
+  // ── PDF import mode ──────────────────────────────────────────────────────────
+
+  describe("PDF import mode", () => {
+    it("imports when no url is provided", async () => {
+      mockGetArticle.mockResolvedValue(null);
+      mockGetUrlIndex.mockResolvedValue(null);
+
+      const result = await importArticle({ text: "Paragraph one.\n\nParagraph two.", title: "My PDF" });
+
+      expect(result.status).toBe("IMPORTED");
+      expect(mockPutArticle).toHaveBeenCalledOnce();
+      const article = mockPutArticle.mock.calls[0]![0]!;
+      expect(article.title).toBe("My PDF");
+      expect(article.sourceUrl).toMatch(/^pdf-import:/);
+      expect(article.paragraphs).toHaveLength(2);
+    });
+
+    it("returns DUPLICATE for identical PDF content", async () => {
+      const text = "Same content.";
+      const articleId = require("crypto").createHash("sha256").update(text).digest("hex");
+      mockGetArticle.mockResolvedValue({
+        articleId,
+        sourceUrl: `pdf-import:${articleId}`,
+        title: "Existing",
+        importedAt: "2026-01-01T00:00:00Z",
+        scope: "shared" as const,
+        paragraphs: [{ index: 0, text }],
+      });
+
+      const result = await importArticle({ text, title: "My PDF" });
+
+      expect(result.status).toBe("DUPLICATE");
+      expect(mockPutArticle).not.toHaveBeenCalled();
+    });
+
+    it("does not perform a network fetch for PDF mode", async () => {
+      const fetchSpy = vi.spyOn(globalThis, "fetch");
+      mockGetArticle.mockResolvedValue(null);
+      mockGetUrlIndex.mockResolvedValue(null);
+
+      await importArticle({ text: "Some text.", title: "PDF Article" });
+
+      expect(fetchSpy).not.toHaveBeenCalled();
     });
   });
 
