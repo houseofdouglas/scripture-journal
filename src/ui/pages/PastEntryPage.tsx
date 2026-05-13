@@ -4,6 +4,22 @@ import { JournalEntrySchema } from "../../types";
 import type { JournalEntry } from "../../types";
 import { useAuth } from "../lib/auth-context";
 
+/** Fetch the content JSON for a given contentRef path and return a blockId→text map. */
+async function fetchBlockMap(contentRef: string, contentType: "scripture" | "article"): Promise<Map<number, string>> {
+  const res = await fetch(`/${contentRef}`);
+  if (!res.ok) return new Map();
+  const data = await res.json() as Record<string, unknown>;
+  const map = new Map<number, string>();
+  if (contentType === "scripture") {
+    const verses = data.verses as Array<{ number: number; text: string }> | undefined;
+    verses?.forEach((v) => map.set(v.number, v.text));
+  } else {
+    const paragraphs = data.paragraphs as Array<{ index: number; text: string }> | undefined;
+    paragraphs?.forEach((p) => map.set(p.index, p.text));
+  }
+  return map;
+}
+
 async function fetchEntry(userId: string, entryId: string): Promise<JournalEntry | null> {
   const res = await fetch(`/users/${userId}/entries/${entryId}.json`);
   if (res.status === 404) return null;
@@ -20,6 +36,13 @@ export function PastEntryPage() {
     queryKey: ["entry", user?.userId, entryId],
     queryFn: () => fetchEntry(user!.userId, entryId!),
     enabled: Boolean(user && entryId),
+  });
+
+  const { data: blockMap } = useQuery({
+    queryKey: ["blockMap", entry?.contentRef],
+    queryFn: () => fetchBlockMap(entry!.contentRef, entry!.contentType),
+    enabled: Boolean(entry),
+    staleTime: Infinity,
   });
 
   if (isLoading) {
@@ -84,18 +107,30 @@ export function PastEntryPage() {
 
       {/* Annotations list */}
       <div className="space-y-4">
-        {entry.annotations.map((annotation, i) => (
-          <div key={i} className="rounded-md border border-gray-100 bg-gray-50 p-4">
-            <div className="mb-1 text-xs text-gray-400">
-              Block {annotation.blockId} ·{" "}
-              {new Date(annotation.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+        {entry.annotations.map((annotation, i) => {
+          const blockText = blockMap?.get(annotation.blockId);
+          const blockLabel = entry.contentType === "scripture"
+            ? `Verse ${annotation.blockId}`
+            : `¶ ${annotation.blockId + 1}`;
+
+          return (
+            <div key={i} className="rounded-md border border-gray-100 bg-white p-4 shadow-sm">
+              <div className="mb-2 text-xs text-gray-400">
+                {blockLabel} ·{" "}
+                {new Date(annotation.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+              {blockText && (
+                <blockquote className="mb-3 border-l-2 border-gray-200 pl-3 text-sm text-gray-500 italic" style={{ fontFamily: "Georgia, serif" }}>
+                  {blockText}
+                </blockquote>
+              )}
+              <p className="text-sm text-gray-800">{annotation.text}</p>
             </div>
-            <p className="text-sm text-gray-800 font-sans">{annotation.text}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
