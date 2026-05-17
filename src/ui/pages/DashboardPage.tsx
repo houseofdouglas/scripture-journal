@@ -22,23 +22,19 @@ export function DashboardPage() {
     queryKey: ["userIndex", user?.userId],
     queryFn: () => fetchUserIndex(user!.userId),
     enabled: Boolean(user),
-    staleTime: 60_000, // 1 minute
+    staleTime: 60_000,
   });
 
   if (isLoading) return <DashboardSkeleton />;
-  if (isError) return <div className="text-red-600">Failed to load your journal.</div>;
+  if (isError) return <div className="text-red-600 dark:text-red-400">Failed to load your journal.</div>;
 
   const entries = index?.entries ?? [];
-
-  // Collect marked days
   const markedDays = new Set(entries.map((e) => e.date));
 
-  // Filter by selected date
   const filtered = selectedDate
     ? entries.filter((e) => e.date === selectedDate)
     : entries;
 
-  // Group by date (entries already ordered newest-first)
   const byDate = new Map<string, UserIndexEntry[]>();
   for (const entry of filtered) {
     const list = byDate.get(entry.date) ?? [];
@@ -48,13 +44,12 @@ export function DashboardPage() {
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_220px]">
-      {/* Main journal list */}
       <div>
-        <h1 className="mb-6 text-2xl font-semibold text-gray-900">My Journal</h1>
+        <h1 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-gray-100">My Journal</h1>
 
         {entries.length === 0 ? (
           <div className="py-16 text-center">
-            <p className="mb-4 text-gray-500">Your journal is empty.</p>
+            <p className="mb-4 text-gray-500 dark:text-gray-400">Your journal is empty.</p>
             <div className="flex justify-center gap-4">
               <Link
                 to="/scripture"
@@ -64,7 +59,7 @@ export function DashboardPage() {
               </Link>
               <Link
                 to="/import"
-                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
               >
                 Import Article
               </Link>
@@ -82,7 +77,6 @@ export function DashboardPage() {
         )}
       </div>
 
-      {/* Calendar sidebar */}
       {entries.length > 0 && (
         <div className="lg:pt-14">
           <JournalCalendar
@@ -99,9 +93,9 @@ export function DashboardPage() {
 function DashboardSkeleton() {
   return (
     <div className="animate-pulse space-y-4">
-      <div className="h-8 w-40 rounded bg-gray-200" />
+      <div className="h-8 w-40 rounded bg-gray-200 dark:bg-gray-700" />
       {[1, 2, 3].map((i) => (
-        <div key={i} className="h-28 rounded-lg bg-gray-200" />
+        <div key={i} className="h-28 rounded-lg bg-gray-200 dark:bg-gray-700" />
       ))}
     </div>
   );

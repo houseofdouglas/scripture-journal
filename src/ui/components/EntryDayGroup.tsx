@@ -20,24 +20,24 @@ export function EntryDayGroup({ date, entries }: Props) {
   });
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-      <div className="border-b border-gray-100 px-4 py-2">
-        <span className="text-sm font-medium text-gray-500">{label}</span>
+    <div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+      <div className="border-b border-gray-100 px-4 py-2 dark:border-gray-800">
+        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</span>
       </div>
-      <ul className="divide-y divide-gray-100">
+      <ul className="divide-y divide-gray-100 dark:divide-gray-800">
         {entries.map((entry) => (
           <li key={entry.entryId}>
             <Link
               to={`/entries/${entry.entryId}`}
-              className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+              className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               <div className="flex items-center gap-3">
                 <TypeBadge type={entry.contentType} />
-                <span className="text-sm font-medium text-gray-800">
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                   {entry.contentTitle}
                 </span>
               </div>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-400 dark:text-gray-500">
                 {entry.noteCount} {entry.noteCount === 1 ? "note" : "notes"}
               </span>
             </Link>

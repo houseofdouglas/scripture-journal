@@ -6,8 +6,8 @@ import { useAuth } from "../lib/auth-context";
  * Global navigation bar.
  *
  * Left: logo / app name → Dashboard
- * Center: Browse Scripture · Import Article
- * Right: username dropdown → Change Password · Log Out
+ * Center: Browse Scripture · Browse Articles · Import Article
+ * Right: username dropdown → Appearance · Change Password · Log Out
  */
 export function Nav() {
   const { user, logout } = useAuth();
@@ -21,21 +21,23 @@ export function Nav() {
   }
 
   return (
-    <nav className="border-b border-gray-200 bg-white px-6 py-3 flex items-center justify-between">
+    <nav className="border-b border-gray-200 bg-white px-6 py-3 flex items-center justify-between dark:border-gray-700 dark:bg-gray-900">
       {/* Logo */}
       <Link
         to="/"
-        className="text-lg font-semibold text-gray-900 hover:text-gray-700"
+        className="text-lg font-semibold text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-gray-300"
       >
         Scripture Journal
       </Link>
 
       {/* Centre links */}
-      <div className="flex gap-6 text-sm text-gray-700">
+      <div className="flex gap-6 text-sm text-gray-700 dark:text-gray-300">
         <NavLink
           to="/scripture"
           className={({ isActive }) =>
-            isActive ? "font-semibold text-gray-900" : "hover:text-gray-900"
+            isActive
+              ? "font-semibold text-gray-900 dark:text-gray-100"
+              : "hover:text-gray-900 dark:hover:text-gray-100"
           }
         >
           Browse Scripture
@@ -44,7 +46,9 @@ export function Nav() {
           to="/articles"
           end
           className={({ isActive }) =>
-            isActive ? "font-semibold text-gray-900" : "hover:text-gray-900"
+            isActive
+              ? "font-semibold text-gray-900 dark:text-gray-100"
+              : "hover:text-gray-900 dark:hover:text-gray-100"
           }
         >
           Browse Articles
@@ -52,7 +56,9 @@ export function Nav() {
         <NavLink
           to="/import"
           className={({ isActive }) =>
-            isActive ? "font-semibold text-gray-900" : "hover:text-gray-900"
+            isActive
+              ? "font-semibold text-gray-900 dark:text-gray-100"
+              : "hover:text-gray-900 dark:hover:text-gray-100"
           }
         >
           Import Article
@@ -64,7 +70,7 @@ export function Nav() {
         <div className="relative">
           <button
             onClick={() => setDropdownOpen((o) => !o)}
-            className="flex items-center gap-1 text-sm text-gray-700 hover:text-gray-900"
+            className="flex items-center gap-1 text-sm text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
             aria-haspopup="true"
             aria-expanded={dropdownOpen}
           >
@@ -92,17 +98,24 @@ export function Nav() {
                 aria-hidden="true"
               />
               {/* Menu */}
-              <div className="absolute right-0 z-20 mt-2 w-44 origin-top-right rounded-md border border-gray-200 bg-white shadow-md">
+              <div className="absolute right-0 z-20 mt-2 w-44 origin-top-right rounded-md border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900">
+                <Link
+                  to="/settings/appearance"
+                  onClick={() => setDropdownOpen(false)}
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                >
+                  Appearance
+                </Link>
                 <Link
                   to="/settings/password"
                   onClick={() => setDropdownOpen(false)}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                   Change Password
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                  className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                   Log Out
                 </button>

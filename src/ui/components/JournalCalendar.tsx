@@ -17,9 +17,7 @@ export function JournalCalendar({ markedDays, selectedDate, onSelectDate }: Prop
 
   const monthLabel = today.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
-  // Days in month
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  // Day of week for the 1st (0=Sunday)
   const startDow = new Date(year, month, 1).getDay();
 
   const cells: Array<number | null> = [
@@ -32,9 +30,9 @@ export function JournalCalendar({ markedDays, selectedDate, onSelectDate }: Prop
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <h3 className="mb-3 text-sm font-semibold text-gray-700">{monthLabel}</h3>
-      <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-400">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+      <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">{monthLabel}</h3>
+      <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-400 dark:text-gray-500">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
           <div key={d} className="font-medium">{d}</div>
         ))}
@@ -55,10 +53,10 @@ export function JournalCalendar({ markedDays, selectedDate, onSelectDate }: Prop
                 isSelected
                   ? "bg-blue-600 text-white"
                   : isMarked
-                  ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                  ? "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
                   : isToday
-                  ? "ring-1 ring-gray-300 text-gray-700"
-                  : "text-gray-500 disabled:cursor-default"
+                  ? "ring-1 ring-gray-300 text-gray-700 dark:ring-gray-600 dark:text-gray-300"
+                  : "text-gray-500 disabled:cursor-default dark:text-gray-500"
               }`}
             >
               {day}

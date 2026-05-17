@@ -31,7 +31,6 @@ const getAnnotationCountText = (count: number): string => {
 /**
  * Paragraph rendering component with annotation support.
  * Article text renders in a serif font (Georgia).
- * Annotation "+" editor is layered on.
  */
 export function ParagraphList({ paragraphs, annotation }: Props) {
   const annotationCount = annotation?.savedAnnotations?.length ?? 0;
@@ -39,17 +38,17 @@ export function ParagraphList({ paragraphs, annotation }: Props) {
   return (
     <div className="space-y-4">
       {annotationCount > 0 && (
-        <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
-          <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium">
+        <div className="mb-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium dark:bg-gray-800">
             {getAnnotationCountText(annotationCount)}
           </span>
         </div>
       )}
       {paragraphs.map((p) => (
-        <div key={p.index} data-paragraph-index={p.index} className="group flex gap-3 leading-relaxed text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+        <div key={p.index} data-paragraph-index={p.index} className="group flex gap-3 leading-relaxed text-gray-900 dark:text-gray-100" style={{ fontFamily: "Georgia, serif" }}>
           {/* Left gutter — paragraph number with SVG plus overlay on hover */}
           <div className="relative flex h-8 w-8 shrink-0 items-start justify-center pt-1">
-            <span className="select-none text-xs font-semibold text-gray-400 tabular-nums">
+            <span className="select-none text-xs font-semibold text-gray-400 tabular-nums dark:text-gray-500">
               {p.index + 1}
             </span>
             {annotation && annotation.openBlockId === null && (
@@ -57,7 +56,7 @@ export function ParagraphList({ paragraphs, annotation }: Props) {
                 onClick={() => annotation.onOpen(p.index)}
                 aria-label="Add note"
                 title="Add note"
-                className="absolute inset-0 flex items-center justify-center rounded-full bg-sky-100 opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-sky-100 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-sky-900"
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                   <line x1="10" y1="3" x2="10" y2="17" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" />
@@ -69,7 +68,6 @@ export function ParagraphList({ paragraphs, annotation }: Props) {
           <div className="flex-1">
             <p>{p.text}</p>
 
-            {/* Inline editor for this paragraph */}
             {annotation?.openBlockId === p.index && (
               <AnnotationEditor
                 text={annotation.editorText}
@@ -81,7 +79,6 @@ export function ParagraphList({ paragraphs, annotation }: Props) {
               />
             )}
 
-            {/* Saved annotations beneath this paragraph */}
             {annotation?.savedAnnotations
               ?.filter((a) => a.blockId === p.index)
               .map((a, i) => (

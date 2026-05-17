@@ -48,9 +48,9 @@ export function PastEntryPage() {
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-4 w-32 rounded bg-gray-200" />
-        <div className="h-8 w-64 rounded bg-gray-200" />
-        <div className="h-4 w-full rounded bg-gray-200" />
+        <div className="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700" />
+        <div className="h-8 w-64 rounded bg-gray-200 dark:bg-gray-700" />
+        <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-700" />
       </div>
     );
   }
@@ -58,13 +58,12 @@ export function PastEntryPage() {
   if (isError || !entry) {
     return (
       <div>
-        <p className="text-gray-600">Entry not found.</p>
-        <Link to="/" className="text-blue-600 hover:underline">← Dashboard</Link>
+        <p className="text-gray-600 dark:text-gray-400">Entry not found.</p>
+        <Link to="/" className="text-blue-600 hover:underline dark:text-blue-400">← Dashboard</Link>
       </div>
     );
   }
 
-  // Determine live content URL from contentRef
   const liveUrl = contentRefToRoute(entry.contentRef);
 
   const dateLabel = (() => {
@@ -83,13 +82,13 @@ export function PastEntryPage() {
   return (
     <div className="mx-auto max-w-2xl">
       {/* Past entry banner */}
-      <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
         <strong>Past Entry</strong> — {dateLabel}
         {liveUrl && (
           <span className="ml-4">
             <Link
               to={liveUrl}
-              className="font-medium text-amber-900 underline hover:no-underline"
+              className="font-medium text-amber-900 underline hover:no-underline dark:text-amber-100"
             >
               Study Today →
             </Link>
@@ -97,11 +96,11 @@ export function PastEntryPage() {
         )}
       </div>
 
-      <h1 className="mb-4 text-xl font-semibold text-gray-700" style={{ fontFamily: "Georgia, serif" }}>
+      <h1 className="mb-4 text-xl font-semibold text-gray-700 dark:text-gray-300" style={{ fontFamily: "Georgia, serif" }}>
         {entry.contentTitle}
       </h1>
 
-      <p className="mb-6 text-xs text-gray-400">
+      <p className="mb-6 text-xs text-gray-400 dark:text-gray-500">
         {entry.annotations.length} {entry.annotations.length === 1 ? "annotation" : "annotations"}
       </p>
 
@@ -114,8 +113,8 @@ export function PastEntryPage() {
             : `¶ ${annotation.blockId + 1}`;
 
           return (
-            <div key={i} className="rounded-md border border-gray-100 bg-white p-4 shadow-sm">
-              <div className="mb-2 text-xs text-gray-400">
+            <div key={i} className="rounded-md border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+              <div className="mb-2 text-xs text-gray-400 dark:text-gray-500">
                 {blockLabel} ·{" "}
                 {new Date(annotation.createdAt).toLocaleTimeString([], {
                   hour: "2-digit",
@@ -123,11 +122,11 @@ export function PastEntryPage() {
                 })}
               </div>
               {blockText && (
-                <blockquote className="mb-3 border-l-2 border-gray-200 pl-3 text-sm text-gray-500 italic" style={{ fontFamily: "Georgia, serif" }}>
+                <blockquote className="mb-3 border-l-2 border-gray-200 pl-3 text-sm text-gray-500 italic dark:border-gray-600 dark:text-gray-400" style={{ fontFamily: "Georgia, serif" }}>
                   {blockText}
                 </blockquote>
               )}
-              <p className="text-sm text-gray-800">{annotation.text}</p>
+              <p className="text-sm text-gray-800 dark:text-gray-200">{annotation.text}</p>
             </div>
           );
         })}
@@ -137,7 +136,6 @@ export function PastEntryPage() {
 }
 
 function contentRefToRoute(contentRef: string): string | null {
-  // content/scripture/<work>/<book>/<chapter>.json → /scripture/<work>/<book>/<chapter>
   const scriptureMatch = contentRef.match(
     /^content\/scripture\/([^/]+)\/([^/]+)\/(\d+)\.json$/
   );
@@ -145,7 +143,6 @@ function contentRefToRoute(contentRef: string): string | null {
     return `/scripture/${scriptureMatch[1]}/${scriptureMatch[2]}/${scriptureMatch[3]}`;
   }
 
-  // content/articles/<articleId>.json → /articles/<articleId>
   const articleMatch = contentRef.match(/^content\/articles\/([^/]+)\.json$/);
   if (articleMatch) {
     return `/articles/${articleMatch[1]}`;

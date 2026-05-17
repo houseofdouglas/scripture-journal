@@ -16,16 +16,16 @@ async function fetchArticle(articleId: string): Promise<Article | null> {
 export function ArticleViewPage() {
   const { articleId } = useParams<{ articleId: string }>();
   const [searchParams] = useSearchParams();
-  const pastEntryDate = searchParams.get("entry-date"); // set when viewing a past entry
+  const pastEntryDate = searchParams.get("entry-date");
 
   const articleRef = `content/articles/${articleId}.json`;
   const today = new Date();
   const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  
+
   const annotation = useAnnotationEditor({
     date,
     contentRef: articleRef,
-    contentTitle: "Article", // Will be updated when article loads
+    contentTitle: "Article",
     contentType: "article",
   });
 
@@ -35,13 +35,12 @@ export function ArticleViewPage() {
       console.log("[useQuery] fetching article:", articleId);
       return fetchArticle(articleId!);
     },
-    staleTime: Infinity, // articles are immutable
+    staleTime: Infinity,
     enabled: Boolean(articleId),
   });
 
   const isPastEntry = Boolean(pastEntryDate);
 
-  // Must be before early returns — hooks cannot be called conditionally
   useEffect(() => {
     if (article && !isPastEntry) {
       annotation.setContentTitle(article.title);
@@ -49,33 +48,31 @@ export function ArticleViewPage() {
   }, [article?.title, isPastEntry]);
 
   if (isLoading) return <ArticleSkeleton />;
-  if (isError) return <div className="text-red-600">Failed to load article.</div>;
+  if (isError) return <div className="text-red-600 dark:text-red-400">Failed to load article.</div>;
   if (!article) {
     return (
       <div>
-        <p className="text-gray-600">Article not found.</p>
-        <Link to="/" className="text-blue-600 hover:underline">← Dashboard</Link>
+        <p className="text-gray-600 dark:text-gray-400">Article not found.</p>
+        <Link to="/" className="text-blue-600 hover:underline dark:text-blue-400">← Dashboard</Link>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-2xl">
-      {/* Dashboard link */}
       <div className="mb-4">
-        <Link to="/" className="text-sm text-gray-500 hover:text-gray-700">
+        <Link to="/" className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
           ← Dashboard
         </Link>
       </div>
 
-      {/* Past entry banner */}
       {isPastEntry && (
-        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
           <strong>Past Entry</strong> — {pastEntryDate}
           <span className="ml-4">
             <Link
               to={`/articles/${articleId}`}
-              className="font-medium text-amber-900 underline hover:no-underline"
+              className="font-medium text-amber-900 underline hover:no-underline dark:text-amber-100"
             >
               Study Today →
             </Link>
@@ -83,14 +80,10 @@ export function ArticleViewPage() {
         </div>
       )}
 
-      {/* New version notice */}
       {article.previousVersionId && !isPastEntry && (
-        <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+        <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
           This is an updated version of this article.{" "}
-          <Link
-            to={`/articles/${article.previousVersionId}`}
-            className="font-medium underline hover:no-underline"
-          >
+          <Link to={`/articles/${article.previousVersionId}`} className="font-medium underline hover:no-underline">
             View previous version
           </Link>
         </div>
@@ -100,18 +93,18 @@ export function ArticleViewPage() {
       <div className="mb-6">
         <div className="mb-1 flex items-start gap-2">
           <h1
-            className={`text-2xl font-semibold ${isPastEntry ? "text-gray-500" : "text-gray-900"}`}
+            className={`text-2xl font-semibold ${isPastEntry ? "text-gray-500 dark:text-gray-400" : "text-gray-900 dark:text-gray-100"}`}
             style={{ fontFamily: "Georgia, serif" }}
           >
             {article.title}
           </h1>
           {article.previousVersionId && (
-            <span className="mt-1 shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+            <span className="mt-1 shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
               Updated
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3 text-xs text-gray-400">
+        <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
           {article.sourceUrl.startsWith("pdf-import:") ? (
             <span>PDF</span>
           ) : (
@@ -119,7 +112,7 @@ export function ArticleViewPage() {
               href={article.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-gray-600 hover:underline"
+              className="hover:text-gray-600 hover:underline dark:hover:text-gray-300"
             >
               Source ↗
             </a>
@@ -128,7 +121,6 @@ export function ArticleViewPage() {
         </div>
       </div>
 
-      {/* Content */}
       <div className={isPastEntry ? "opacity-60" : ""}>
         <ParagraphList
           paragraphs={article.paragraphs ?? []}
@@ -152,12 +144,12 @@ export function ArticleViewPage() {
 function ArticleSkeleton() {
   return (
     <div className="mx-auto max-w-2xl animate-pulse space-y-4">
-      <div className="h-8 w-72 rounded bg-gray-200" />
-      <div className="h-3 w-32 rounded bg-gray-200" />
+      <div className="h-8 w-72 rounded bg-gray-200 dark:bg-gray-700" />
+      <div className="h-3 w-32 rounded bg-gray-200 dark:bg-gray-700" />
       {Array.from({ length: 6 }, (_, i) => (
         <div key={i} className="space-y-2">
-          <div className="h-4 w-full rounded bg-gray-200" />
-          <div className="h-4 w-5/6 rounded bg-gray-200" />
+          <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-700" />
+          <div className="h-4 w-5/6 rounded bg-gray-200 dark:bg-gray-700" />
         </div>
       ))}
     </div>

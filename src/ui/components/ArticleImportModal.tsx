@@ -143,14 +143,14 @@ export function ArticleImportModal({ onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
+      <div className="w-full max-w-md rounded-lg bg-white shadow-xl dark:bg-gray-900">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-900">Import Article</h2>
+        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Import Article</h2>
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="text-gray-400 hover:text-gray-600 disabled:invisible"
+            className="text-gray-400 hover:text-gray-600 disabled:invisible dark:text-gray-500 dark:hover:text-gray-300"
             aria-label="Close"
           >
             ✕
@@ -163,7 +163,7 @@ export function ArticleImportModal({ onClose }: Props) {
           {state.mode === "url" && (
             <form onSubmit={handleUrlSubmit} className="space-y-4">
               <div>
-                <label htmlFor="article-url" className="mb-1 block text-sm font-medium text-gray-700">
+                <label htmlFor="article-url" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Article URL
                 </label>
                 <input
@@ -173,12 +173,12 @@ export function ArticleImportModal({ onClose }: Props) {
                   required
                   value={state.url}
                   onChange={(e) => setState({ ...state, url: e.target.value, error: undefined as any })}
-                  className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    state.error ? "border-red-400" : "border-gray-300"
+                  className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100 ${
+                    state.error ? "border-red-400 dark:border-red-600" : "border-gray-300 dark:border-gray-600"
                   }`}
                 />
                 {state.error && (
-                  <p className="mt-1 text-xs text-red-600">{state.error}</p>
+                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{state.error}</p>
                 )}
               </div>
 
@@ -186,10 +186,8 @@ export function ArticleImportModal({ onClose }: Props) {
                 <p className="text-sm">
                   <button
                     type="button"
-                    onClick={() =>
-                      setState({ mode: "manual", url: state.url, text: "", title: "" })
-                    }
-                    className="text-blue-600 hover:underline"
+                    onClick={() => setState({ mode: "manual", url: state.url, text: "", title: "" })}
+                    className="text-blue-600 hover:underline dark:text-blue-400"
                   >
                     Paste article text manually instead →
                   </button>
@@ -197,33 +195,30 @@ export function ArticleImportModal({ onClose }: Props) {
               )}
 
               <div className="flex gap-3 pt-1">
-                <button
-                  type="submit"
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                >
+                <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                   Import
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                   Cancel
                 </button>
               </div>
 
-              <div className="border-t border-gray-100 pt-3 flex gap-4 text-sm">
+              <div className="flex gap-4 border-t border-gray-100 pt-3 text-sm dark:border-gray-800">
                 <button
                   type="button"
                   onClick={() => setState({ mode: "pdf", fileName: "", title: "" })}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   Import a PDF →
                 </button>
                 <button
                   type="button"
                   onClick={() => setState({ mode: "manual", url: "", text: "", title: "" })}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   Paste text →
                 </button>
@@ -235,7 +230,7 @@ export function ArticleImportModal({ onClose }: Props) {
           {state.mode === "pdf" && (
             <form onSubmit={handlePdfSubmit} className="space-y-4">
               <div>
-                <label htmlFor="pdf-file" className="mb-1 block text-sm font-medium text-gray-700">
+                <label htmlFor="pdf-file" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   PDF file
                 </label>
                 <input
@@ -243,14 +238,14 @@ export function ArticleImportModal({ onClose }: Props) {
                   type="file"
                   accept=".pdf,application/pdf"
                   onChange={handlePdfFileChange}
-                  className="w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100"
+                  className="w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-300 dark:file:bg-blue-900 dark:file:text-blue-300"
                 />
                 {state.fileName && (
-                  <p className="mt-1 text-xs text-gray-500">{state.fileName}</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{state.fileName}</p>
                 )}
               </div>
               <div>
-                <label htmlFor="pdf-title" className="mb-1 block text-sm font-medium text-gray-700">
+                <label htmlFor="pdf-title" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Title
                 </label>
                 <input
@@ -259,10 +254,10 @@ export function ArticleImportModal({ onClose }: Props) {
                   required
                   value={state.title}
                   onChange={(e) => setState({ ...state, title: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
-              {state.error && <p className="text-xs text-red-600">{state.error}</p>}
+              {state.error && <p className="text-xs text-red-600 dark:text-red-400">{state.error}</p>}
               <div className="flex gap-3 pt-1">
                 <button
                   type="submit"
@@ -274,12 +269,12 @@ export function ArticleImportModal({ onClose }: Props) {
                 <button
                   type="button"
                   onClick={() => setState({ mode: "url", url: "" })}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   ← Back
                 </button>
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 dark:text-gray-500">
                 Text is extracted from the PDF — each detected paragraph becomes an annotatable block.
               </p>
             </form>
@@ -287,7 +282,7 @@ export function ArticleImportModal({ onClose }: Props) {
 
           {/* Loading */}
           {state.mode === "loading" && (
-            <div className="flex h-24 items-center justify-center text-gray-500">
+            <div className="flex h-24 items-center justify-center text-gray-500 dark:text-gray-400">
               Importing…
             </div>
           )}
@@ -295,11 +290,9 @@ export function ArticleImportModal({ onClose }: Props) {
           {/* Manual paste */}
           {state.mode === "manual" && (
             <form onSubmit={handleManualSubmit} className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Paste the article text below.
-              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Paste the article text below.</p>
               <div>
-                <label htmlFor="article-title" className="mb-1 block text-sm font-medium text-gray-700">
+                <label htmlFor="article-title" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Title
                 </label>
                 <input
@@ -308,11 +301,11 @@ export function ArticleImportModal({ onClose }: Props) {
                   required
                   value={state.title}
                   onChange={(e) => setState({ ...state, title: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
               <div>
-                <label htmlFor="article-text" className="mb-1 block text-sm font-medium text-gray-700">
+                <label htmlFor="article-text" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Article text
                 </label>
                 <textarea
@@ -321,21 +314,18 @@ export function ArticleImportModal({ onClose }: Props) {
                   rows={8}
                   value={state.text}
                   onChange={(e) => setState({ ...state, text: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
-              {state.error && <p className="text-xs text-red-600">{state.error}</p>}
+              {state.error && <p className="text-xs text-red-600 dark:text-red-400">{state.error}</p>}
               <div className="flex gap-3 pt-1">
-                <button
-                  type="submit"
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                >
+                <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
                   Import
                 </button>
                 <button
                   type="button"
                   onClick={() => setState({ mode: "url", url: state.url })}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   ← Back to URL
                 </button>
@@ -346,12 +336,9 @@ export function ArticleImportModal({ onClose }: Props) {
           {/* Duplicate */}
           {state.mode === "duplicate" && (
             <div className="space-y-4">
-              <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
                 <strong>Already imported</strong>
-                <p className="mt-1">
-                  "{state.title}" was imported on{" "}
-                  {new Date(state.importedAt).toLocaleDateString()}.
-                </p>
+                <p className="mt-1">"{state.title}" was imported on {new Date(state.importedAt).toLocaleDateString()}.</p>
               </div>
               <div className="flex gap-3">
                 <button
@@ -362,7 +349,7 @@ export function ArticleImportModal({ onClose }: Props) {
                 </button>
                 <button
                   onClick={onClose}
-                  className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                   Cancel
                 </button>
@@ -373,7 +360,7 @@ export function ArticleImportModal({ onClose }: Props) {
           {/* New version */}
           {state.mode === "new-version" && (
             <div className="space-y-4">
-              <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+              <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
                 <strong>Updated article detected</strong>
                 <p className="mt-1">
                   This article has changed since it was last imported on{" "}
@@ -390,13 +377,13 @@ export function ArticleImportModal({ onClose }: Props) {
                 </button>
                 <button
                   onClick={() => navigate(`/articles/${state.previousArticleId}`)}
-                  className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                 >
                   Open Previous Version
                 </button>
                 <button
                   onClick={onClose}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   Cancel
                 </button>

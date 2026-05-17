@@ -2,16 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "Frontend (Vite)",
+      "name": "vite",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": ["run", "dev:vite"],
       "port": 5173
-    },
-    {
-      "name": "Backend (Hono Lambda local)",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev:api"],
-      "port": 3001
     }
   ]
 }

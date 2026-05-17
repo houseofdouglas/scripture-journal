@@ -28,18 +28,16 @@ export function VerseList({ verses, annotation }: Props) {
 
           {/* Verse number — fixed 2rem×2rem column so the bubble aligns exactly over it */}
           <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
-            <span className="select-none text-xs font-semibold text-gray-400 tabular-nums">
+            <span className="select-none text-xs font-semibold text-gray-400 tabular-nums dark:text-gray-500">
               {verse.number}
             </span>
 
-            {/* Sky-blue circle overlaying the verse number on hover.
-                SVG plus avoids font-metric centering issues. */}
             {annotation && annotation.openBlockId === null && (
               <button
                 onClick={() => annotation.onOpen(verse.number)}
                 aria-label="Add note"
                 title="Add note"
-                className="absolute inset-0 flex items-center justify-center rounded-full bg-sky-100 opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-sky-100 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-sky-900"
               >
                 <svg
                   width="20"
@@ -57,11 +55,10 @@ export function VerseList({ verses, annotation }: Props) {
 
           {/* Verse body */}
           <div className="flex-1">
-            <p className="leading-relaxed text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+            <p className="leading-relaxed text-gray-900 dark:text-gray-100" style={{ fontFamily: "Georgia, serif" }}>
               {verse.text}
             </p>
 
-            {/* Inline editor for this verse */}
             {annotation?.openBlockId === verse.number && (
               <AnnotationEditor
                 text={annotation.editorText}
@@ -73,7 +70,6 @@ export function VerseList({ verses, annotation }: Props) {
               />
             )}
 
-            {/* Saved annotations beneath this verse */}
             {annotation?.savedAnnotations
               .filter((a) => a.blockId === verse.number)
               .map((a, i) => (

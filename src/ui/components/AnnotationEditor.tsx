@@ -22,7 +22,7 @@ export function AnnotationEditor({ text, isSaving, errorMessage, onChange, onSav
   }, []);
 
   return (
-    <div className="mt-2 rounded-md border border-blue-300 bg-blue-50 p-3 font-sans">
+    <div className="mt-2 rounded-md border border-blue-300 bg-blue-50 p-3 font-sans dark:border-blue-700 dark:bg-blue-950">
       <textarea
         ref={textareaRef}
         rows={3}
@@ -30,12 +30,12 @@ export function AnnotationEditor({ text, isSaving, errorMessage, onChange, onSav
         onChange={(e) => onChange(e.target.value)}
         disabled={isSaving}
         placeholder="Write your note…"
-        className="w-full resize-none rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+        className="w-full resize-none rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700"
       />
 
       {/* Error strip */}
       {errorMessage && (
-        <div className="mt-2 rounded bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-800">
+        <div className="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
           {errorMessage}
           <button
             onClick={onSave}
@@ -57,7 +57,7 @@ export function AnnotationEditor({ text, isSaving, errorMessage, onChange, onSav
         <button
           onClick={onCancel}
           disabled={isSaving}
-          className="text-xs text-gray-500 hover:text-gray-700 disabled:text-gray-300"
+          className="text-xs text-gray-500 hover:text-gray-700 disabled:text-gray-300 dark:text-gray-400 dark:hover:text-gray-200"
         >
           Cancel
         </button>

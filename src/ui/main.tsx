@@ -4,12 +4,14 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./lib/auth-context";
+import { ThemeProvider } from "./lib/theme-context";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Nav } from "./components/Nav";
 
 // Pages — lazy imports keep the initial bundle small
 import { LoginPage } from "./pages/LoginPage";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
+import { AppearancePage } from "./pages/AppearancePage";
 
 // Placeholder pages — built in later tasks
 import { DashboardPage } from "./pages/DashboardPage";
@@ -31,7 +33,7 @@ const queryClient = new QueryClient({
 
 function AppShell() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Nav />
       <main className="mx-auto max-w-4xl px-4 py-8">
         <Routes>
@@ -52,6 +54,14 @@ function AppShell() {
             element={
               <ProtectedRoute>
                 <ChangePasswordPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings/appearance"
+            element={
+              <ProtectedRoute>
+                <AppearancePage />
               </ProtectedRoute>
             }
           />
@@ -128,12 +138,14 @@ function AppShell() {
 const root = createRoot(document.getElementById("root")!);
 root.render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <AppShell />
-        </BrowserRouter>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <BrowserRouter>
+            <AppShell />
+          </BrowserRouter>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   </StrictMode>
 );

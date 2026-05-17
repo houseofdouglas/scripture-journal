@@ -21,7 +21,6 @@ export function LoginPage() {
     setStatus("loading");
 
     try {
-      // Use raw fetch — apiClient would redirect on 401, but here 401 means wrong credentials
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -51,44 +50,29 @@ export function LoginPage() {
 
   return (
     <div className="mx-auto mt-24 max-w-sm">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Sign in</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-gray-100">Sign in</h1>
 
-      {/* Session-expired alert */}
       {isSessionExpired && status === "idle" && (
-        <div
-          role="alert"
-          className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800"
-        >
+        <div role="alert" className="mb-4 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
           Your session has expired. Please sign in again.
         </div>
       )}
 
-      {/* Invalid credentials alert */}
       {status === "invalid-credentials" && (
-        <div
-          role="alert"
-          className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
+        <div role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
           Invalid username or password.
         </div>
       )}
 
-      {/* Rate-limited alert */}
       {isRateLimited && (
-        <div
-          role="alert"
-          className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-        >
+        <div role="alert" className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
           Too many attempts. Please wait a moment before trying again.
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label
-            htmlFor="username"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="username" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Username
           </label>
           <input
@@ -99,19 +83,16 @@ export function LoginPage() {
             disabled={formDisabled}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className={`w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 ${
+            className={`w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700 ${
               status === "invalid-credentials"
-                ? "border-red-400"
-                : "border-gray-300"
+                ? "border-red-400 dark:border-red-600"
+                : "border-gray-300 dark:border-gray-600"
             }`}
           />
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Password
           </label>
           <input
@@ -122,10 +103,10 @@ export function LoginPage() {
             disabled={formDisabled}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className={`w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 ${
+            className={`w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700 ${
               status === "invalid-credentials"
-                ? "border-red-400"
-                : "border-gray-300"
+                ? "border-red-400 dark:border-red-600"
+                : "border-gray-300 dark:border-gray-600"
             }`}
           />
         </div>

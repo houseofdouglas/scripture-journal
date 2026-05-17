@@ -17,7 +17,6 @@ export function ChangePasswordPage() {
     e.preventDefault();
     setClientError(null);
 
-    // Client-side validation
     if (newPassword !== confirmPassword) {
       setClientError("New passwords do not match.");
       return;
@@ -32,14 +31,13 @@ export function ChangePasswordPage() {
     try {
       await apiClient.post("/auth/password", { currentPassword, newPassword });
       setStatus("success");
-      // Reset all fields
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setStatus("wrong-current");
-        setCurrentPassword(""); // clear only current password
+        setCurrentPassword("");
       } else {
         setStatus("error");
       }
@@ -48,64 +46,52 @@ export function ChangePasswordPage() {
 
   const isLoading = status === "loading";
 
+  const inputClass = (error?: boolean) =>
+    `w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700 ${
+      error
+        ? "border-red-400 dark:border-red-600"
+        : "border-gray-300 dark:border-gray-600"
+    }`;
+
   return (
     <div className="mx-auto mt-12 max-w-sm">
       <div className="mb-4">
-        <Link to="/" className="text-sm text-gray-500 hover:text-gray-700">
+        <Link to="/" className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
           ← Dashboard
         </Link>
       </div>
 
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">
+      <h1 className="mb-6 text-2xl font-semibold text-gray-900 dark:text-gray-100">
         Change Password
       </h1>
 
-      {/* Success */}
       {status === "success" && (
-        <div
-          role="alert"
-          className="mb-4 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
-        >
+        <div role="alert" className="mb-4 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300">
           Password updated successfully. Your existing session stays active.
         </div>
       )}
 
-      {/* Wrong current password */}
       {status === "wrong-current" && (
-        <div
-          role="alert"
-          className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
+        <div role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
           Current password is incorrect.
         </div>
       )}
 
-      {/* Server error */}
       {status === "error" && (
-        <div
-          role="alert"
-          className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
+        <div role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
           Something went wrong. Please try again.
         </div>
       )}
 
-      {/* Client-side validation error */}
       {clientError && (
-        <div
-          role="alert"
-          className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
+        <div role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
           {clientError}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label
-            htmlFor="currentPassword"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="currentPassword" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Current password
           </label>
           <input
@@ -116,17 +102,12 @@ export function ChangePasswordPage() {
             disabled={isLoading}
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
-            className={`w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 ${
-              status === "wrong-current" ? "border-red-400" : "border-gray-300"
-            }`}
+            className={inputClass(status === "wrong-current")}
           />
         </div>
 
         <div>
-          <label
-            htmlFor="newPassword"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="newPassword" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             New password
           </label>
           <input
@@ -138,15 +119,12 @@ export function ChangePasswordPage() {
             disabled={isLoading}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className={inputClass()}
           />
         </div>
 
         <div>
-          <label
-            htmlFor="confirmPassword"
-            className="mb-1 block text-sm font-medium text-gray-700"
-          >
+          <label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Confirm new password
           </label>
           <input
@@ -158,7 +136,7 @@ export function ChangePasswordPage() {
             disabled={isLoading}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className={inputClass()}
           />
         </div>
 
@@ -170,15 +148,15 @@ export function ChangePasswordPage() {
           >
             {isLoading ? "Saving…" : "Update password"}
           </button>
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => navigate("/")}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:text-gray-400"
-              aria-label="Cancel"
-            >
-              Cancel
-            </button>
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={() => navigate("/")}
+            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:text-gray-400 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+            aria-label="Cancel"
+          >
+            Cancel
+          </button>
         </div>
       </form>
     </div>
