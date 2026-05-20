@@ -28,6 +28,7 @@ export const JournalEntrySchema = z.object({
   contentRef: z.string().min(1),
   contentTitle: z.string().min(1),
   contentType: ContentTypeSchema,
+  projectId: z.string().min(1).default("personal"), // defaults for backwards compat
   annotations: z.array(AnnotationSchema),
   updatedAt: z.string().datetime(),
 });
@@ -41,6 +42,7 @@ export const UserIndexEntrySchema = z.object({
   contentRef: z.string().min(1),
   contentTitle: z.string().min(1),
   contentType: ContentTypeSchema,
+  projectId: z.string().min(1).default("personal"), // defaults for backwards compat
   snippet: z.string().max(200), // text of the first annotation, truncated to 200 chars
   noteCount: z.number().int().min(1),
 });
@@ -63,6 +65,7 @@ export const AnnotateRequestSchema = z.object({
   contentRef: z.string().min(1), // validated server-side against known prefixes
   contentTitle: z.string().min(1),
   contentType: ContentTypeSchema,
+  projectId: z.string().min(1).default("personal"),
   blockId: z.number().int().min(0),
   text: z.string().min(1).refine((s) => s.trim().length > 0, {
     message: "Annotation text must contain at least one non-whitespace character",

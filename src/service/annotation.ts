@@ -38,6 +38,7 @@ export async function annotate(userId: string, req: AnnotateRequest): Promise<An
       contentRef: req.contentRef,
       contentTitle: req.contentTitle,
       contentType: req.contentType,
+      projectId: req.projectId,
       date: req.date,
     });
 

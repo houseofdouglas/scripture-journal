@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, ApiError } from "../lib/api-client";
 import type { AnnotateResponse } from "../../types";
 import { useAuth } from "../lib/auth-context";
+import { useProject } from "../lib/project-context";
 
 export interface SavedAnnotation {
   blockId: number;
@@ -49,6 +50,7 @@ interface UseAnnotationEditorOptions {
 
 export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnnotationEditorResult {
   const { user } = useAuth();
+  const { activeProjectId } = useProject();
   const queryClient = useQueryClient();
   const [editor, setEditor] = useState<EditorState>({
     blockId: null,
@@ -125,6 +127,7 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
         contentRef: options.contentRef,
         contentTitle,
         contentType: options.contentType,
+        projectId: activeProjectId,
         blockId,
         text,
       });

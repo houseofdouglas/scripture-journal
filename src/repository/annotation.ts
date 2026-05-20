@@ -56,6 +56,7 @@ export interface ContentMeta {
   contentRef: string;
   contentTitle: string;
   contentType: ContentType;
+  projectId: string;
   date: string; // client-supplied YYYY-MM-DD
 }
 
@@ -86,6 +87,7 @@ export async function appendAnnotation(
           contentRef: meta.contentRef,
           contentTitle: meta.contentTitle,
           contentType: meta.contentType,
+          projectId: meta.projectId,
           annotations: [annotation],
           updatedAt: now,
         });
@@ -133,6 +135,7 @@ async function updateUserIndex(
             contentRef: entry.contentRef,
             contentTitle: entry.contentTitle,
             contentType: entry.contentType,
+            projectId: entry.projectId,
             snippet,
             noteCount,
           },

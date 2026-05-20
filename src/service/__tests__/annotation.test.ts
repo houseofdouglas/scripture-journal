@@ -26,6 +26,7 @@ const BASE_REQUEST = {
   contentRef: "content/scripture/book-of-mormon/alma/32.json",
   contentTitle: "Alma 32",
   contentType: "scripture" as const,
+  projectId: "personal",
   blockId: 5,
   text: "Great verse.",
 };
@@ -39,6 +40,7 @@ function fakeEntry(annotations: Array<{ blockId: number; text: string; createdAt
     contentRef: BASE_REQUEST.contentRef,
     contentTitle: BASE_REQUEST.contentTitle,
     contentType: BASE_REQUEST.contentType,
+    projectId: "personal",
     annotations,
     updatedAt: annotations[annotations.length - 1]!.createdAt,
   };

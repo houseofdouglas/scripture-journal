@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./lib/auth-context";
 import { ThemeProvider } from "./lib/theme-context";
+import { ProjectProvider } from "./lib/project-context";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Nav } from "./components/Nav";
 
@@ -12,6 +13,7 @@ import { Nav } from "./components/Nav";
 import { LoginPage } from "./pages/LoginPage";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { AppearancePage } from "./pages/AppearancePage";
+import { ProjectsPage } from "./pages/ProjectsPage";
 
 // Placeholder pages — built in later tasks
 import { DashboardPage } from "./pages/DashboardPage";
@@ -62,6 +64,14 @@ function AppShell() {
             element={
               <ProtectedRoute>
                 <AppearancePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <ProjectsPage />
               </ProtectedRoute>
             }
           />
@@ -141,9 +151,11 @@ root.render(
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <BrowserRouter>
-            <AppShell />
-          </BrowserRouter>
+          <ProjectProvider>
+            <BrowserRouter>
+              <AppShell />
+            </BrowserRouter>
+          </ProjectProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

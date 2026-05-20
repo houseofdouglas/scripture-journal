@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
 import { TypeBadge } from "./EntryCard";
-import type { UserIndexEntry } from "../../types";
+import type { UserIndexEntry, Project } from "../../types";
 
 interface Props {
   date: string; // YYYY-MM-DD
   entries: UserIndexEntry[];
+  showProject?: Project[] | undefined;
 }
 
-/** Grouped multi-entry day — shows header + compact rows without snippet. */
-export function EntryDayGroup({ date, entries }: Props) {
+export function EntryDayGroup({ date, entries, showProject }: Props) {
   const [yearStr, monthStr, dayStr] = date.split("-");
   const year = +yearStr!;
   const month = +monthStr!;
@@ -25,24 +25,35 @@ export function EntryDayGroup({ date, entries }: Props) {
         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</span>
       </div>
       <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-        {entries.map((entry) => (
-          <li key={entry.entryId}>
-            <Link
-              to={`/entries/${entry.entryId}`}
-              className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              <div className="flex items-center gap-3">
-                <TypeBadge type={entry.contentType} />
-                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                  {entry.contentTitle}
+        {entries.map((entry) => {
+          const projectName = showProject?.find(
+            (p) => p.projectId === (entry.projectId ?? "personal")
+          )?.name;
+
+          return (
+            <li key={entry.entryId}>
+              <Link
+                to={`/entries/${entry.entryId}`}
+                className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                <div className="flex items-center gap-3">
+                  <TypeBadge type={entry.contentType} />
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {entry.contentTitle}
+                  </span>
+                  {projectName && (
+                    <span className="rounded-full border border-gray-200 px-2 py-0.5 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                      {projectName}
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  {entry.noteCount} {entry.noteCount === 1 ? "note" : "notes"}
                 </span>
-              </div>
-              <span className="text-xs text-gray-400 dark:text-gray-500">
-                {entry.noteCount} {entry.noteCount === 1 ? "note" : "notes"}
-              </span>
-            </Link>
-          </li>
-        ))}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

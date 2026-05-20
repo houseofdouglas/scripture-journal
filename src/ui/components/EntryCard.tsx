@@ -1,22 +1,35 @@
 import { Link } from "react-router-dom";
 import type { UserIndexEntry } from "../../types";
+import type { Project } from "../../types";
 
 interface Props {
   entry: UserIndexEntry;
   date: string; // YYYY-MM-DD, formatted for display
+  showProject?: Project[] | undefined;
 }
 
-export function EntryCard({ entry, date }: Props) {
+export function EntryCard({ entry, date, showProject }: Props) {
+  const projectName = showProject?.find(
+    (p) => p.projectId === (entry.projectId ?? "personal")
+  )?.name;
+
   return (
     <Link
       to={`/entries/${entry.entryId}`}
       className="block rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:border-blue-300 hover:shadow dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-600"
     >
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
           {formatDate(date)}
         </span>
-        <TypeBadge type={entry.contentType} />
+        <div className="flex items-center gap-2">
+          {projectName && (
+            <span className="rounded-full border border-gray-200 px-2 py-0.5 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
+              {projectName}
+            </span>
+          )}
+          <TypeBadge type={entry.contentType} />
+        </div>
       </div>
       <h3 className="mb-1 font-semibold text-gray-900 dark:text-gray-100">{entry.contentTitle}</h3>
       {entry.snippet && (
