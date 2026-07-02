@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiClient, ApiError } from "../lib/api-client";
 import { extractPdfText } from "../lib/pdf-import";
@@ -6,7 +6,7 @@ import type { ImportResponse } from "../../types";
 
 type ModalState =
   | { mode: "url"; url: string; error?: string; fetchFailed?: boolean }
-  | { mode: "pdf"; fileName: string; title: string; error?: string }
+  | { mode: "pdf"; fileName: string; title: string; text?: string; extracting?: boolean; error?: string }
   | { mode: "manual"; url: string; text: string; title: string; error?: string }
   | { mode: "loading" }
   | { mode: "duplicate"; articleId: string; title: string; importedAt: string }
@@ -19,7 +19,6 @@ interface Props {
 export function ArticleImportModal({ onClose }: Props) {
   const navigate = useNavigate();
   const [state, setState] = useState<ModalState>({ mode: "url", url: "" });
-  const pdfFileRef = useRef<File | null>(null);
 
   async function handleUrlSubmit(e: FormEvent) {
     e.preventDefault();
@@ -68,33 +67,19 @@ export function ArticleImportModal({ onClose }: Props) {
   async function handlePdfSubmit(e: FormEvent) {
     e.preventDefault();
     if (state.mode !== "pdf") return;
-    const file = pdfFileRef.current;
-    if (!file) {
+    if (!state.text) {
       setState({ ...state, error: "Please select a PDF file." });
       return;
     }
 
+    const { text, title, fileName } = state;
     setState({ mode: "loading" });
 
     try {
-      const text = await extractPdfText(file);
-      if (!text.trim()) {
-        setState({ mode: "pdf", fileName: file.name, title: state.title, error: "Could not extract text from this PDF." });
-        return;
-      }
-      const result = await apiClient.post<ImportResponse>("/articles/import", {
-        text,
-        title: state.title,
-      });
+      const result = await apiClient.post<ImportResponse>("/articles/import", { text, title });
       handleImportResponse(result, "");
-    } catch (err) {
-      const title = state.mode === "pdf" ? (state as { title: string }).title : "";
-      const fileName = pdfFileRef.current?.name ?? "";
-      if (err instanceof ApiError) {
-        setState({ mode: "pdf", fileName, title, error: "Could not import. Please try again." });
-      } else {
-        setState({ mode: "pdf", fileName, title, error: "Failed to read the PDF. Try pasting text manually." });
-      }
+    } catch {
+      setState({ mode: "pdf", fileName, title, text, error: "Could not import. Please try again." });
     }
   }
 
@@ -131,12 +116,27 @@ export function ArticleImportModal({ onClose }: Props) {
     }
   }
 
-  function handlePdfFileChange(e: ChangeEvent<HTMLInputElement>) {
+  async function handlePdfFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    pdfFileRef.current = file;
     const defaultTitle = file.name.replace(/\.pdf$/i, "").replace(/[-_]/g, " ");
-    setState({ mode: "pdf", fileName: file.name, title: defaultTitle });
+
+    // Extract immediately on selection rather than deferring to submit. Safari
+    // can hand back a File for an iCloud-only document before it's fully
+    // materialized locally; reading it later (e.g. once the user has finished
+    // typing a title) risks the underlying reference having gone stale.
+    setState({ mode: "pdf", fileName: file.name, title: defaultTitle, extracting: true });
+
+    try {
+      const text = await extractPdfText(file);
+      if (!text.trim()) {
+        setState({ mode: "pdf", fileName: file.name, title: defaultTitle, error: "Could not extract text from this PDF." });
+        return;
+      }
+      setState({ mode: "pdf", fileName: file.name, title: defaultTitle, text });
+    } catch {
+      setState({ mode: "pdf", fileName: file.name, title: defaultTitle, error: "Failed to read the PDF. Try pasting text manually." });
+    }
   }
 
   const isLoading = state.mode === "loading";
@@ -241,7 +241,10 @@ export function ArticleImportModal({ onClose }: Props) {
                   className="w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-300 dark:file:bg-blue-900 dark:file:text-blue-300"
                 />
                 {state.fileName && (
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{state.fileName}</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {state.fileName}
+                    {state.extracting && " — reading…"}
+                  </p>
                 )}
               </div>
               <div>
@@ -261,7 +264,7 @@ export function ArticleImportModal({ onClose }: Props) {
               <div className="flex gap-3 pt-1">
                 <button
                   type="submit"
-                  disabled={!pdfFileRef.current && !state.fileName}
+                  disabled={!state.text || state.extracting}
                   className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                 >
                   Import
