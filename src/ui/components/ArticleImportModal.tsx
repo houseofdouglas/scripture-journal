@@ -121,10 +121,8 @@ export function ArticleImportModal({ onClose }: Props) {
     if (!file) return;
     const defaultTitle = file.name.replace(/\.pdf$/i, "").replace(/[-_]/g, " ");
 
-    // Extract immediately on selection rather than deferring to submit. Safari
-    // can hand back a File for an iCloud-only document before it's fully
-    // materialized locally; reading it later (e.g. once the user has finished
-    // typing a title) risks the underlying reference having gone stale.
+    // Extract on selection rather than deferring to submit, so the user finds
+    // out immediately if the file can't be read.
     setState({ mode: "pdf", fileName: file.name, title: defaultTitle, extracting: true });
 
     try {
@@ -134,7 +132,8 @@ export function ArticleImportModal({ onClose }: Props) {
         return;
       }
       setState({ mode: "pdf", fileName: file.name, title: defaultTitle, text });
-    } catch {
+    } catch (err) {
+      console.error("PDF extraction failed:", err);
       setState({ mode: "pdf", fileName: file.name, title: defaultTitle, error: "Failed to read the PDF. Try pasting text manually." });
     }
   }
