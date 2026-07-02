@@ -3,7 +3,14 @@ import { apiClient } from "../api-client";
 import type { Project, ProjectsResponse } from "../../../types";
 
 async function fetchProjects(): Promise<Project[]> {
-  const res = await fetch("/api/projects");
+  // Nav (and this hook) renders on the public /login page too, before any
+  // token exists — fetch manually rather than via apiClient so a 401 there
+  // resolves to an empty list instead of triggering apiClient's global
+  // redirect-to-login on every anonymous page load.
+  const token = localStorage.getItem("jwt");
+  const res = await fetch("/api/projects", {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   if (res.status === 401) return []; // not yet logged in
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = (await res.json()) as ProjectsResponse;
