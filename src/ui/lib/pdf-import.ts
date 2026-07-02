@@ -30,11 +30,22 @@ interface PdfTextItem {
   transform: number[];
 }
 
+// Normalizes a paragraph for repeat detection across pages: strips a trailing
+// page number (the only part of a running header/footer that usually varies
+// page-to-page) and collapses whitespace/case differences.
+function normalizeForRepeatDetection(text: string): string {
+  return text
+    .replace(/\s*\d+\s*$/, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 export async function extractPdfText(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-  const allParagraphs: string[] = [];
+  const allParagraphs: { pageNum: number; text: string }[] = [];
 
   for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
     const page = await pdf.getPage(pageNum);
@@ -84,9 +95,31 @@ export async function extractPdfText(file: File): Promise<string> {
 
     for (const paraLines of pageParagraphs) {
       const text = paraLines.join(" ").trim();
-      if (text) allParagraphs.push(text);
+      if (text) allParagraphs.push({ pageNum, text });
     }
   }
 
-  return allParagraphs.join("\n\n");
+  // Drop running headers/footers: paragraphs that recur near-verbatim across
+  // most pages (mastheads, copyright lines, "licensed to" watermarks — common
+  // in publisher-distributed reprints). A real content paragraph essentially
+  // never repeats across a large fraction of a document's pages.
+  const pagesByNormalized = new Map<string, Set<number>>();
+  for (const { pageNum, text } of allParagraphs) {
+    const key = normalizeForRepeatDetection(text);
+    if (!key) continue;
+    let pages = pagesByNormalized.get(key);
+    if (!pages) pagesByNormalized.set(key, (pages = new Set()));
+    pages.add(pageNum);
+  }
+  const boilerplateThreshold = Math.max(3, Math.ceil(pdf.numPages * 0.4));
+  const boilerplate = new Set(
+    Array.from(pagesByNormalized.entries())
+      .filter(([, pages]) => pages.size >= boilerplateThreshold)
+      .map(([key]) => key)
+  );
+
+  return allParagraphs
+    .filter(({ text }) => !boilerplate.has(normalizeForRepeatDetection(text)))
+    .map(({ text }) => text)
+    .join("\n\n");
 }
