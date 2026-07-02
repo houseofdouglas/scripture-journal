@@ -39,10 +39,13 @@ export async function extractPdfText(file: File): Promise<string> {
     const lines = Array.from(lineMap.values()).sort((a, b) => b.y - a.y);
     if (lines.length === 0) continue;
 
-    // Estimate line height from the median non-zero height
-    const heights = lines.map((l) => l.height).filter((h) => h > 0).sort((a, b) => a - b);
-    const medianHeight = heights[Math.floor(heights.length / 2)] ?? 12;
-    const paraGap = medianHeight * 1.4;
+    // Estimate normal line-to-line spacing from the median gap between consecutive
+    // lines. This tracks actual leading (which varies by document/font and is often
+    // looser than the glyph height itself), unlike a glyph-height-based estimate,
+    // which under-detects paragraph continuations in documents with generous leading.
+    const gaps = lines.slice(1).map((line, i) => lines[i]!.y - line.y).filter((g) => g > 0).sort((a, b) => a - b);
+    const medianGap = gaps[Math.floor(gaps.length / 2)] ?? 12;
+    const paraGap = medianGap * 1.5;
 
     // Group consecutive lines into paragraphs based on vertical gap
     const pageParagraphs: string[][] = [[]];
