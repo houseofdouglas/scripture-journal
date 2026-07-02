@@ -5,6 +5,25 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
+// pdfjs-dist's getTextContent() consumes a ReadableStream via `for await...of`,
+// which needs ReadableStream.prototype[Symbol.asyncIterator]. Some Safari
+// builds still lack it, throwing "undefined is not a function" deep inside
+// the library. Polyfill it up front rather than depend on the OS/browser.
+if (typeof ReadableStream !== "undefined" && !(ReadableStream.prototype as any)[Symbol.asyncIterator]) {
+  (ReadableStream.prototype as any)[Symbol.asyncIterator] = async function* (this: ReadableStream) {
+    const reader = this.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) return;
+        yield value;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  };
+}
+
 interface PdfTextItem {
   str: string;
   height: number;
