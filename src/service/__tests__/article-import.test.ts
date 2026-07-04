@@ -19,6 +19,7 @@ vi.mock("../../repository/article", () => ({
   getArticleUrlIndex: vi.fn(),
   updateArticleUrlIndex: vi.fn(),
   updateArticleIndex: vi.fn(),
+  setArticleArchived: vi.fn(),
 }));
 
 // Mock CloudFront client — capture CreateInvalidationCommand calls
@@ -31,8 +32,9 @@ vi.mock("@aws-sdk/client-cloudfront", () => {
   };
 });
 
-import { importArticle } from "../article-import";
+import { importArticle, archiveArticle, unarchiveArticle } from "../article-import";
 import { ValidationError } from "../errors";
+import { WriteConflictError } from "../../repository/errors";
 import * as articleRepo from "../../repository/article";
 import * as cfModule from "@aws-sdk/client-cloudfront";
 
@@ -41,6 +43,7 @@ const mockPutArticle = vi.mocked(articleRepo.putArticle);
 const mockGetUrlIndex = vi.mocked(articleRepo.getArticleUrlIndex);
 const mockUpdateUrlIndex = vi.mocked(articleRepo.updateArticleUrlIndex);
 const mockUpdateIndex = vi.mocked(articleRepo.updateArticleIndex);
+const mockSetArticleArchived = vi.mocked(articleRepo.setArticleArchived);
 // Access the shared send spy via the module's __cloudFrontSend export
 const cfSend = (cfModule as unknown as { __cloudFrontSend: ReturnType<typeof vi.fn> }).__cloudFrontSend;
 
@@ -403,6 +406,7 @@ describe("importArticle()", () => {
         title: "Old Article",
         sourceUrl: "https://churchofjesuschrist.org/other",
         importedAt: "2026-01-01T00:00:00Z",
+        archived: false,
       };
       const result = mutator({ articles: [existingEntry] });
 
@@ -430,17 +434,20 @@ describe("importArticle()", () => {
       expect(mockUpdateIndex).toHaveBeenCalledOnce();
 
       const mutator = mockUpdateIndex.mock.calls[0]![0]!;
+      // Old entry for this sourceUrl is archived — the new version must NOT inherit that.
       const oldEntry = {
         articleId: PREVIOUS_ID,
         title: "Old Version",
         sourceUrl: ALLOWED_URL,
         importedAt: "2026-01-01T00:00:00Z",
+        archived: true,
       };
       const otherEntry = {
         articleId: "e".repeat(64),
         title: "Unrelated Article",
         sourceUrl: "https://churchofjesuschrist.org/other",
         importedAt: "2026-03-01T00:00:00Z",
+        archived: false,
       };
       const updated = mutator({ articles: [otherEntry, oldEntry] });
 
@@ -448,8 +455,9 @@ describe("importArticle()", () => {
       expect(updated.articles).toHaveLength(2);
       expect(updated.articles.find((a) => a.articleId === PREVIOUS_ID)).toBeUndefined();
       expect(updated.articles.find((a) => a.sourceUrl === "https://churchofjesuschrist.org/other")).toBeDefined();
-      // New entry is prepended
+      // New entry is prepended and starts unarchived, even though the URL's previous entry was archived
       expect(updated.articles[0]!.sourceUrl).toBe(ALLOWED_URL);
+      expect(updated.articles[0]!.archived).toBe(false);
     });
 
     it("calls CloudFront invalidation on IMPORTED", async () => {
@@ -509,5 +517,69 @@ describe("importArticle()", () => {
         expect(cfSend).not.toHaveBeenCalled();
       }
     });
+  });
+});
+
+describe("archiveArticle()", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    cfSend.mockResolvedValue({});
+  });
+
+  it("returns { articleId, archived: true } and invalidates the index on success", async () => {
+    mockSetArticleArchived.mockResolvedValue(true);
+
+    const result = await archiveArticle("a".repeat(64));
+
+    expect(result).toEqual({ articleId: "a".repeat(64), archived: true });
+    expect(mockSetArticleArchived).toHaveBeenCalledWith("a".repeat(64), true);
+    expect(cfSend).toHaveBeenCalledOnce();
+  });
+
+  it("returns null and does not invalidate when the article is not in the index", async () => {
+    mockSetArticleArchived.mockResolvedValue(false);
+
+    const result = await archiveArticle("a".repeat(64));
+
+    expect(result).toBeNull();
+    expect(cfSend).not.toHaveBeenCalled();
+  });
+
+  it("propagates WriteConflictError from the repository", async () => {
+    mockSetArticleArchived.mockRejectedValue(new WriteConflictError("content/articles/index.json"));
+
+    await expect(archiveArticle("a".repeat(64))).rejects.toThrow(WriteConflictError);
+  });
+});
+
+describe("unarchiveArticle()", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    cfSend.mockResolvedValue({});
+  });
+
+  it("returns { articleId, archived: false } and invalidates the index on success", async () => {
+    mockSetArticleArchived.mockResolvedValue(true);
+
+    const result = await unarchiveArticle("a".repeat(64));
+
+    expect(result).toEqual({ articleId: "a".repeat(64), archived: false });
+    expect(mockSetArticleArchived).toHaveBeenCalledWith("a".repeat(64), false);
+    expect(cfSend).toHaveBeenCalledOnce();
+  });
+
+  it("returns null and does not invalidate when the article is not in the index", async () => {
+    mockSetArticleArchived.mockResolvedValue(false);
+
+    const result = await unarchiveArticle("a".repeat(64));
+
+    expect(result).toBeNull();
+    expect(cfSend).not.toHaveBeenCalled();
+  });
+
+  it("propagates WriteConflictError from the repository", async () => {
+    mockSetArticleArchived.mockRejectedValue(new WriteConflictError("content/articles/index.json"));
+
+    await expect(unarchiveArticle("a".repeat(64))).rejects.toThrow(WriteConflictError);
   });
 });

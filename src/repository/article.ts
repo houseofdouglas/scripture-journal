@@ -104,3 +104,35 @@ export async function updateArticleIndex(
     return mutate(current);
   });
 }
+
+/**
+ * Set the `archived` flag on the index entry whose `articleId` matches.
+ *
+ * Returns `false` without writing when no entry matches (including when the
+ * index does not exist yet) — an older article version's id, for example,
+ * never appears in the index and is not archivable directly. Returns `true`
+ * once the flag has been persisted (retrying on 412 via `updateArticleIndex`).
+ */
+export async function setArticleArchived(
+  articleId: string,
+  archived: boolean
+): Promise<boolean> {
+  const existing = await getArticleIndex();
+  if (!existing || !existing.data.articles.some((a) => a.articleId === articleId)) {
+    return false;
+  }
+
+  let found = false;
+  await updateArticleIndex((current) => {
+    const index = current.articles.findIndex((a) => a.articleId === articleId);
+    if (index === -1) {
+      found = false;
+      return current;
+    }
+    found = true;
+    const articles = [...current.articles];
+    articles[index] = { ...articles[index]!, archived };
+    return { articles };
+  });
+  return found;
+}

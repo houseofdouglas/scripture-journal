@@ -1,8 +1,9 @@
 import type { Hono } from "hono";
 import type { AppEnv } from "./app";
 import { ImportRequestSchema } from "../types";
-import { importArticle } from "../service/article-import";
+import { importArticle, archiveArticle, unarchiveArticle } from "../service/article-import";
 import { ValidationError } from "../service/errors";
+import { WriteConflictError } from "../repository/errors";
 import { ZodError } from "zod";
 
 export function registerArticleRoutes(app: Hono<AppEnv>): void {
@@ -43,6 +44,46 @@ export function registerArticleRoutes(app: Hono<AppEnv>): void {
             fields: err.fields,
           },
           422
+        );
+      }
+      throw err;
+    }
+  });
+
+  // ── POST /articles/:articleId/archive ───────────────────────────────────────
+  app.post("/articles/:articleId/archive", async (c) => {
+    const articleId = c.req.param("articleId");
+    try {
+      const result = await archiveArticle(articleId);
+      if (!result) {
+        return c.json({ error: "NOT_FOUND", message: "Article not found in index" }, 404);
+      }
+      return c.json({ data: result }, 200);
+    } catch (err) {
+      if (err instanceof WriteConflictError) {
+        return c.json(
+          { error: "WRITE_CONFLICT", message: "Could not update the article index. Please try again." },
+          409
+        );
+      }
+      throw err;
+    }
+  });
+
+  // ── POST /articles/:articleId/unarchive ─────────────────────────────────────
+  app.post("/articles/:articleId/unarchive", async (c) => {
+    const articleId = c.req.param("articleId");
+    try {
+      const result = await unarchiveArticle(articleId);
+      if (!result) {
+        return c.json({ error: "NOT_FOUND", message: "Article not found in index" }, 404);
+      }
+      return c.json({ data: result }, 200);
+    } catch (err) {
+      if (err instanceof WriteConflictError) {
+        return c.json(
+          { error: "WRITE_CONFLICT", message: "Could not update the article index. Please try again." },
+          409
         );
       }
       throw err;

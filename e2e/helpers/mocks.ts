@@ -473,3 +473,62 @@ export async function mockImportFetchFailure(page: Page): Promise<void> {
     });
   });
 }
+
+// ---------------------------------------------------------------------------
+// Archive / unarchive mocks
+// ---------------------------------------------------------------------------
+
+export interface ArticleIndexEntryFixture {
+  articleId: string;
+  title: string;
+  sourceUrl: string;
+  importedAt: string;
+  archived: boolean;
+}
+
+/**
+ * Mocks `content/articles/index.json`. Register this AFTER `mockArticle()`
+ * in the same test — both use a `*.json` glob under `content/articles/`, and
+ * Playwright dispatches to the most-recently-registered matching handler, so
+ * this exact-path route must come last to take priority over the broader one.
+ */
+export async function mockArticleIndex(
+  page: Page,
+  articles: ArticleIndexEntryFixture[],
+): Promise<void> {
+  await page.route("**/content/articles/index.json", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ articles }),
+    });
+  });
+}
+
+/** Mocks a successful `POST /api/articles/:id/archive`. */
+export async function mockArchiveSuccess(
+  page: Page,
+  articleId: string,
+): Promise<void> {
+  await page.route(`**/api/articles/${articleId}/archive`, (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ data: { articleId, archived: true } }),
+    });
+  });
+}
+
+/** Mocks a successful `POST /api/articles/:id/unarchive`. */
+export async function mockUnarchiveSuccess(
+  page: Page,
+  articleId: string,
+): Promise<void> {
+  await page.route(`**/api/articles/${articleId}/unarchive`, (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ data: { articleId, archived: false } }),
+    });
+  });
+}
