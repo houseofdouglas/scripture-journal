@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArticleIndexSchema } from "../../../types";
 import type { ArticleIndex } from "../../../types";
+import { apiClient } from "../api-client";
 
 const ARTICLE_INDEX_URL = "/content/articles/index.json";
 
@@ -44,5 +45,43 @@ export function useArticleIndex() {
     queryKey: ["articles", "index"],
     queryFn: fetchArticleIndex,
     staleTime: 0,
+  });
+}
+
+/** Returns whether the given article's current index entry is archived. `undefined` index treated as not archived. */
+export function isArticleArchived(index: ArticleIndex | undefined, articleId: string): boolean {
+  return index?.articles.find((a) => a.articleId === articleId)?.archived ?? false;
+}
+
+interface ArchiveResult {
+  articleId: string;
+  archived: boolean;
+}
+
+/** Archives an article; invalidates the article index query on success. */
+export function useArchiveArticle() {
+  const queryClient = useQueryClient();
+  return useMutation<ArchiveResult, Error, string>({
+    mutationFn: (articleId: string) =>
+      apiClient
+        .post<{ data: ArchiveResult }>(`/articles/${articleId}/archive`, undefined)
+        .then((res) => res.data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["articles", "index"] });
+    },
+  });
+}
+
+/** Unarchives an article; invalidates the article index query on success. */
+export function useUnarchiveArticle() {
+  const queryClient = useQueryClient();
+  return useMutation<ArchiveResult, Error, string>({
+    mutationFn: (articleId: string) =>
+      apiClient
+        .post<{ data: ArchiveResult }>(`/articles/${articleId}/unarchive`, undefined)
+        .then((res) => res.data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["articles", "index"] });
+    },
   });
 }

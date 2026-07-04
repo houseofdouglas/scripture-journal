@@ -8,16 +8,21 @@ vi.mock("../../service/auth", () => ({
 
 vi.mock("../../service/article-import", () => ({
   importArticle: vi.fn(),
+  archiveArticle: vi.fn(),
+  unarchiveArticle: vi.fn(),
 }));
 
 import * as authService from "../../service/auth";
 import * as articleService from "../../service/article-import";
 import { ValidationError } from "../../service/errors";
+import { WriteConflictError } from "../../repository/errors";
 import { createApp } from "../app";
 import { registerArticleRoutes } from "../article";
 
 const mockVerifyToken = vi.mocked(authService.verifyToken);
 const mockImportArticle = vi.mocked(articleService.importArticle);
+const mockArchiveArticle = vi.mocked(articleService.archiveArticle);
+const mockUnarchiveArticle = vi.mocked(articleService.unarchiveArticle);
 
 const FAKE_PAYLOAD = { sub: "user-uuid", username: "peter", iat: 1000000, exp: 9999999 };
 
@@ -156,5 +161,105 @@ describe("POST /articles/import", () => {
     const res = await req(app, { notAUrl: "something" }, "valid-token");
 
     expect(res.status).toBe(422);
+  });
+});
+
+const ARTICLE_ID = "a".repeat(64);
+
+async function archiveReq(app: ReturnType<typeof buildApp>, action: "archive" | "unarchive", token?: string) {
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return app.request(`/api/articles/${ARTICLE_ID}/${action}`, { method: "POST", headers });
+}
+
+describe("POST /articles/:articleId/archive", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returns 401 without JWT", async () => {
+    const app = buildApp();
+    const res = await archiveReq(app, "archive");
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 200 with { data: { articleId, archived: true } } on success", async () => {
+    mockVerifyToken.mockResolvedValue(FAKE_PAYLOAD);
+    mockArchiveArticle.mockResolvedValue({ articleId: ARTICLE_ID, archived: true });
+
+    const app = buildApp();
+    const res = await archiveReq(app, "archive", "valid-token");
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { data: { articleId: string; archived: boolean } };
+    expect(body.data).toEqual({ articleId: ARTICLE_ID, archived: true });
+  });
+
+  it("returns 404 NOT_FOUND when the article has no matching index entry", async () => {
+    mockVerifyToken.mockResolvedValue(FAKE_PAYLOAD);
+    mockArchiveArticle.mockResolvedValue(null);
+
+    const app = buildApp();
+    const res = await archiveReq(app, "archive", "valid-token");
+
+    expect(res.status).toBe(404);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.error).toBe("NOT_FOUND");
+  });
+
+  it("returns 409 WRITE_CONFLICT on persistent index write conflict", async () => {
+    mockVerifyToken.mockResolvedValue(FAKE_PAYLOAD);
+    mockArchiveArticle.mockRejectedValue(new WriteConflictError("content/articles/index.json"));
+
+    const app = buildApp();
+    const res = await archiveReq(app, "archive", "valid-token");
+
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.error).toBe("WRITE_CONFLICT");
+  });
+});
+
+describe("POST /articles/:articleId/unarchive", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("returns 401 without JWT", async () => {
+    const app = buildApp();
+    const res = await archiveReq(app, "unarchive");
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 200 with { data: { articleId, archived: false } } on success", async () => {
+    mockVerifyToken.mockResolvedValue(FAKE_PAYLOAD);
+    mockUnarchiveArticle.mockResolvedValue({ articleId: ARTICLE_ID, archived: false });
+
+    const app = buildApp();
+    const res = await archiveReq(app, "unarchive", "valid-token");
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { data: { articleId: string; archived: boolean } };
+    expect(body.data).toEqual({ articleId: ARTICLE_ID, archived: false });
+  });
+
+  it("returns 404 NOT_FOUND when the article has no matching index entry", async () => {
+    mockVerifyToken.mockResolvedValue(FAKE_PAYLOAD);
+    mockUnarchiveArticle.mockResolvedValue(null);
+
+    const app = buildApp();
+    const res = await archiveReq(app, "unarchive", "valid-token");
+
+    expect(res.status).toBe(404);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.error).toBe("NOT_FOUND");
+  });
+
+  it("returns 409 WRITE_CONFLICT on persistent index write conflict", async () => {
+    mockVerifyToken.mockResolvedValue(FAKE_PAYLOAD);
+    mockUnarchiveArticle.mockRejectedValue(new WriteConflictError("content/articles/index.json"));
+
+    const app = buildApp();
+    const res = await archiveReq(app, "unarchive", "valid-token");
+
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.error).toBe("WRITE_CONFLICT");
   });
 });

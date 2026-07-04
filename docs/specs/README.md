@@ -12,6 +12,7 @@ Specs are the source of truth. Code is derived from specs.
 
 | Spec | File | Summary | Acceptance Report |
 |------|------|---------|---|
+| Archive Articles | [archive-articles.md](archive-articles.md) | Archive/unarchive an article via a new index flag; kept intact for entries/annotations; "Show archived" toggle on Browse Articles | [2026-07-03](../plans/completed/archive-articles-acceptance-2026-07-03.md) |
 | Browse Articles | [browse-articles.md](browse-articles.md) | Card-grid browser at `/articles`, ArticleIndex in S3, CloudFront invalidation on import, client-side search | [2026-05-02](../plans/completed/browse-articles-acceptance-2026-05-02.md) |
 | Article Import | [article-import.md](article-import.md) | Import from churchofjesuschrist.org, SHA-256 content-addressing, duplicate/version detection, manual paste fallback | [2026-04-26](../plans/completed/article-import-acceptance-2026-04-26.md) |
 | Dashboard | [dashboard.md](dashboard.md) | Entry list (single vs. grouped day cards), calendar view, past entry read-only view | [2026-04-26](../plans/completed/dashboard-acceptance-2026-04-26.md) |

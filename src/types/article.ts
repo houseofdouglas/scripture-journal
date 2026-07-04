@@ -128,6 +128,7 @@ export const ArticleIndexEntrySchema = z.object({
   title: z.string().min(1),
   sourceUrl: z.string().min(1),
   importedAt: z.string().datetime(),      // ISO 8601
+  archived: z.boolean().default(false),   // entries written before this field existed parse as false
 });
 export type ArticleIndexEntry = z.infer<typeof ArticleIndexEntrySchema>;
 

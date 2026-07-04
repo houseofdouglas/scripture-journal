@@ -11,6 +11,7 @@ import {
   getArticleUrlIndex,
   updateArticleUrlIndex,
   updateArticleIndex,
+  setArticleArchived,
 } from "../repository/article";
 import { ValidationError } from "./errors";
 import { env } from "../config/env";
@@ -198,7 +199,7 @@ async function writeArticle(
   await putArticle(article);
   await updateArticleUrlIndex(sourceUrl, articleId, importedAt);
   await updateArticleIndex((current) => {
-    const entry = { articleId, title, sourceUrl, importedAt };
+    const entry = { articleId, title, sourceUrl, importedAt, archived: false };
     if (previousVersionId) {
       // Version import: replace the existing entry for this URL, prepend new one
       const filtered = current.articles.filter((a) => a.sourceUrl !== sourceUrl);
@@ -220,6 +221,36 @@ async function writeArticle(
   }
 
   return { status: "IMPORTED", articleId, title, importedAt };
+}
+
+/**
+ * Archive an article: hides it from the default Browse Articles list while
+ * leaving `content/articles/<articleId>.json` and all journal entries/
+ * annotations referencing it untouched.
+ *
+ * Returns `null` if `articleId` has no matching entry in the article index
+ * (e.g. it's an older version's id, or the index doesn't exist yet).
+ */
+export async function archiveArticle(
+  articleId: string
+): Promise<{ articleId: string; archived: true } | null> {
+  const found = await setArticleArchived(articleId, true);
+  if (!found) return null;
+  await invalidateArticleIndex(crypto.randomUUID());
+  return { articleId, archived: true };
+}
+
+/**
+ * Reverse of `archiveArticle` — restores the article to the default
+ * Browse Articles list. Returns `null` under the same conditions.
+ */
+export async function unarchiveArticle(
+  articleId: string
+): Promise<{ articleId: string; archived: false } | null> {
+  const found = await setArticleArchived(articleId, false);
+  if (!found) return null;
+  await invalidateArticleIndex(crypto.randomUUID());
+  return { articleId, archived: false };
 }
 
 /**

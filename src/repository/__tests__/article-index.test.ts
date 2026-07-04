@@ -5,7 +5,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
-import { getArticleIndex, updateArticleIndex } from "../article";
+import { getArticleIndex, updateArticleIndex, setArticleArchived } from "../article";
 import { WriteConflictError } from "../errors";
 
 const s3Mock = mockClient(S3Client);
@@ -18,6 +18,7 @@ const SAMPLE_ENTRY = {
   title: "Faith in Jesus Christ",
   sourceUrl: "https://churchofjesuschrist.org/study/manual/faith",
   importedAt: "2026-04-22T10:00:00.000Z",
+  archived: false,
 };
 
 const SAMPLE_INDEX = { articles: [SAMPLE_ENTRY] };
@@ -112,6 +113,7 @@ describe("updateArticleIndex()", () => {
       title: "The Living Christ",
       sourceUrl: "https://churchofjesuschrist.org/study/the-living-christ",
       importedAt: "2026-04-23T10:00:00.000Z",
+      archived: false,
     };
 
     await updateArticleIndex((current) => ({
@@ -138,5 +140,109 @@ describe("updateArticleIndex()", () => {
 
     // 1 initial + 3 retries = 4 PUT calls
     expect(s3Mock.commandCalls(PutObjectCommand)).toHaveLength(4);
+  });
+});
+
+describe("setArticleArchived()", () => {
+  beforeEach(() => s3Mock.reset());
+
+  it("returns true and persists archived: true when the articleId matches an entry", async () => {
+    s3Mock
+      .on(GetObjectCommand)
+      .resolves(makeGetResponse(SAMPLE_INDEX, '"etag-1"'));
+    s3Mock.on(PutObjectCommand).resolves({});
+
+    const result = await setArticleArchived(VALID_ARTICLE_ID, true);
+
+    expect(result).toBe(true);
+    const putCall = s3Mock.commandCalls(PutObjectCommand)[0]!;
+    const body = JSON.parse(putCall.args[0].input.Body as string);
+    expect(body.articles[0].archived).toBe(true);
+    expect(body.articles[0].articleId).toBe(VALID_ARTICLE_ID);
+    // Other fields must be untouched by the archive flip
+    expect(body.articles[0].title).toBe(SAMPLE_ENTRY.title);
+    expect(body.articles[0].sourceUrl).toBe(SAMPLE_ENTRY.sourceUrl);
+    expect(body.articles[0].importedAt).toBe(SAMPLE_ENTRY.importedAt);
+  });
+
+  it("returns true and persists archived: false (unarchive) when the articleId matches", async () => {
+    const archivedIndex = {
+      articles: [{ ...SAMPLE_ENTRY, archived: true }],
+    };
+    s3Mock
+      .on(GetObjectCommand)
+      .resolves(makeGetResponse(archivedIndex, '"etag-2"'));
+    s3Mock.on(PutObjectCommand).resolves({});
+
+    const result = await setArticleArchived(VALID_ARTICLE_ID, false);
+
+    expect(result).toBe(true);
+    const putCall = s3Mock.commandCalls(PutObjectCommand)[0]!;
+    const body = JSON.parse(putCall.args[0].input.Body as string);
+    expect(body.articles[0].archived).toBe(false);
+    // Other fields must be untouched by the unarchive flip
+    expect(body.articles[0].title).toBe(SAMPLE_ENTRY.title);
+    expect(body.articles[0].sourceUrl).toBe(SAMPLE_ENTRY.sourceUrl);
+    expect(body.articles[0].importedAt).toBe(SAMPLE_ENTRY.importedAt);
+  });
+
+  it("archiving an already-archived article is idempotent (200/true, unchanged)", async () => {
+    const archivedIndex = { articles: [{ ...SAMPLE_ENTRY, archived: true }] };
+    s3Mock
+      .on(GetObjectCommand)
+      .resolves(makeGetResponse(archivedIndex, '"etag-5"'));
+    s3Mock.on(PutObjectCommand).resolves({});
+
+    const result = await setArticleArchived(VALID_ARTICLE_ID, true);
+
+    expect(result).toBe(true);
+    const putCall = s3Mock.commandCalls(PutObjectCommand)[0]!;
+    const body = JSON.parse(putCall.args[0].input.Body as string);
+    expect(body.articles[0].archived).toBe(true);
+  });
+
+  it("unarchiving an already-unarchived article is idempotent (200/true, unchanged)", async () => {
+    s3Mock
+      .on(GetObjectCommand)
+      .resolves(makeGetResponse(SAMPLE_INDEX, '"etag-6"'));
+    s3Mock.on(PutObjectCommand).resolves({});
+
+    const result = await setArticleArchived(VALID_ARTICLE_ID, false);
+
+    expect(result).toBe(true);
+    const putCall = s3Mock.commandCalls(PutObjectCommand)[0]!;
+    const body = JSON.parse(putCall.args[0].input.Body as string);
+    expect(body.articles[0].archived).toBe(false);
+  });
+
+  it("returns false and does not write when no entry matches the articleId", async () => {
+    s3Mock
+      .on(GetObjectCommand)
+      .resolves(makeGetResponse(SAMPLE_INDEX, '"etag-3"'));
+
+    const result = await setArticleArchived(VALID_ARTICLE_ID_2, true);
+
+    expect(result).toBe(false);
+    expect(s3Mock.commandCalls(PutObjectCommand)).toHaveLength(0);
+  });
+
+  it("returns false and does not write when the index does not exist", async () => {
+    s3Mock.on(GetObjectCommand).rejects({ name: "NoSuchKey" });
+
+    const result = await setArticleArchived(VALID_ARTICLE_ID, true);
+
+    expect(result).toBe(false);
+    expect(s3Mock.commandCalls(PutObjectCommand)).toHaveLength(0);
+  });
+
+  it("propagates WriteConflictError on persistent 412 conflict", async () => {
+    s3Mock
+      .on(GetObjectCommand)
+      .resolves(makeGetResponse(SAMPLE_INDEX, '"etag-4"'));
+    s3Mock.on(PutObjectCommand).rejects(make412Error());
+
+    await expect(setArticleArchived(VALID_ARTICLE_ID, true)).rejects.toThrow(
+      WriteConflictError
+    );
   });
 });
