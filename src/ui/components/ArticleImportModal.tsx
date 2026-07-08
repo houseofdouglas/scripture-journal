@@ -1,12 +1,20 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiClient, ApiError } from "../lib/api-client";
-import { extractPdfText } from "../lib/pdf-import";
+import { extractPdfWithFallback, type ExtractSource } from "../lib/pdf-extract-client";
 import type { ImportResponse } from "../../types";
 
 type ModalState =
   | { mode: "url"; url: string; error?: string; fetchFailed?: boolean }
-  | { mode: "pdf"; fileName: string; title: string; text?: string; extracting?: boolean; error?: string }
+  | { mode: "pdf"; fileName: string; extracting?: boolean; error?: string }
+  | {
+      mode: "pdf-preview";
+      fileName: string;
+      title: string;
+      paragraphs: string[];
+      source: ExtractSource;
+      error?: string;
+    }
   | { mode: "manual"; url: string; text: string; title: string; error?: string }
   | { mode: "loading" }
   | { mode: "duplicate"; articleId: string; title: string; importedAt: string }
@@ -64,22 +72,28 @@ export function ArticleImportModal({ onClose }: Props) {
     }
   }
 
-  async function handlePdfSubmit(e: FormEvent) {
+  async function handlePdfPreviewImport(e: FormEvent) {
     e.preventDefault();
-    if (state.mode !== "pdf") return;
-    if (!state.text) {
-      setState({ ...state, error: "Please select a PDF file." });
-      return;
-    }
+    if (state.mode !== "pdf-preview") return;
 
-    const { text, title, fileName } = state;
+    const { title, paragraphs, fileName, source } = state;
     setState({ mode: "loading" });
 
     try {
-      const result = await apiClient.post<ImportResponse>("/articles/import", { text, title });
+      const result = await apiClient.post<ImportResponse>("/articles/import", {
+        text: paragraphs.join("\n\n"),
+        title,
+      });
       handleImportResponse(result, "");
     } catch {
-      setState({ mode: "pdf", fileName, title, text, error: "Could not import. Please try again." });
+      setState({
+        mode: "pdf-preview",
+        fileName,
+        title,
+        paragraphs,
+        source,
+        error: "Could not import. Please try again.",
+      });
     }
   }
 
@@ -122,19 +136,26 @@ export function ArticleImportModal({ onClose }: Props) {
     const defaultTitle = file.name.replace(/\.pdf$/i, "").replace(/[-_]/g, " ");
 
     // Extract on selection rather than deferring to submit, so the user finds
-    // out immediately if the file can't be read.
-    setState({ mode: "pdf", fileName: file.name, title: defaultTitle, extracting: true });
+    // out immediately if the file can't be read — lands on a preview step,
+    // not a created article, so a bad extraction is never a fait accompli.
+    setState({ mode: "pdf", fileName: file.name, extracting: true });
 
     try {
-      const text = await extractPdfText(file);
-      if (!text.trim()) {
-        setState({ mode: "pdf", fileName: file.name, title: defaultTitle, error: "Could not extract text from this PDF." });
+      const result = await extractPdfWithFallback(file);
+      if (result.paragraphs.length === 0) {
+        setState({ mode: "pdf", fileName: file.name, error: "Could not extract text from this PDF." });
         return;
       }
-      setState({ mode: "pdf", fileName: file.name, title: defaultTitle, text });
+      setState({
+        mode: "pdf-preview",
+        fileName: file.name,
+        title: result.suggestedTitle ?? defaultTitle,
+        paragraphs: result.paragraphs,
+        source: result.source,
+      });
     } catch (err) {
       console.error("PDF extraction failed:", err);
-      setState({ mode: "pdf", fileName: file.name, title: defaultTitle, error: "Failed to read the PDF. Try pasting text manually." });
+      setState({ mode: "pdf", fileName: file.name, error: "Could not extract text from this PDF." });
     }
   }
 
@@ -209,7 +230,7 @@ export function ArticleImportModal({ onClose }: Props) {
               <div className="flex gap-4 border-t border-gray-100 pt-3 text-sm dark:border-gray-800">
                 <button
                   type="button"
-                  onClick={() => setState({ mode: "pdf", fileName: "", title: "" })}
+                  onClick={() => setState({ mode: "pdf", fileName: "" })}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                   Import a PDF →
@@ -225,9 +246,9 @@ export function ArticleImportModal({ onClose }: Props) {
             </form>
           )}
 
-          {/* PDF mode */}
+          {/* PDF mode — file picker */}
           {state.mode === "pdf" && (
-            <form onSubmit={handlePdfSubmit} className="space-y-4">
+            <div className="space-y-4">
               <div>
                 <label htmlFor="pdf-file" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   PDF file
@@ -237,37 +258,20 @@ export function ArticleImportModal({ onClose }: Props) {
                   type="file"
                   accept=".pdf,application/pdf"
                   onChange={handlePdfFileChange}
-                  className="w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-300 dark:file:bg-blue-900 dark:file:text-blue-300"
+                  disabled={state.extracting}
+                  className="w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50 dark:text-gray-300 dark:file:bg-blue-900 dark:file:text-blue-300"
                 />
                 {state.fileName && (
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {state.fileName}
-                    {state.extracting && " — reading…"}
-                  </p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{state.fileName}</p>
                 )}
               </div>
-              <div>
-                <label htmlFor="pdf-title" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Title
-                </label>
-                <input
-                  id="pdf-title"
-                  type="text"
-                  required
-                  value={state.title}
-                  onChange={(e) => setState({ ...state, title: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                />
-              </div>
+              {state.extracting && (
+                <div className="flex h-16 items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+                  Extracting text…
+                </div>
+              )}
               {state.error && <p className="text-xs text-red-600 dark:text-red-400">{state.error}</p>}
               <div className="flex gap-3 pt-1">
-                <button
-                  type="submit"
-                  disabled={!state.text || state.extracting}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                >
-                  Import
-                </button>
                 <button
                   type="button"
                   onClick={() => setState({ mode: "url", url: "" })}
@@ -276,9 +280,58 @@ export function ArticleImportModal({ onClose }: Props) {
                   ← Back
                 </button>
               </div>
-              <p className="text-xs text-gray-400 dark:text-gray-500">
-                Text is extracted from the PDF — each detected paragraph becomes an annotatable block.
-              </p>
+            </div>
+          )}
+
+          {/* PDF preview — read-only paragraph sanity check before creating the article */}
+          {state.mode === "pdf-preview" && (
+            <form onSubmit={handlePdfPreviewImport} className="space-y-4">
+              {state.source === "local" && (
+                <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                  Cloud extraction unavailable — used local extraction.
+                </p>
+              )}
+              <div>
+                <label htmlFor="pdf-preview-title" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Title
+                </label>
+                <input
+                  id="pdf-preview-title"
+                  type="text"
+                  required
+                  value={state.title}
+                  onChange={(e) => setState({ ...state, title: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                />
+              </div>
+              <div>
+                <p className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Preview ({state.paragraphs.length} paragraph{state.paragraphs.length === 1 ? "" : "s"})
+                </p>
+                <div className="max-h-64 space-y-3 overflow-y-auto rounded-md border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800">
+                  {state.paragraphs.map((p, i) => (
+                    <p key={i} className="text-sm text-gray-700 dark:text-gray-300">
+                      {p}
+                    </p>
+                  ))}
+                </div>
+              </div>
+              {state.error && <p className="text-xs text-red-600 dark:text-red-400">{state.error}</p>}
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="submit"
+                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  Import
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setState({ mode: "url", url: "" })}
+                  className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           )}
 

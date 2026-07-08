@@ -62,6 +62,25 @@ resource "aws_iam_role_policy" "lambda_cloudfront" {
   })
 }
 
+# Textract: Layout analysis for PDF import extraction.
+# Textract's document-analysis actions don't support resource-level
+# permissions (AWS requires Resource: "*" for these) — scoping is instead
+# achieved by which S3 objects the Lambda points Textract at (tmp/extract/*
+# only; see lambda_s3 above, which already grants object CRUD bucket-wide).
+resource "aws_iam_role_policy" "lambda_textract" {
+  name = "scripture-journal-lambda-textract-${var.env}"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["textract:StartDocumentAnalysis", "textract:GetDocumentAnalysis"]
+      Resource = "*"
+    }]
+  })
+}
+
 # SSM: GetParameter on the JWT secret only
 resource "aws_iam_role_policy" "lambda_ssm" {
   name = "scripture-journal-lambda-ssm-${var.env}"
@@ -85,7 +104,7 @@ resource "aws_lambda_function" "api" {
   handler       = "index.handler"
   runtime       = "nodejs22.x"
   filename      = "${path.module}/../dist/lambda.zip"
-  timeout       = 30
+  timeout       = 90 # raised from 30s for Textract PDF extraction (polls up to 75s)
   memory_size   = 256
 
   source_code_hash = filebase64sha256("${path.module}/../dist/lambda.zip")

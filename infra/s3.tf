@@ -37,6 +37,37 @@ resource "aws_s3_bucket_policy" "app" {
   depends_on = [aws_s3_bucket_public_access_block.app]
 }
 
+# Allows the browser to PUT PDFs directly to tmp/extract/ via a presigned
+# URL (PDF Textract extraction) without routing the file through Lambda.
+resource "aws_s3_bucket_cors_configuration" "app" {
+  bucket = aws_s3_bucket.app.id
+
+  cors_rule {
+    allowed_methods = ["PUT"]
+    allowed_origins = ["https://${var.custom_domain}", "http://localhost:5173"]
+    allowed_headers = ["content-type"]
+    max_age_seconds = 3000
+  }
+}
+
+# Belt-and-braces cleanup for tmp/extract/ objects: the Lambda deletes them
+# right after extraction (success or failure), but an abandoned upload or a
+# failed delete would otherwise linger indefinitely.
+resource "aws_s3_bucket_lifecycle_configuration" "app_tmp_expiry" {
+  bucket = aws_s3_bucket.app.id
+
+  rule {
+    id     = "expire-tmp"
+    status = "Enabled"
+    filter {
+      prefix = "tmp/"
+    }
+    expiration {
+      days = 1
+    }
+  }
+}
+
 data "aws_iam_policy_document" "app_bucket" {
   # CloudFront OAC read access — content/ (scripture JSON) and users/ (journal data)
   statement {

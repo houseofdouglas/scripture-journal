@@ -141,3 +141,33 @@ export const ArticleIndexSchema = z.object({
   articles: z.array(ArticleIndexEntrySchema),
 });
 export type ArticleIndex = z.infer<typeof ArticleIndexSchema>;
+
+// ── PDF Textract extraction ───────────────────────────────────────────────────
+
+/** Matches `tmp/extract/<uuid-v4>.pdf` — the only keys the extract endpoint accepts. */
+export const TMP_EXTRACT_KEY_PATTERN =
+  /^tmp\/extract\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.pdf$/;
+
+/** Build the tmp S3 key for a freshly generated extraction UUID. */
+export function buildExtractTmpKey(uuid: string): string {
+  return `tmp/extract/${uuid}.pdf`;
+}
+
+export const ExtractUploadUrlResponseSchema = z.object({
+  uploadUrl: z.string().url(),
+  key: z.string().regex(TMP_EXTRACT_KEY_PATTERN),
+});
+export type ExtractUploadUrlResponse = z.infer<typeof ExtractUploadUrlResponseSchema>;
+
+export const ExtractPdfRequestSchema = z.object({
+  key: z.string().regex(TMP_EXTRACT_KEY_PATTERN, "Invalid extraction key"),
+  filename: z.string().min(1),
+});
+export type ExtractPdfRequest = z.infer<typeof ExtractPdfRequestSchema>;
+
+export const ExtractPdfResponseSchema = z.object({
+  paragraphs: z.array(z.string().min(1)).min(1),
+  suggestedTitle: z.string().min(1).nullable(),
+  pageCount: z.number().int().positive(),
+});
+export type ExtractPdfResponse = z.infer<typeof ExtractPdfResponseSchema>;
