@@ -532,3 +532,59 @@ export async function mockUnarchiveSuccess(
     });
   });
 }
+
+// ---------------------------------------------------------------------------
+// PDF Textract extraction mocks
+// ---------------------------------------------------------------------------
+
+/** Mocks `POST /api/articles/extract-pdf/upload-url`. */
+export async function mockExtractUploadUrl(
+  page: Page,
+  uploadUrl: string,
+  key: string,
+): Promise<void> {
+  await page.route("**/api/articles/extract-pdf/upload-url", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ uploadUrl, key }),
+    });
+  });
+}
+
+/** Mocks the direct browser→S3 PUT at the presigned URL (matches by path, ignoring the query string). */
+export async function mockS3Upload(
+  page: Page,
+  uploadUrl: string,
+  status = 200,
+): Promise<void> {
+  const urlWithoutQuery = uploadUrl.split("?")[0];
+  await page.route(`${urlWithoutQuery}**`, (route) => {
+    route.fulfill({ status });
+  });
+}
+
+/** Mocks a successful `POST /api/articles/extract-pdf`. */
+export async function mockExtractPdfSuccess(
+  page: Page,
+  response: { paragraphs: string[]; suggestedTitle: string | null; pageCount: number },
+): Promise<void> {
+  await page.route("**/api/articles/extract-pdf", (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(response),
+    });
+  });
+}
+
+/** Mocks a failed `POST /api/articles/extract-pdf` (502 EXTRACTION_FAILED by default). */
+export async function mockExtractPdfFailure(page: Page, status = 502): Promise<void> {
+  await page.route("**/api/articles/extract-pdf", (route) => {
+    route.fulfill({
+      status,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "EXTRACTION_FAILED", message: "Textract job failed" }),
+    });
+  });
+}
