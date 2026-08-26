@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { appendAnnotation, buildEntryId } from "../repository/annotation";
 import { WriteConflictError } from "../repository/errors";
 import { ValidationError } from "./errors";
@@ -53,10 +52,4 @@ export async function annotate(userId: string, req: AnnotateRequest): Promise<An
     }
     throw err;
   }
-}
-
-/** Verify that a contentRef is sha256-addressable for entryId computation. */
-export function buildEntryIdForContentRef(date: string, contentRef: string): string {
-  const hash = crypto.createHash("sha256").update(contentRef).digest("hex").slice(0, 16);
-  return `${date}_${hash}`;
 }
