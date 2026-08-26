@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, ApiError } from "../lib/api-client";
+import { JournalEntrySchema } from "../../types";
 import type { AnnotateResponse } from "../../types";
+import { buildEntryId } from "../lib/entry-id";
 import { useAuth } from "../lib/auth-context";
 import { useProject } from "../lib/project-context";
 
@@ -16,15 +18,6 @@ interface EditorState {
   text: string;
   status: "idle" | "saving" | "error";
   errorMessage: string | null;
-}
-
-export interface EntryData {
-  id: string;
-  contentRef: string;
-  title: string;
-  date: string;
-  notes: unknown[];
-  savedAnnotations?: SavedAnnotation[];
 }
 
 export interface UseAnnotationEditorResult {
@@ -45,11 +38,13 @@ interface UseAnnotationEditorOptions {
   contentRef: string;
   contentTitle: string;
   contentType: "scripture" | "article";
+  /** Override the derived entryId. Normally omitted — it is computed from (date, contentRef). */
   entryId?: string;
 }
 
 export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnnotationEditorResult {
   const { user } = useAuth();
+  const userId = user?.userId;
   const { activeProjectId } = useProject();
   const queryClient = useQueryClient();
   const [editor, setEditor] = useState<EditorState>({
@@ -70,31 +65,30 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
   useEffect(() => {
     setSavedAnnotations([]);
     setEditor({ blockId: null, text: "", status: "idle", errorMessage: null });
+    let cancelled = false;
     const fetchEntry = async () => {
-      if (!user) return;
+      if (!userId || !options.date || !options.contentRef) return;
 
       try {
-        const match = options.contentRef.match(/content\/articles\/([^/]+)\.json$/);
-        const articleId = match ? match[1] : options.contentRef.split("/").pop();
-        const entryId = articleId || options.entryId;
-        
-        if (!entryId) return;
-        
-        const url = `/users/${user.userId}/entries/${entryId}.json`;
-        
-        const res = await fetch(url);
-        if (res.ok) {
-          const data: EntryData = await res.json();
-          if (data.savedAnnotations) {
-            setSavedAnnotations(data.savedAnnotations);
-          }
-        }
+        // entryId must match the server's derivation (annotation spec FR-6),
+        // otherwise the GET below 404s and today's notes never come back.
+        const entryId = options.entryId ?? (await buildEntryId(options.date, options.contentRef));
+        const res = await fetch(`/users/${userId}/entries/${entryId}.json`);
+        if (!res.ok) return; // 404 = no entry for today yet
+        const entry = JournalEntrySchema.parse(await res.json());
+        if (cancelled) return;
+        setSavedAnnotations(
+          entry.annotations.map((a) => ({ blockId: a.blockId, text: a.text, createdAt: a.createdAt }))
+        );
       } catch {
-        // Silently fail if entry not found
+        // Silently ignore a missing or malformed entry — never log note text (NFR-14)
       }
     };
-    fetchEntry();
-  }, [options.contentRef, options.entryId, user]);
+    void fetchEntry();
+    return () => {
+      cancelled = true;
+    };
+  }, [options.date, options.contentRef, options.entryId, userId]);
 
   const openEditor = useCallback((blockId: number) => {
     setEditor((prev) => {
