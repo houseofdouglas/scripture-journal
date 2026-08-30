@@ -18,9 +18,12 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], headless: false },
     },
   ],
-  // webServer: {
-  //   command: "npm run dev",
-  //   port: 5173,
-  //   reuseExistingServer: true,
-  // },
+  // Only Vite is needed — every API and content request is intercepted via
+  // page.route() in e2e/helpers/mocks.ts, so the real Lambda dev server
+  // (npm run dev:api, which requires .env.local) is not started here.
+  webServer: {
+    command: "npm run dev:vite",
+    port: 5173,
+    reuseExistingServer: true,
+  },
 });

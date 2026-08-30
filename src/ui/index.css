@@ -1,3 +1,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  /* Jump-to-block highlight (note history "jump to verse") — spec FR-28/29 */
+  .block-flash {
+    animation: block-flash-anim 1.5s ease-out;
+    border-radius: 0.25rem;
+  }
+
+  .block-flash-static {
+    outline: 2px solid rgb(96 165 250);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  @keyframes block-flash-anim {
+    0%, 40% {
+      background-color: rgb(191 219 254 / 0.6);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block-flash {
+    animation: none;
+    outline: 2px solid rgb(96 165 250);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+}

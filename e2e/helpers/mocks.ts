@@ -169,6 +169,7 @@ export interface EntryStub {
   contentRef: string;
   contentTitle: string;
   contentType: "scripture" | "article";
+  projectId?: string;
   snippet?: string;
   noteCount?: number;
 }
@@ -180,6 +181,7 @@ export async function mockUserIndex(
   // Fill in defaults for optional fields so the component renders correctly
   const full = entries.map((e) => ({
     ...e,
+    projectId: e.projectId ?? "personal",
     snippet: e.snippet ?? "",
     noteCount: e.noteCount ?? 1,
   }));
@@ -312,6 +314,9 @@ export async function mockArticle(
 // Past entry mocks
 // ---------------------------------------------------------------------------
 
+/** Default userId — matches seedAuth()'s default JWT `sub`. */
+const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001";
+
 export async function mockPastEntry(
   page: Page,
   entryId: string,
@@ -320,16 +325,24 @@ export async function mockPastEntry(
   date: string,
   notes: unknown[] = [],
 ): Promise<void> {
+  const contentType = contentRef.includes("/articles/") ? "article" : "scripture";
+
   await page.route(`**/users/*/entries/${entryId}.json`, (route) => {
     route.fulfill({
       status: 200,
       contentType: "application/json",
+      // Shape matches JournalEntrySchema (src/types/annotation.ts) —
+      // PastEntryPage/useJournalEntry parses this and 404s on mismatch.
       body: JSON.stringify({
-        id: entryId,
-        contentRef,
-        title,
+        entryId,
+        userId: DEFAULT_USER_ID,
         date,
-        notes,
+        contentRef,
+        contentTitle: title,
+        contentType,
+        projectId: "personal",
+        annotations: notes,
+        updatedAt: new Date().toISOString(),
       }),
     });
   });

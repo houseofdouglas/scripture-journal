@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ParagraphList } from "../components/ParagraphList";
+import { NoteHistoryRail } from "../components/NoteHistoryRail";
+import { NoteHistoryModal } from "../components/NoteHistoryModal";
 import { useAnnotationEditor } from "../hooks/useAnnotationEditor";
 import { useArticleIndex, useArchiveArticle, useUnarchiveArticle, isArticleArchived } from "../lib/queries/articles";
 import type { Article } from "../../types";
@@ -56,12 +58,19 @@ export function ArticleViewPage() {
   }
 
   const isPastEntry = Boolean(pastEntryDate);
+  const [openEntryId, setOpenEntryId] = useState<string | null>(null);
 
   useEffect(() => {
     if (article && !isPastEntry) {
       annotation.setContentTitle(article.title);
     }
   }, [article?.title, isPastEntry]);
+
+  // Close the modal when navigating to a different article — the component
+  // instance persists across param changes on this route.
+  useEffect(() => {
+    setOpenEntryId(null);
+  }, [articleId]);
 
   if (isLoading) return <ArticleSkeleton />;
   if (isError) return <div className="text-red-600 dark:text-red-400">Failed to load article.</div>;
@@ -75,7 +84,7 @@ export function ArticleViewPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div>
       <div className="mb-4">
         <Link to="/" className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
           ← Dashboard
@@ -157,22 +166,56 @@ export function ArticleViewPage() {
         </div>
       </div>
 
-      <div className={isPastEntry ? "opacity-60" : ""}>
-        <ParagraphList
-          paragraphs={article.paragraphs ?? []}
-          annotation={{
-            openBlockId: annotation.openBlockId,
-            editorText: annotation.editorText,
-            isSaving: annotation.isSaving,
-            errorMessage: annotation.errorMessage,
-            savedAnnotations: annotation.savedAnnotations,
-            onOpen: annotation.openEditor,
-            onClose: annotation.closeEditor,
-            onTextChange: annotation.setEditorText,
-            onSave: annotation.saveAnnotation,
-          }}
+      {isPastEntry ? (
+        <div className="opacity-60">
+          <ParagraphList
+            paragraphs={article.paragraphs ?? []}
+            annotation={{
+              openBlockId: annotation.openBlockId,
+              editorText: annotation.editorText,
+              isSaving: annotation.isSaving,
+              errorMessage: annotation.errorMessage,
+              savedAnnotations: annotation.savedAnnotations,
+              onOpen: annotation.openEditor,
+              onClose: annotation.closeEditor,
+              onTextChange: annotation.setEditorText,
+              onSave: annotation.saveAnnotation,
+            }}
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_15rem]">
+          {/* Rail first in DOM (spec FR-9) so the mobile disclosure lands above the paragraphs */}
+          <div className="lg:col-start-2 lg:row-start-1">
+            <NoteHistoryRail contentRef={articleRef} contentType="article" onOpenEntry={setOpenEntryId} />
+          </div>
+
+          <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+            <ParagraphList
+              paragraphs={article.paragraphs ?? []}
+              annotation={{
+                openBlockId: annotation.openBlockId,
+                editorText: annotation.editorText,
+                isSaving: annotation.isSaving,
+                errorMessage: annotation.errorMessage,
+                savedAnnotations: annotation.savedAnnotations,
+                onOpen: annotation.openEditor,
+                onClose: annotation.closeEditor,
+                onTextChange: annotation.setEditorText,
+                onSave: annotation.saveAnnotation,
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {openEntryId && (
+        <NoteHistoryModal
+          entryId={openEntryId}
+          contentType="article"
+          onClose={() => setOpenEntryId(null)}
         />
-      </div>
+      )}
     </div>
   );
 }
