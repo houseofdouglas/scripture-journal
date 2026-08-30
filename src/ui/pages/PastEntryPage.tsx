@@ -1,8 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { JournalEntrySchema } from "../../types";
-import type { JournalEntry } from "../../types";
-import { useAuth } from "../lib/auth-context";
+import { useJournalEntry } from "../lib/queries/entry";
 
 /** Fetch the content JSON for a given contentRef path and return a blockId→text map. */
 async function fetchBlockMap(contentRef: string, contentType: "scripture" | "article"): Promise<Map<number, string>> {
@@ -20,23 +18,10 @@ async function fetchBlockMap(contentRef: string, contentType: "scripture" | "art
   return map;
 }
 
-async function fetchEntry(userId: string, entryId: string): Promise<JournalEntry | null> {
-  const res = await fetch(`/users/${userId}/entries/${entryId}.json`);
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const raw = await res.json();
-  return JournalEntrySchema.parse(raw);
-}
-
 export function PastEntryPage() {
   const { entryId } = useParams<{ entryId: string }>();
-  const { user } = useAuth();
 
-  const { data: entry, isLoading, isError } = useQuery({
-    queryKey: ["entry", user?.userId, entryId],
-    queryFn: () => fetchEntry(user!.userId, entryId!),
-    enabled: Boolean(user && entryId),
-  });
+  const { data: entry, isLoading, isError } = useJournalEntry(entryId);
 
   const { data: blockMap } = useQuery({
     queryKey: ["blockMap", entry?.contentRef],
@@ -81,6 +66,10 @@ export function PastEntryPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <Link to="/" className="mb-4 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400">
+        ← Dashboard
+      </Link>
+
       {/* Past entry banner */}
       <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
         <strong>Past Entry</strong> — {dateLabel}

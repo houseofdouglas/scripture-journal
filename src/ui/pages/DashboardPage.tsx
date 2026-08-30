@@ -1,23 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../lib/auth-context";
 import { useProject } from "../lib/project-context";
 import { useProjects } from "../lib/queries/projects";
+import { useUserIndex } from "../lib/queries/user-index";
 import { EntryCard } from "../components/EntryCard";
 import { EntryDayGroup } from "../components/EntryDayGroup";
 import { JournalCalendar } from "../components/JournalCalendar";
-import type { UserIndex, UserIndexEntry } from "../../types";
-
-async function fetchUserIndex(userId: string): Promise<UserIndex> {
-  const res = await fetch(`/users/${userId}/index.json`);
-  if (res.status === 404) return { entries: [] };
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json() as Promise<UserIndex>;
-}
+import type { UserIndexEntry } from "../../types";
 
 export function DashboardPage() {
-  const { user } = useAuth();
   const { activeProjectId, setActiveProject } = useProject();
   const { data: projects = [] } = useProjects();
 
@@ -25,12 +16,7 @@ export function DashboardPage() {
   const [projectFilter, setProjectFilter] = useState<string | "all">("all");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const { data: index, isLoading, isError } = useQuery({
-    queryKey: ["userIndex", user?.userId],
-    queryFn: () => fetchUserIndex(user!.userId),
-    enabled: Boolean(user),
-    staleTime: 60_000,
-  });
+  const { data: index, isLoading, isError } = useUserIndex();
 
   if (isLoading) return <DashboardSkeleton />;
   if (isError) return <div className="text-red-600 dark:text-red-400">Failed to load your journal.</div>;
