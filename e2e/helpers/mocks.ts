@@ -1,8 +1,25 @@
 import { Page } from "@playwright/test";
+import { createHash } from "crypto";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Mirrors `buildEntryId()` in src/repository/annotation.ts (annotation spec
+ * FR-6): `${date}_${sha256(contentRef).slice(0, 16)}`. The client derives the
+ * same id (src/ui/lib/entry-id.ts) to GET today's entry, so a mocked entry
+ * must be served at this exact key or the app silently treats it as missing.
+ */
+function computeEntryId(date: string, contentRef: string): string {
+  const hash = createHash("sha256").update(contentRef).digest("hex").slice(0, 16);
+  return `${date}_${hash}`;
+}
+
+/** Local Y-M-D date string, matching how the SPA derives "today" for entryId purposes. */
+function localDateString(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 /** Base64url-encode a string (no padding). */
 function b64url(str: string): string {
@@ -248,31 +265,31 @@ export async function mockArticle(
   });
 
   if (entryData) {
-    const savedAnnotations = entryData.notes.map((note: any) => ({
+    const contentRef = `content/articles/${article.articleId}.json`;
+    const date = localDateString(new Date());
+    const entryId = computeEntryId(date, contentRef);
+
+    const annotations = entryData.notes.map((note: any) => ({
       blockId: note.blockId,
       text: note.text,
       createdAt: note.createdAt,
     }));
 
+    // Must satisfy JournalEntrySchema (src/types/annotation.ts) — the SPA
+    // parses this response and silently drops it on a schema mismatch.
     const entryResponse = {
-      id: entryData.entryId,
-      contentRef: `content/articles/${article.articleId}.json`,
-      title: entryData.title,
-      date: new Date().toISOString().split("T")[0],
-      notes: entryData.notes,
-      savedAnnotations,
+      entryId,
+      userId: "00000000-0000-0000-0000-000000000001",
+      date,
+      contentRef,
+      contentTitle: entryData.title,
+      contentType: "article",
+      projectId: "personal",
+      annotations,
+      updatedAt: new Date().toISOString(),
     };
 
-    await page.route(`**/users/*/entries/${entryData.entryId}.json`, (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(entryResponse),
-      });
-    });
-
-    // Also mock articleId as entryId for ArticleViewPage
-    await page.route(`**/users/*/entries/${article.articleId}.json`, (route) => {
+    await page.route(`**/users/*/entries/${entryId}.json`, (route) => {
       route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -353,8 +370,10 @@ export async function mockChangePasswordFailure(
     route.fulfill({
       status,
       contentType: "application/json",
+      // Per docs/specs/auth.md: 401 here is the domain-specific
+      // WRONG_CURRENT_PASSWORD error, not a session-expired 401.
       body: JSON.stringify({
-        error: status === 401 ? "Unauthorized" : "Internal server error",
+        error: status === 401 ? "WRONG_CURRENT_PASSWORD" : "Internal server error",
       }),
     });
   });

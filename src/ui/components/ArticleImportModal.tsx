@@ -44,6 +44,8 @@ export function ArticleImportModal({ onClose }: Props) {
         const body = err.body as { error?: string; fields?: Record<string, string> };
         if (body?.error === "FETCH_FAILED") {
           setState({ mode: "url", url: state.url, fetchFailed: true, error: "Could not fetch the article." });
+        } else if (body?.error === "DOMAIN_NOT_ALLOWED") {
+          setState({ mode: "url", url: state.url, error: body.fields?.url ?? "Domain not allowed." });
         } else {
           setState({ mode: "url", url: state.url, error: "Something went wrong. Please try again." });
         }
@@ -419,8 +421,12 @@ export function ArticleImportModal({ onClose }: Props) {
                 <strong>Updated article detected</strong>
                 <p className="mt-1">
                   This article has changed since it was last imported on{" "}
-                  {new Date(state.previousImportedAt).toLocaleDateString()}.
-                  Your previous annotations are preserved on the prior version.
+                  {new Date(state.previousImportedAt).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                  . Your previous annotations are preserved on the prior version.
                 </p>
               </div>
               <div className="flex gap-3">

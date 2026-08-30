@@ -9,8 +9,8 @@ import { mockChangePasswordSuccess, mockChangePasswordFailure } from "./helpers/
 test("unauthenticated visit to /change-password redirects to login", async ({
   page,
 }) => {
-  await page.goto("/change-password");
-  await expect(page).toHaveURL(/\/login\?return=.*change-password/i);
+  await page.goto("/settings/password");
+  await expect(page).toHaveURL(/\/login\?return=.*settings.*password/i);
 });
 
 // ---------------------------------------------------------------------------
@@ -21,9 +21,9 @@ test("client-side validation: passwords don't match", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
 
-  await page.goto("/change-password");
+  await page.goto("/settings/password");
   await page.getByLabel(/current password/i).fill("current123");
-  await page.getByLabel(/new password/i).fill("newpassword123");
+  await page.getByLabel(/^new password$/i).fill("newpassword123");
   await page.getByLabel(/confirm new password/i).fill("different123");
   await page.getByRole("button", { name: /update password/i }).click();
 
@@ -38,9 +38,9 @@ test("client-side validation: new password same as current", async ({
   await page.goto("/login");
   await seedAuth(page);
 
-  await page.goto("/change-password");
+  await page.goto("/settings/password");
   await page.getByLabel(/current password/i).fill("current123");
-  await page.getByLabel(/new password/i).fill("current123");
+  await page.getByLabel(/^new password$/i).fill("current123");
   await page.getByLabel(/confirm new password/i).fill("current123");
   await page.getByRole("button", { name: /update password/i }).click();
 
@@ -54,9 +54,9 @@ test("success state after password change alert shown", async ({ page }) => {
   await seedAuth(page);
   await mockChangePasswordSuccess(page);
 
-  await page.goto("/change-password");
+  await page.goto("/settings/password");
   await page.getByLabel(/current password/i).fill("current123");
-  await page.getByLabel(/new password/i).fill("newpassword123");
+  await page.getByLabel(/^new password$/i).fill("newpassword123");
   await page.getByLabel(/confirm new password/i).fill("newpassword123");
   await page.getByRole("button", { name: /update password/i }).click();
 
@@ -70,14 +70,14 @@ test("form fields reset after successful password change", async ({ page }) => {
   await seedAuth(page);
   await mockChangePasswordSuccess(page);
 
-  await page.goto("/change-password");
+  await page.goto("/settings/password");
   await page.getByLabel(/current password/i).fill("current123");
-  await page.getByLabel(/new password/i).fill("newpassword123");
+  await page.getByLabel(/^new password$/i).fill("newpassword123");
   await page.getByLabel(/confirm new password/i).fill("newpassword123");
   await page.getByRole("button", { name: /update password/i }).click();
 
   await expect(page.getByLabel(/current password/i)).toHaveValue("");
-  await expect(page.getByLabel(/new password/i)).toHaveValue("");
+  await expect(page.getByLabel(/^new password$/i)).toHaveValue("");
   await expect(page.getByLabel(/confirm new password/i)).toHaveValue("");
 });
 
@@ -86,9 +86,9 @@ test("401 error for wrong current password", async ({ page }) => {
   await seedAuth(page);
   await mockChangePasswordFailure(page, 401);
 
-  await page.goto("/change-password");
+  await page.goto("/settings/password");
   await page.getByLabel(/current password/i).fill("wrongcurrent123");
-  await page.getByLabel(/new password/i).fill("newpassword123");
+  await page.getByLabel(/^new password$/i).fill("newpassword123");
   await page.getByLabel(/confirm new password/i).fill("newpassword123");
   await page.getByRole("button", { name: /update password/i }).click();
 
@@ -102,9 +102,9 @@ test("server error handling", async ({ page }) => {
   await seedAuth(page);
   await mockChangePasswordFailure(page, 500);
 
-  await page.goto("/change-password");
+  await page.goto("/settings/password");
   await page.getByLabel(/current password/i).fill("current123");
-  await page.getByLabel(/new password/i).fill("newpassword123");
+  await page.getByLabel(/^new password$/i).fill("newpassword123");
   await page.getByLabel(/confirm new password/i).fill("newpassword123");
   await page.getByRole("button", { name: /update password/i }).click();
 
@@ -117,7 +117,7 @@ test("cancel button returns to dashboard", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
 
-  await page.goto("/change-password");
+  await page.goto("/settings/password");
   await page.getByRole("button", { name: /cancel/i }).click();
   await expect(page).toHaveURL("/");
 });
@@ -127,9 +127,9 @@ test("current password field cleared on 401 error", async ({ page }) => {
   await seedAuth(page);
   await mockChangePasswordFailure(page, 401);
 
-  await page.goto("/change-password");
+  await page.goto("/settings/password");
   await page.getByLabel(/current password/i).fill("wrongcurrent123");
-  await page.getByLabel(/new password/i).fill("newpassword123");
+  await page.getByLabel(/^new password$/i).fill("newpassword123");
   await page.getByLabel(/confirm new password/i).fill("newpassword123");
   await page.getByRole("button", { name: /update password/i }).click();
 
@@ -139,14 +139,27 @@ test("current password field cleared on 401 error", async ({ page }) => {
 test("form disabled during loading state", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
-  await mockChangePasswordSuccess(page);
+  // A same-tick mock response leaves no window in which to observe the
+  // loading state, so delay it slightly (as e2e/past-entry.spec.ts does).
+  await page.route("**/api/auth/password", (route) => {
+    setTimeout(() => {
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ success: true }),
+      });
+    }, 200);
+  });
 
-  await page.goto("/change-password");
+  await page.goto("/settings/password");
 
-  const submitButton = page.getByRole("button", { name: /update password/i });
+  // Not getByRole(name: /update password/i) — the button's accessible name
+  // changes to "Saving…" while loading, so a name-based locator would stop
+  // matching during the very state this test needs to observe.
+  const submitButton = page.locator('form button[type="submit"]');
 
   await page.getByLabel(/current password/i).fill("current123");
-  await page.getByLabel(/new password/i).fill("newpassword123");
+  await page.getByLabel(/^new password$/i).fill("newpassword123");
   await page.getByLabel(/confirm new password/i).fill("newpassword123");
 
   const loadPromise = submitButton.click();
