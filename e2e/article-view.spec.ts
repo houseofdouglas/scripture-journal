@@ -82,7 +82,7 @@ test("article view shows annotation count badge", async ({ page }) => {
   );
 
   await page.goto(ARTICLE_URL);
-  await expect(page.getByText(/1 notes/i)).toBeVisible();
+  await expect(page.getByText(/1 note\b/i)).toBeVisible();
 });
 
 test("non-existent article shows Article not found with link to dashboard", async ({
@@ -106,17 +106,27 @@ test("non-existent article shows Article not found with link to dashboard", asyn
   await expect(page.getByRole("link", { name: /dashboard/i })).toBeVisible();
 });
 
-test("clicking article entry card navigates to article view", async ({
+test("clicking article entry card navigates to entry view", async ({
   page,
 }) => {
   await page.goto("/login");
   await seedAuth(page);
-  await mockUserIndex(page, []);
+  // Per docs/specs/dashboard.md: "Clicking any entry card ... navigates to
+  // /entries/<entryId>" — not straight to the live article view.
+  await mockUserIndex(page, [
+    {
+      entryId: "entry-001",
+      date: "2026-04-20",
+      contentRef: "content/articles/a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2.json",
+      contentTitle: "Genesis Chapter 1",
+      contentType: "article",
+    },
+  ]);
   await mockArticle(page);
 
   await page.goto("/");
   await page.getByText("Genesis Chapter 1").click();
-  await expect(page).toHaveURL(ARTICLE_URL);
+  await expect(page).toHaveURL("/entries/entry-001");
 });
 
 test("back button from article view navigates to dashboard", async ({
@@ -140,7 +150,7 @@ test("article with multiple paragraphs renders correctly", async ({ page }) => {
 
   await expect(page.getByText(/God created the heaven and the earth/i)).toBeVisible();
   await expect(page.getByText(/earth was without form/i)).toBeVisible();
-  await expect(page.getByText(/God said let there be light/i)).toBeVisible();
+  await expect(page.getByText(/God said, Let there be light/i)).toBeVisible();
 });
 
 test("annotations display with timestamps", async ({ page }) => {

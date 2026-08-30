@@ -146,7 +146,14 @@ export function ArticleViewPage() {
               Source ↗
             </a>
           )}
-          <span>Imported {new Date(article.importedAt).toLocaleDateString()}</span>
+          <span>
+            Imported{" "}
+            {new Date(article.importedAt).toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </span>
         </div>
       </div>
 

@@ -45,7 +45,7 @@ test("fresh import navigates to article", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
   await expect(page).toHaveURL("/articles/article-fresh-789");
   await expect(page.getByText(/Genesis Chapter 1/i)).toBeVisible();
@@ -64,9 +64,9 @@ test("domain not in allowlist shows error", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://example.com/article");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
-  await expect(page.getByText(/domain not allowed/i)).toBeVisible();
+  await expect(page.getByText(/domain not in allowlist/i)).toBeVisible();
 });
 
 test("error message displays specific domain restriction", async ({ page }) => {
@@ -78,7 +78,7 @@ test("error message displays specific domain restriction", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://example.com/article");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
   await expect(page.getByText(/domain not in allowlist/i)).toBeVisible();
 });
@@ -96,7 +96,7 @@ test("network timeout shows fetch failed message", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/article");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
   await expect(page.getByText(/could not fetch the article/i)).toBeVisible();
 });
@@ -110,7 +110,7 @@ test("paste article text manually link available", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/article");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
   await expect(page.getByText(/paste article text manually instead/i)).toBeVisible();
 });
@@ -124,10 +124,10 @@ test("clicking manual paste link switches to manual mode", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/article");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
   await page.getByText(/paste article text manually instead/i).click();
 
-  await expect(page.getByLabel(/article title/i)).toBeVisible();
+  await expect(page.getByLabel("Title", { exact: true })).toBeVisible();
   await expect(page.getByLabel(/article text/i)).toBeVisible();
 });
 
@@ -135,7 +135,9 @@ test("clicking manual paste link switches to manual mode", async ({ page }) => {
 // Duplicate detection tests
 // ---------------------------------------------------------------------------
 
-test("duplicate article shows already imported modal", async ({ page }) => {
+// Per docs/specs/article-import.md FR-7: "the client navigates to the
+// existing article" on DUPLICATE — no confirmation modal is shown.
+test("duplicate article navigates directly to existing article", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
   await mockUserIndex(page, []);
@@ -149,12 +151,12 @@ test("duplicate article shows already imported modal", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
-  await expect(page.getByText(/already imported/i)).toBeVisible();
+  await expect(page).toHaveURL("/articles/article-duplicate-123");
 });
 
-test("open existing button navigates to article", async ({ page }) => {
+test("duplicate article view loads existing content after navigation", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
   await mockUserIndex(page, []);
@@ -179,32 +181,10 @@ test("open existing button navigates to article", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
-  await page.getByRole("button", { name: /import/i }).click();
-
-  await page.getByRole("button", { name: /open existing/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
   await expect(page).toHaveURL("/articles/article-duplicate-123");
-});
-
-test("cancel button closes modal", async ({ page }) => {
-  await page.goto("/login");
-  await seedAuth(page);
-  await mockUserIndex(page, []);
-  await mockImportDuplicate(
-    page,
-    "article-duplicate-123",
-    "Genesis Chapter 1",
-    "2026-04-15T10:30:00.000Z",
-  );
-
-  await openImportModal(page);
-
-  await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
-  await page.getByRole("button", { name: /import/i }).click();
-
-  await page.getByRole("button", { name: /cancel/i }).click();
-
-  await expect(page.getByText(/import article/i)).not.toBeVisible();
+  await expect(page.getByText(/Genesis Chapter 1/i)).toBeVisible();
 });
 
 // ---------------------------------------------------------------------------
@@ -226,7 +206,7 @@ test("updated article shows new version modal", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
   await expect(page.getByText(/updated article detected/i)).toBeVisible();
 });
@@ -246,7 +226,7 @@ test("shows previous import date", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
   await expect(page.getByText(/april 10, 2026/i)).toBeVisible();
 });
@@ -266,7 +246,7 @@ test("informs user annotations preserved", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
   await expect(
     page.getByText(/your previous annotations are preserved on the prior version/i),
@@ -277,6 +257,25 @@ test("create new version button works", async ({ page }) => {
   await page.goto("/login");
   await seedAuth(page);
   await mockUserIndex(page, []);
+  // First import attempt must return NEW_VERSION so the confirmation modal
+  // (with the "Create New Version" button) actually appears.
+  await mockImportNewVersion(
+    page,
+    "https://www.churchofjesuschrist.org/genesis/1",
+    "article-previous-123",
+    "2026-04-10T10:30:00.000Z",
+    "Genesis Chapter 1",
+  );
+
+  await openImportModal(page);
+
+  await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
+  await page.getByRole("button", { name: "Import", exact: true }).click();
+
+  await expect(page.getByText(/updated article detected/i)).toBeVisible();
+
+  // Confirming re-posts with confirm:true — override the route so that
+  // follow-up request returns the version-imported result.
   await mockImportVersionSuccess(
     page,
     "article-new-version-456",
@@ -296,11 +295,6 @@ test("create new version button works", async ({ page }) => {
     ],
     previousVersionId: "article-previous-123",
   });
-
-  await openImportModal(page);
-
-  await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
-  await page.getByRole("button", { name: /import/i }).click();
 
   await page.getByRole("button", { name: /create new version/i }).click();
 
@@ -333,7 +327,7 @@ test("open previous version button works", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
   await page.getByRole("button", { name: /open previous version/i }).click();
 
@@ -355,7 +349,7 @@ test("cancel button closes modal new version", async ({ page }) => {
   await openImportModal(page);
 
   await page.getByLabel(/article url/i).fill("https://www.churchofjesuschrist.org/genesis/1");
-  await page.getByRole("button", { name: /import/i }).click();
+  await page.getByRole("button", { name: "Import", exact: true }).click();
 
   await page.getByRole("button", { name: /cancel/i }).click();
 

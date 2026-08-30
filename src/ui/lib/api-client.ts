@@ -37,7 +37,16 @@ async function request<T>(
     body: body !== undefined ? JSON.stringify(body) : (undefined as any),
   });
 
-  if (response.status === 401) {
+  const json: unknown = await response.json().catch(() => null);
+
+  // 401 usually means the JWT expired/is invalid, but some endpoints (e.g.
+  // POST /auth/password) also use 401 for a domain-specific error — those
+  // carry their own error code and must reach the caller as an ApiError
+  // instead of forcing a session-expired redirect (annotation spec / auth spec).
+  const isSessionExpired =
+    response.status === 401 && (json as { error?: string } | null)?.error !== "WRONG_CURRENT_PASSWORD";
+
+  if (isSessionExpired) {
     // Store return path then redirect to login
     const returnPath = window.location.pathname + window.location.search;
     localStorage.removeItem("jwt");
@@ -45,8 +54,6 @@ async function request<T>(
     // Return a never-resolving promise — navigation is in progress
     return new Promise(() => {});
   }
-
-  const json: unknown = await response.json().catch(() => null);
 
   if (!response.ok) {
     throw new ApiError(response.status, json);
