@@ -10,6 +10,7 @@ export function Nav() {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const newProjectInputRef = useRef<HTMLInputElement>(null);
 
   const { activeProjectId, setActiveProject } = useProject();
@@ -52,157 +53,239 @@ export function Nav() {
   }, [projectDropdownOpen]);
 
   return (
-    <nav className="border-b border-gray-200 bg-white px-6 py-3 flex items-center justify-between dark:border-gray-700 dark:bg-gray-900">
-      {/* Logo */}
-      <Link
-        to="/"
-        className="text-lg font-semibold text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-gray-300"
-      >
-        Scripture Journal
-      </Link>
-
-      {/* Centre links */}
-      <div className="flex gap-6 text-sm text-gray-700 dark:text-gray-300">
-        <NavLink
-          to="/scripture"
-          className={({ isActive }) =>
-            isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
-          }
+    <nav className="border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900 sm:px-6">
+      <div className="flex items-center justify-between">
+        {/* Logo */}
+        <Link
+          to="/"
+          className="text-lg font-semibold text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-gray-300"
         >
-          Browse Scripture
-        </NavLink>
-        <NavLink
-          to="/articles"
-          end
-          className={({ isActive }) =>
-            isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
-          }
+          Scripture Journal
+        </Link>
+
+        {/* Mobile menu toggle */}
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen((open) => !open)}
+          className="rounded p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200 md:hidden"
+          aria-label="Toggle navigation menu"
+          aria-expanded={mobileMenuOpen}
         >
-          Browse Articles
-        </NavLink>
-        <NavLink
-          to="/import"
-          className={({ isActive }) =>
-            isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
-          }
-        >
-          Import Article
-        </NavLink>
-      </div>
+          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+            {mobileMenuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
 
-      {/* Right side: project switcher + user dropdown */}
-      <div className="flex items-center gap-3">
-        {/* Project switcher */}
-        {user && (
-          <div className="relative">
-            <button
-              onClick={() => { setProjectDropdownOpen((o) => !o); setNewProjectName(""); }}
-              className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-700"
-            >
-              <span className="h-2 w-2 rounded-full bg-blue-500" aria-hidden="true" />
-              {activeProject.name}
-              <svg className="h-3 w-3 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
+        {/* Centre links */}
+        <div className="hidden gap-6 text-sm text-gray-700 dark:text-gray-300 md:flex">
+          <NavLink
+            to="/scripture"
+            className={({ isActive }) =>
+              isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
+            }
+          >
+            Browse Scripture
+          </NavLink>
+          <NavLink
+            to="/articles"
+            end
+            className={({ isActive }) =>
+              isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
+            }
+          >
+            Browse Articles
+          </NavLink>
+          <NavLink
+            to="/import"
+            className={({ isActive }) =>
+              isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
+            }
+          >
+            Import Article
+          </NavLink>
+        </div>
 
-            {projectDropdownOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setProjectDropdownOpen(false)} aria-hidden="true" />
-                <div className="absolute right-0 z-20 mt-2 w-52 origin-top-right rounded-md border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900">
-                  {/* Project list */}
-                  {projects.map((p) => (
-                    <button
-                      key={p.projectId}
-                      onClick={() => handleProjectSelect(p.projectId)}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                      <span
-                        className={`h-2 w-2 shrink-0 rounded-full ${p.projectId === activeProjectId ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"}`}
-                        aria-hidden="true"
-                      />
-                      <span className={p.projectId === activeProjectId ? "font-semibold" : ""}>{p.name}</span>
-                    </button>
-                  ))}
+        {/* Right side: project switcher + user dropdown */}
+        <div className="hidden items-center gap-3 md:flex">
+          {/* Project switcher */}
+          {user && (
+            <div className="relative">
+              <button
+                onClick={() => { setProjectDropdownOpen((o) => !o); setNewProjectName(""); }}
+                className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-700"
+              >
+                <span className="h-2 w-2 rounded-full bg-blue-500" aria-hidden="true" />
+                {activeProject.name}
+                <svg className="h-3 w-3 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
 
-                  {/* New project form */}
-                  <div className="border-t border-gray-100 p-2 dark:border-gray-800">
-                    <form onSubmit={handleCreateProject} className="flex gap-1.5">
-                      <input
-                        ref={newProjectInputRef}
-                        type="text"
-                        placeholder="New project…"
-                        value={newProjectName}
-                        onChange={(e) => setNewProjectName(e.target.value)}
-                        className="min-w-0 flex-1 rounded border border-gray-200 px-2 py-1 text-xs text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
-                      />
+              {projectDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setProjectDropdownOpen(false)} aria-hidden="true" />
+                  <div className="absolute right-0 z-20 mt-2 w-52 origin-top-right rounded-md border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900">
+                    {/* Project list */}
+                    {projects.map((p) => (
                       <button
-                        type="submit"
-                        disabled={!newProjectName.trim() || createProject.isPending}
-                        className="rounded bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-40"
+                        key={p.projectId}
+                        onClick={() => handleProjectSelect(p.projectId)}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
                       >
-                        Add
+                        <span
+                          className={`h-2 w-2 shrink-0 rounded-full ${p.projectId === activeProjectId ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"}`}
+                          aria-hidden="true"
+                        />
+                        <span className={p.projectId === activeProjectId ? "font-semibold" : ""}>{p.name}</span>
                       </button>
-                    </form>
+                    ))}
+
+                    {/* New project form */}
+                    <div className="border-t border-gray-100 p-2 dark:border-gray-800">
+                      <form onSubmit={handleCreateProject} className="flex gap-1.5">
+                        <input
+                          ref={newProjectInputRef}
+                          type="text"
+                          placeholder="New project…"
+                          value={newProjectName}
+                          onChange={(e) => setNewProjectName(e.target.value)}
+                          className="min-w-0 flex-1 rounded border border-gray-200 px-2 py-1 text-xs text-gray-900 placeholder-gray-400 focus:border-blue-400 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
+                        />
+                        <button
+                          type="submit"
+                          disabled={!newProjectName.trim() || createProject.isPending}
+                          className="rounded bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-40"
+                        >
+                          Add
+                        </button>
+                      </form>
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+                </>
+              )}
+            </div>
+          )}
 
-        {/* User dropdown */}
-        {user && (
-          <div className="relative">
-            <button
-              onClick={() => setUserDropdownOpen((o) => !o)}
-              className="flex items-center gap-1 text-sm text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
-              aria-haspopup="true"
-              aria-expanded={userDropdownOpen}
-            >
-              {user.username}
-              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
+          {/* User dropdown */}
+          {user && (
+            <div className="relative">
+              <button
+                onClick={() => setUserDropdownOpen((o) => !o)}
+                className="flex items-center gap-1 text-sm text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
+                aria-haspopup="true"
+                aria-expanded={userDropdownOpen}
+              >
+                {user.username}
+                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
 
-            {userDropdownOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setUserDropdownOpen(false)} aria-hidden="true" />
-                <div className="absolute right-0 z-20 mt-2 w-44 origin-top-right rounded-md border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900">
-                  <Link
-                    to="/projects"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
-                  >
-                    Manage Projects
-                  </Link>
-                  <Link
-                    to="/settings/appearance"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
-                  >
-                    Appearance
-                  </Link>
-                  <Link
-                    to="/settings/password"
-                    onClick={() => setUserDropdownOpen(false)}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
-                  >
-                    Change Password
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
-                  >
-                    Log Out
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+              {userDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setUserDropdownOpen(false)} aria-hidden="true" />
+                  <div className="absolute right-0 z-20 mt-2 w-44 origin-top-right rounded-md border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900">
+                    <Link
+                      to="/projects"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                      Manage Projects
+                    </Link>
+                    <Link
+                      to="/settings/appearance"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                      Appearance
+                    </Link>
+                    <Link
+                      to="/settings/password"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                      Change Password
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Mobile menu panel */}
+      {mobileMenuOpen && (
+        <div className="mt-3 flex flex-col gap-4 border-t border-gray-200 pt-3 dark:border-gray-700 md:hidden">
+          <div className="flex flex-col gap-3 text-sm text-gray-700 dark:text-gray-300">
+            <NavLink
+              to="/scripture"
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
+              }
+            >
+              Browse Scripture
+            </NavLink>
+            <NavLink
+              to="/articles"
+              end
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
+              }
+            >
+              Browse Articles
+            </NavLink>
+            <NavLink
+              to="/import"
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
+              }
+            >
+              Import Article
+            </NavLink>
+          </div>
+
+          {user && (
+            <div className="flex flex-col gap-3 border-t border-gray-200 pt-3 text-sm text-gray-700 dark:border-gray-700 dark:text-gray-300">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+                <span className="h-2 w-2 rounded-full bg-blue-500" aria-hidden="true" />
+                {activeProject.name}
+              </div>
+              <Link to="/projects" onClick={() => setMobileMenuOpen(false)} className="hover:text-gray-900 dark:hover:text-gray-100">
+                Manage Projects
+              </Link>
+              <div className="border-t border-gray-200 pt-3 font-medium text-gray-900 dark:border-gray-700 dark:text-gray-100">
+                {user.username}
+              </div>
+              <Link to="/settings/appearance" onClick={() => setMobileMenuOpen(false)} className="hover:text-gray-900 dark:hover:text-gray-100">
+                Appearance
+              </Link>
+              <Link to="/settings/password" onClick={() => setMobileMenuOpen(false)} className="hover:text-gray-900 dark:hover:text-gray-100">
+                Change Password
+              </Link>
+              <button
+                onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+                className="text-left hover:text-gray-900 dark:hover:text-gray-100"
+              >
+                Log Out
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
