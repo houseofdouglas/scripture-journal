@@ -22,6 +22,10 @@ vi.mock("../../hooks/useAnnotationEditor", () => ({
   }),
 }));
 
+vi.mock("../../components/NoteHistoryRail", () => ({
+  NoteHistoryRail: () => null,
+}));
+
 vi.mock("../../lib/queries/articles", async () => {
   const actual = await vi.importActual<typeof import("../../lib/queries/articles")>(
     "../../lib/queries/articles"
