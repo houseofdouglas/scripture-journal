@@ -17,7 +17,6 @@ type ModalState =
     }
   | { mode: "manual"; url: string; text: string; title: string; error?: string }
   | { mode: "loading" }
-  | { mode: "duplicate"; articleId: string; title: string; importedAt: string }
   | { mode: "new-version"; url: string; previousArticleId: string; previousImportedAt: string; title: string };
 
 interface Props {
@@ -388,30 +387,6 @@ export function ArticleImportModal({ onClose }: Props) {
                 </button>
               </div>
             </form>
-          )}
-
-          {/* Duplicate */}
-          {state.mode === "duplicate" && (
-            <div className="space-y-4">
-              <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-                <strong>Already imported</strong>
-                <p className="mt-1">"{state.title}" was imported on {new Date(state.importedAt).toLocaleDateString()}.</p>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => navigate(`/articles/${state.articleId}`)}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                >
-                  Open Existing
-                </button>
-                <button
-                  onClick={onClose}
-                  className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
           )}
 
           {/* New version */}
