@@ -16,7 +16,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [ ] RAB-09 — Service: image info reader
 - [ ] RAB-10 — Service: SVG sanitizer
 - [x] RAB-11 — Service: SSRF-safe image fetcher
-- [ ] RAB-12 — Repository: asset store
+- [x] RAB-12 — Repository: asset store
 - [ ] RAB-13 — Service: figure detection and resolution
 - [ ] RAB-14 — Service: hashing and import integration
 - [x] RAB-15 — Infra: IAM and CloudFront asset headers
