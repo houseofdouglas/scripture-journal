@@ -1,4 +1,5 @@
 import type { ArticleParagraph } from "../../../types";
+import { CodeBlock } from "./CodeBlock";
 import { HeadingBlock } from "./HeadingBlock";
 import { ListBlock } from "./ListBlock";
 import { TableBlock } from "./TableBlock";
@@ -25,8 +26,7 @@ export function BlockContent({ block }: Props) {
       if (block.table) return <TableBlock table={block.table} />;
       break;
     case "code":
-      // TODO(RAB-17): replace with CodeBlock (language label, Copy button, truncation note).
-      if (block.code) return <pre className="overflow-x-auto">{block.code.content}</pre>;
+      if (block.code) return <CodeBlock code={block.code} />;
       break;
     case "figure":
       // TODO(RAB-18): replace with FigureBlock (<img>, figcaption, "View original size").
