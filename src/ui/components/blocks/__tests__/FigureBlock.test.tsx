@@ -110,13 +110,13 @@ describe("FigureBlock", () => {
 
   it("does not render 'View original size' unless a handler is supplied", () => {
     render(<FigureBlock figure={wideSvg} text="x" />);
-    expect(screen.queryByRole("button", { name: "View original size" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /View original size/ })).toBeNull();
   });
 
   it("renders 'View original size' and calls the handler when supplied", () => {
     const onViewOriginal = vi.fn();
     render(<FigureBlock figure={wideSvg} text="x" onViewOriginal={onViewOriginal} />);
-    fireEvent.click(screen.getByRole("button", { name: "View original size" }));
+    fireEvent.click(screen.getByRole("button", { name: "View original size: Figure 1. The loop" }));
     expect(onViewOriginal).toHaveBeenCalledOnce();
   });
 });

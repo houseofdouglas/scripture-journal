@@ -1,6 +1,6 @@
 import type { ArticleParagraph } from "../../../types";
 import { CodeBlock } from "./CodeBlock";
-import { FigureBlock } from "./FigureBlock";
+import { FigureWithOriginal } from "./FigureWithOriginal";
 import { HeadingBlock } from "./HeadingBlock";
 import { ListBlock } from "./ListBlock";
 import { TableBlock } from "./TableBlock";
@@ -30,7 +30,7 @@ export function BlockContent({ block }: Props) {
       if (block.code) return <CodeBlock code={block.code} />;
       break;
     case "figure":
-      if (block.figure) return <FigureBlock figure={block.figure} text={block.text} />;
+      if (block.figure) return <FigureWithOriginal figure={block.figure} text={block.text} />;
       break;
     default:
       break;
