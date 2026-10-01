@@ -5,7 +5,7 @@ Status: IN PROGRESS
 Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks file); each task is built in its own worktree branch `rab/<task>` and merged into the feature branch at the end of its wave.
 
 ## Progress
-- [ ] RAB-01 — Test: fixtures and baseline article ids
+- [x] RAB-01 — Test: fixtures and baseline article ids
 - [x] RAB-02 — Types: block kinds and schemas
 - [ ] RAB-03 — Service: content-root selection
 - [ ] RAB-04 — Service: block walker, text and headings
@@ -31,3 +31,6 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 ## Decisions & Notes
 - 2026-10-01 — Spec FR-24 corrected during planning: Browse Articles search is title/URL only, so "search matches block text" was replaced with Past Entry excerpt prefixes.
 - 2026-10-01 — ADR records an unresolved tension with the 2026-04-21 content-scope ADR (non-allowlisted sources stored as shared).
+- 2026-10-01 — RAB-01 verified fixture counts: 10 h2 (not 11 — 3 more h2 sit outside the body), 2 `.sd-key` callouts (not 5). Spec/tasks/ADR corrected. Callout icons have only a viewBox, so decorative-size detection must read viewBox. Baseline ids in `src/service/__tests__/fixtures/baseline-ids.json`.
+- 2026-10-01 — S3 409 ConditionalRequestConflict on asset write is surfaced as an error (not success); RAB-13 should turn it into an unavailable figure.
+- Lint: repo has no ESLint config; agents run typecheck + tests only. Separate task suggested.

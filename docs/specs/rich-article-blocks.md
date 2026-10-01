@@ -15,7 +15,7 @@
 
 **User Roles**: Reader
 
-**Why**: The importer currently extracts only `<p>` elements. On the reference article — *The AI-Native SDLC Playbook* (`https://claude.com/blog/the-ai-native-sdlc-playbook`) — that loses 11 `h2`, 21 `h3`, 38 `h4` (repeated labels such as "How to execute it" and "Governance considerations" that frame each play), 19 lists, 13 code blocks, one 3-column × 6-row comparison table, four diagram images, and five callout boxes whose text sits in bare `<div>`s. The result reads as disconnected paragraphs with the argument's structure, examples, and diagrams missing. Headings also give the Reader a section-level anchor for notes.
+**Why**: The importer currently extracts only `<p>` elements. On the reference article — *The AI-Native SDLC Playbook* (`https://claude.com/blog/the-ai-native-sdlc-playbook`) — that loses 10 `h2`, 21 `h3`, 38 `h4` (repeated labels such as "How to execute it" and "Governance considerations" that frame each play), 19 lists, 13 code blocks, one 3-column × 6-row comparison table, four diagram images, and callout boxes (`.sd-key`, `.sd-side`, …) whose text sits in bare `<div>`s. The result reads as disconnected paragraphs with the argument's structure, examples, and diagrams missing. Headings also give the Reader a section-level anchor for notes.
 
 ---
 
@@ -95,7 +95,7 @@
     - Grouping: each maximal run of uncovered inline content (text nodes and inline elements) under the same nearest block-level ancestor (`div`, `section`, `blockquote`, `aside`, `details`, `dt`, `dd`, etc.) is one block, in document order. Block-level boundaries split runs.
     - Whitespace collapsed to single spaces and trimmed; whitespace-only runs skipped.
     - **Excluded** (never emitted, by catch-all or any other rule): `<script>`, `<style>`, `<noscript>`, `<template>`, `<button>`, form controls (`<input>`, `<select>`, `<textarea>`, `<label>`), `<nav>`, `<footer>`, footnote containers (`[role="doc-endnotes"]`, `[role="doc-footnote"]`, `.footnotes`) per the constitution's footnote-stripping rule, and hidden content (`hidden` attribute, `aria-hidden="true"`, inline `display:none` or `visibility:hidden`).
-    - This covers the reference article's five callout boxes (`.sd-key`) and definition lists (`<dt>`/`<dd>` each become a text block).
+    - This covers the reference article's callout and embed boxes (`.sd-key`, `.sd-side`, `.sd-res`, …) and definition lists (`<dt>`/`<dd>` each become a text block).
 
 ### Hashing and versioning
 
@@ -211,12 +211,12 @@ Reference fixture: the saved HTML of the reference article, committed as a test 
 ### Happy Path
 
 - [ ] Content root for the reference fixture is the `.w-richtext` article body; no hero, category/product tag, "Copy link", author-bio, or related-posts text appears in any block.
-- [ ] Heading blocks match the body's 11 `h2`, 21 `h3`, and 38 `h4` in document order with correct `level`; e.g. each play's "How to execute it" (level 4) immediately precedes its steps list.
+- [ ] Heading blocks match the body's 10 `h2`, 21 `h3`, and 38 `h4` in document order with correct `level`; e.g. each play's "How to execute it" (level 4) immediately precedes its steps list.
 - [ ] 19 `list` blocks (all single-level), ordered/unordered matching the source, in document order.
 - [ ] 13 `code` blocks with languages markdown ×6, javascript ×3, yaml ×2, json ×1, bash ×1; each `content` matches the source text byte-for-byte including whitespace.
 - [ ] One `table` block with headers `Stage`, `Traditional SDLC`, `AI-native SDLC` and 6 rows.
 - [ ] 4 `figure` blocks: 3 with captions matching the source, 1 with `text: "Figure"`; assets stored under `content/assets/` and rendered via CloudFront.
-- [ ] The 5 callout boxes produce `text` blocks containing their text; their 44×44 icons produce no blocks.
+- [ ] The 2 `.sd-key` callouts and other `sd-*` embed boxes produce `text` blocks containing their text; the callout icons (viewBox `0 0 44 44`, no width/height, `aria-hidden`) produce no blocks.
 - [ ] **No-loss property**: every non-whitespace word of visible text in the content root (excluding FR-14 exclusions) appears, in order, in the concatenated block `text` — and no word appears twice due to double extraction.
 - [ ] Notes can be added to and displayed on a heading, list, code, table, and figure block.
 - [ ] Inline SVG fixture (2400×600 `viewBox`, no width/height) is stored as `.svg` with `width="2400" height="600"`; at a 375 px viewport it renders at 4:1 and shows "View original size".

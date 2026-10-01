@@ -94,7 +94,7 @@ Extend `ArticleParagraphSchema` with optional `kind` and the `heading`, `list` (
 `extractBlocks(root)`: a single document-order pass with a handler registry and a "covered" set so nothing is emitted twice (FR-3). Implements `<p>` and `h1`–`h6` (h1 → level 2, FR-4). Applies the FR-14 exclusion list globally. Exposes handler hooks for list, code, table, figure, and catch-all (later tasks); figures are emitted as unresolved `PendingFigure` entries.
 
 ### Acceptance criteria
-- [ ] Reference fixture yields 11 / 21 / 38 heading blocks for h2 / h3 / h4, in order, correct `level`
+- [ ] Reference fixture yields 10 / 21 / 38 heading blocks for h2 / h3 / h4, in order, correct `level`
 - [ ] `<p>` inside `<td>`, `<li>`, or `<figcaption>` is not emitted separately
 - [ ] Excluded elements (script, style, nav, footer, button, hidden, footnote containers) contribute no text
 
@@ -177,7 +177,7 @@ FR-7: headers from `<thead>` or an all-`<th>` first row; colspan/rowspan placeme
 FR-14: after the structured handlers, each maximal run of uncovered inline content under the same nearest block-level ancestor becomes a `text` block; whitespace collapsed; `<dt>`/`<dd>` become separate blocks. Add the no-loss property test: every visible word in the content root (minus exclusions) appears exactly once, in order, across concatenated block `text`.
 
 ### Acceptance criteria
-- [ ] Reference fixture's 5 callouts become text blocks
+- [ ] Reference fixture's 2 `.sd-key` callouts and other `sd-*` embed boxes (`sd-side`, `sd-res`, `sd-band`, …) become text blocks
 - [ ] No-loss property passes on the reference and talk fixtures
 - [ ] Hidden, nav, and footnote-container text never appears
 

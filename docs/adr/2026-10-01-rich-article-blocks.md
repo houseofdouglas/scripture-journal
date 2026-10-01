@@ -8,7 +8,7 @@
 
 Since the initial architecture, imported source content has been **plain text only** (AGENTS.md: "footnotes, hyperlinks, and cross-references from imported articles are stripped"). The URL importer extracts `<p>` elements and nothing else.
 
-That was adequate for churchofjesuschrist.org talks, which are almost entirely paragraphs. It fails for structured articles. The motivating reference — *The AI-Native SDLC Playbook* (claude.com) — loses 70 headings, 19 lists, 13 code blocks, a comparison table, four diagrams, and five callout boxes on import. What remains reads as disconnected paragraphs; the article's structure and argument are gone, and the Reader cannot anchor a note to a section, list, table, or diagram.
+That was adequate for churchofjesuschrist.org talks, which are almost entirely paragraphs. It fails for structured articles. The motivating reference — *The AI-Native SDLC Playbook* (claude.com) — loses 69 headings, 19 lists, 13 code blocks, a comparison table, four diagrams, and callout boxes whose text sits outside `<p>` on import. What remains reads as disconnected paragraphs; the article's structure and argument are gone, and the Reader cannot anchor a note to a section, list, table, or diagram.
 
 Two constraints from the constitution are in tension with fixing this:
 
