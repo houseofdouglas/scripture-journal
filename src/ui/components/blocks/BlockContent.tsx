@@ -1,5 +1,6 @@
 import type { ArticleParagraph } from "../../../types";
 import { CodeBlock } from "./CodeBlock";
+import { FigureBlock } from "./FigureBlock";
 import { HeadingBlock } from "./HeadingBlock";
 import { ListBlock } from "./ListBlock";
 import { TableBlock } from "./TableBlock";
@@ -29,8 +30,7 @@ export function BlockContent({ block }: Props) {
       if (block.code) return <CodeBlock code={block.code} />;
       break;
     case "figure":
-      // TODO(RAB-18): replace with FigureBlock (<img>, figcaption, "View original size").
-      if (block.figure) return <p>{block.figure.caption || block.text}</p>;
+      if (block.figure) return <FigureBlock figure={block.figure} text={block.text} />;
       break;
     default:
       break;
