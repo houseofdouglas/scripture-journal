@@ -17,7 +17,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [x] RAB-10 — Service: SVG sanitizer
 - [x] RAB-11 — Service: SSRF-safe image fetcher
 - [x] RAB-12 — Repository: asset store
-- [ ] RAB-13 — Service: figure detection and resolution
+- [x] RAB-13 — Service: figure detection and resolution
 - [ ] RAB-14 — Service: hashing and import integration
 - [x] RAB-15 — Infra: IAM and CloudFront asset headers
 - [x] RAB-16 — UI: block renderers (headings, lists, tables)
@@ -38,3 +38,4 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - 2026-10-01 — RAB-10 sanitizer has private viewBox/length helpers duplicating RAB-09 `readSvgDimensions`; they differ when only one of width/height is absolute (sanitizer overwrites both from viewBox; reader derives the missing side from the viewBox ratio). RAB-13 must dedupe onto `readSvgDimensions` and write the sanitizer's width/height from it so stored attrs and stored figure dims agree.
 - 2026-10-01 — Sanitizer residual risks (accepted, mitigated by `<img>` rendering + CSP): pattern-based CSS cleaning (rejects any backslash), HTML-mode parsing (XML-only DTD features lost), no internal complexity cap (relies on 2 MB fetch cap), benign animations kept.
 - 2026-10-01 — RAB-07 dropped `<table><caption>` text; RAB-08 fixes this (table handler emits the caption as a text block before the table) so the no-loss property holds.
+- 2026-10-01 — RAB-13: figure hashing for FR-15 derives from the asset key (`figureAssetSha(figure)`), no side map. A `<figure>` without media is not matched (inner tables/pre stay structured). `blocks.ts` now transitively loads the S3 client via `figure.ts` → `repository/asset` (needs env at import; fine in Lambda/tests).
