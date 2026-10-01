@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Code Fixture</title>
+</head>
+<body>
+  <article>
+    <p>Code fixture: language detection, whitespace preservation, escaping.</p>
+
+    <pre id="language-class"><code class="language-typescript">export function add(a: number, b: number): number {
+  return a + b;
+}</code></pre>
+
+    <pre id="lang-class"><code class="lang-python">def greet(name):
+    return f"Hello, {name}"</code></pre>
+
+    <pre id="lang-on-pre" class="language-json"><code>{ "key": "value", "n": 1 }</code></pre>
+
+    <pre id="no-code-element">plain preformatted text
+  with two-space indentation
+and no code element</pre>
+
+    <pre id="garbage-class"><code class="hljs foo-bar language-">x = 1</code></pre>
+
+    <pre id="whitespace-only"><code>
+
+	  </code></pre>
+
+    <pre id="indentation-tabs"><code class="language-go">func main() {
+	if true {
+		fmt.Println("tabs")
+	}
+    // four spaces
+}</code></pre>
+
+    <pre id="script-text"><code class="language-html">&lt;script&gt;alert(1)&lt;/script&gt;
+&lt;p onclick="evil()"&gt;text&lt;/p&gt;</code></pre>
+
+    <p>Closing paragraph after the code blocks.</p>
+  </article>
+</body>
+</html>

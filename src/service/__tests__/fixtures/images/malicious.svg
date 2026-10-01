@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="100" viewBox="0 0 200 100" onload="alert('onload')">
+  <style>@import url(https://evil.example/z.css); rect { fill: #6a9bcc; }</style>
+  <script>alert('script');</script>
+  <script xlink:href="https://evil.example/payload.js"></script>
+  <foreignObject x="0" y="0" width="200" height="100">
+    <div xmlns="http://www.w3.org/1999/xhtml"><iframe src="https://evil.example/frame"></iframe>foreign content</div>
+  </foreignObject>
+  <a xlink:href="https://evil.example/x"><text x="10" y="90">click me</text></a>
+  <image xlink:href="https://evil.example/x" x="0" y="0" width="10" height="10"/>
+  <g style="background:url(https://evil.example/y)" onclick="alert('click')">
+    <rect id="benign" x="20" y="20" width="160" height="60" fill="#d97757"/>
+  </g>
+</svg>

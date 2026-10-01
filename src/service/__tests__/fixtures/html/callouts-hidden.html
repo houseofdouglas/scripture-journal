@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Callouts and Hidden Content Fixture</title>
+  <style>.callout { border: 1px solid #ccc; }</style>
+</head>
+<body>
+  <nav><a href="/">Home</a> <a href="/blog">Blog</a> Navigation text must not be imported.</nav>
+  <main>
+    <article>
+      <p>Callouts fixture: bare-text containers become text blocks; hidden and chrome content is dropped.</p>
+
+      <div class="callout" id="callout-one">
+        <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="none" stroke="#000"/></svg>
+        Every callout with an icon and bare text should become one text block.
+      </div>
+
+      <div class="callout" id="callout-two">
+        <svg viewBox="0 0 44 44" aria-hidden="true"><path d="M4 24h8l4-12 6 22 5-16 3 6h10" stroke="#000" fill="none"/></svg>
+        <span>Second callout</span> with mixed inline and bare text.
+      </div>
+
+      <div class="callout" id="callout-three">A callout with bare text only and no icon.</div>
+
+      <div hidden><p>Hidden via the hidden attribute.</p></div>
+      <div aria-hidden="true"><p>Hidden via aria-hidden.</p></div>
+      <div style="display:none"><p>Hidden via inline display none.</p></div>
+      <p style="display: none;">Hidden paragraph via inline style.</p>
+
+      <button type="button">Copy link</button>
+      <noscript><p>Enable JavaScript to view this content.</p></noscript>
+      <style>.inline-style { color: red; }</style>
+
+      <dl id="definitions">
+        <dt>Term one</dt>
+        <dd>Definition of term one.</dd>
+        <dt>Term two</dt>
+        <dd>Definition of term two.</dd>
+      </dl>
+
+      <p>Body text with a footnote marker<sup><a href="#fn1">1</a></sup>.</p>
+
+      <div class="footnotes">
+        <ol>
+          <li id="fn1">Footnote text must not be imported.</li>
+        </ol>
+      </div>
+
+      <p>Closing paragraph after the callouts.</p>
+    </article>
+  </main>
+  <footer><p>Footer text must not be imported.</p></footer>
+</body>
+</html>

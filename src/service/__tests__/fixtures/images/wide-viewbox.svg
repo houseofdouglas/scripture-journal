@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 600">
+  <rect x="0" y="0" width="2400" height="600" fill="#f5f3ee"/>
+  <rect x="100" y="150" width="500" height="300" rx="24" fill="#d97757"/>
+  <circle cx="1200" cy="300" r="180" fill="#6a9bcc"/>
+  <path d="M1700 450 L2000 150 L2300 450 Z" fill="#788c5d"/>
+  <text x="1200" y="560" font-family="sans-serif" font-size="48" text-anchor="middle" fill="#141413">Wide diagram: 2400 by 600</text>
+</svg>
