@@ -1,14 +1,11 @@
 import type { SavedAnnotation } from "../hooks/useAnnotationEditor";
 import { AnnotationEditor } from "./AnnotationEditor";
 import { SavedAnnotationDisplay } from "./SavedAnnotation";
-
-interface Paragraph {
-  index: number;
-  text: string;
-}
+import { BlockContent } from "./blocks/BlockContent";
+import type { ArticleParagraph } from "../../types";
 
 interface Props {
-  paragraphs: Paragraph[];
+  paragraphs: ArticleParagraph[];
   annotation?: {
     openBlockId: number | null;
     editorText: string;
@@ -29,7 +26,9 @@ const getAnnotationCountText = (count: number): string => {
 };
 
 /**
- * Paragraph rendering component with annotation support.
+ * Article block rendering with annotation support. Every block (text, heading, list,
+ * table, code, figure) shares the same gutter "+" affordance and saved-note wrapper;
+ * only the inner content varies by `kind` (see `BlockContent`).
  * Article text renders in a serif font (Georgia).
  */
 export function ParagraphList({ paragraphs, annotation }: Props) {
@@ -65,8 +64,9 @@ export function ParagraphList({ paragraphs, annotation }: Props) {
               </button>
             )}
           </div>
-          <div className="flex-1">
-            <p>{p.text}</p>
+          {/* min-w-0 lets wide blocks (tables, code) scroll inside their own container */}
+          <div className="min-w-0 flex-1">
+            <BlockContent block={p} />
 
             {annotation?.openBlockId === p.index && (
               <AnnotationEditor
