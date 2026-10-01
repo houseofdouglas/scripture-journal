@@ -1,6 +1,7 @@
 import createDOMPurify from "dompurify";
 import type { Config, WindowLike } from "dompurify";
 import { JSDOM } from "jsdom";
+import { readSvgDimensions } from "./image-info";
 
 // Server-side SVG sanitizer (spec rich-article-blocks FR-11, FR-9).
 //
@@ -13,7 +14,7 @@ import { JSDOM } from "jsdom";
 //   2. DOMPurify (SVG + SVG-filters profiles) on a jsdom window, with hooks that
 //      restrict href/xlink:href and clean CSS in attributes.
 //   3. Post-pass: remove href-targeting animations, clean `<style>` text, write
-//      width/height from viewBox when missing, require something drawable.
+//      width/height from `readSvgDimensions`, require something drawable.
 //   4. Serialize as XML (the serializer adds `xmlns` / `xmlns:xlink`).
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -253,31 +254,21 @@ function hasRenderedDrawable(root: Element): boolean {
   return false;
 }
 
-// ── Dimensions (private; to be deduplicated with image-info at integration) ──
+// ── Dimensions ────────────────────────────────────────────────────────────────
 
-function isAbsoluteLength(value: string | null): boolean {
-  if (value === null) return false;
-  const m = /^\s*(\d*\.?\d+(?:e[+-]?\d+)?)(px)?\s*$/i.exec(value);
-  return m !== null && Number(m[1]) > 0;
-}
-
-function parseViewBox(value: string | null): { width: number; height: number } | null {
-  if (value === null) return null;
-  const parts = value.trim().split(/[\s,]+/).map(Number);
-  if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) return null;
-  const [, , width, height] = parts as [number, number, number, number];
-  if (width <= 0 || height <= 0) return null;
-  return { width, height };
-}
-
+/**
+ * Writes explicit integer width/height onto the root using `readSvgDimensions`
+ * — the same reader that sizes the stored figure — so the stored attributes
+ * always equal the figure's recorded dimensions (including when only one side
+ * is absolute and the other is derived from the viewBox ratio). Left untouched
+ * when the size cannot be determined; the figure is then unavailable.
+ */
 function ensureDimensions(svg: Element): void {
-  if (isAbsoluteLength(svg.getAttribute("width")) && isAbsoluteLength(svg.getAttribute("height"))) {
-    return;
-  }
-  const vb = parseViewBox(svg.getAttribute("viewBox"));
-  if (vb === null) return;
-  svg.setAttribute("width", String(Math.ceil(vb.width)));
-  svg.setAttribute("height", String(Math.ceil(vb.height)));
+  const rootTag = new window.XMLSerializer().serializeToString(svg.cloneNode(false));
+  const dims = readSvgDimensions(rootTag);
+  if (dims === null) return;
+  svg.setAttribute("width", String(dims.width));
+  svg.setAttribute("height", String(dims.height));
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────

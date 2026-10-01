@@ -3,6 +3,7 @@ import { join } from "path";
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 import { sanitizeSvg } from "../svg-sanitize";
+import { readSvgDimensions } from "../image-info";
 
 const IMAGES = join(__dirname, "../../__tests__/fixtures/images");
 const fixture = (name: string): string => readFileSync(join(IMAGES, name), "utf8");
@@ -102,10 +103,18 @@ describe("sanitizeSvg — root and parsing", () => {
     expect(root.getAttribute("height")).toBe("5");
   });
 
-  it("keeps absolute width/height as given", () => {
+  it("keeps absolute width/height, normalized to integer px", () => {
     const root = parseXml(mustSanitize(`<svg width="300px" height="100" viewBox="0 0 30 10">${RECT}</svg>`)).documentElement;
-    expect(root.getAttribute("width")).toBe("300px");
+    expect(root.getAttribute("width")).toBe("300");
     expect(root.getAttribute("height")).toBe("100");
+  });
+
+  it("derives the missing side from the viewBox ratio, matching readSvgDimensions", () => {
+    const out = mustSanitize(`<svg width="300" height="50%" viewBox="0 0 30 10">${RECT}</svg>`);
+    const root = parseXml(out).documentElement;
+    expect(root.getAttribute("width")).toBe("300");
+    expect(root.getAttribute("height")).toBe("100");
+    expect(readSvgDimensions(out)).toEqual({ width: 300, height: 100 });
   });
 });
 
