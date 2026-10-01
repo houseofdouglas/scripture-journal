@@ -15,7 +15,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [ ] RAB-08 — Service: catch-all text and no-loss property
 - [ ] RAB-09 — Service: image info reader
 - [ ] RAB-10 — Service: SVG sanitizer
-- [ ] RAB-11 — Service: SSRF-safe image fetcher
+- [x] RAB-11 — Service: SSRF-safe image fetcher
 - [ ] RAB-12 — Repository: asset store
 - [ ] RAB-13 — Service: figure detection and resolution
 - [ ] RAB-14 — Service: hashing and import integration
