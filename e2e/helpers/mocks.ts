@@ -1,5 +1,8 @@
 import { Page } from "@playwright/test";
 import { createHash } from "crypto";
+import { readFileSync } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -619,4 +622,74 @@ export async function mockExtractPdfFailure(page: Page, status = 502): Promise<v
       body: JSON.stringify({ error: "EXTRACTION_FAILED", message: "Textract job failed" }),
     });
   });
+}
+
+// ---------------------------------------------------------------------------
+// Rich article blocks (RAB-21)
+// ---------------------------------------------------------------------------
+
+const HELPERS_DIR = path.dirname(fileURLToPath(import.meta.url));
+const IMAGE_FIXTURES_DIR = path.resolve(HELPERS_DIR, "../../src/service/__tests__/fixtures/images");
+
+/** The rich-article fixture (e2e/fixtures/rich-article.json): one block of every kind. */
+export const RICH_ARTICLE = JSON.parse(
+  readFileSync(path.resolve(HELPERS_DIR, "../fixtures/rich-article.json"), "utf8"),
+) as typeof DEFAULT_ARTICLE & {
+  paragraphs: Array<{ index: number; kind?: string; text: string }>;
+};
+
+/** Asset extension → image fixture served for it. */
+const FIGURE_ASSETS: Record<string, { file: string; contentType: string }> = {
+  svg: { file: "wide-viewbox.svg", contentType: "image/svg+xml" },
+  png: { file: "tiny.png", contentType: "image/png" },
+};
+
+/**
+ * Serves `content/assets/<sha>.<ext>` from small real image fixtures keyed by extension
+ * (any `.svg` → the 2400×600 viewBox-only SVG, any `.png` → a tiny PNG). Other extensions 404.
+ */
+export async function mockFigureAssets(page: Page): Promise<void> {
+  await page.route("**/content/assets/*", (route) => {
+    const ext = new URL(route.request().url()).pathname.split(".").pop() ?? "";
+    const asset = FIGURE_ASSETS[ext];
+    if (!asset) return route.fulfill({ status: 404, body: "" });
+    return route.fulfill({
+      status: 200,
+      contentType: asset.contentType,
+      body: readFileSync(path.join(IMAGE_FIXTURES_DIR, asset.file)),
+    });
+  });
+}
+
+/**
+ * Mocks an annotate endpoint that echoes the posted blockId/text (with a valid
+ * AnnotateResponse shape), so several blocks can be annotated in one test.
+ */
+export async function mockAnnotateEcho(page: Page): Promise<void> {
+  let noteCount = 0;
+  await page.route("**/api/entries/annotate", (route) => {
+    const body = route.request().postDataJSON() as {
+      blockId: number;
+      text: string;
+      date: string;
+      contentRef: string;
+    };
+    noteCount += 1;
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        entryId: computeEntryId(body.date, body.contentRef),
+        annotation: { blockId: body.blockId, text: body.text, createdAt: new Date().toISOString() },
+        noteCount,
+      }),
+    });
+  });
+}
+
+/** Mocks the rich-article fixture (no existing entry), its figure assets, and an echoing annotate endpoint. */
+export async function mockRichArticle(page: Page, article = RICH_ARTICLE): Promise<void> {
+  await mockArticle(page, article);
+  await mockFigureAssets(page);
+  await mockAnnotateEcho(page);
 }
