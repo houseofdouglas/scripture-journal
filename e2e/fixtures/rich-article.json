@@ -1,0 +1,176 @@
+{
+  "articleId": "864f77845b8f58a07c453f152a7f9b74a604967c4ef5d6c0fbf28f1cb0f5549f",
+  "sourceUrl": "https://claude.com/blog/rich-article-fixture",
+  "title": "Rich Article Fixture",
+  "importedAt": "2026-09-15T12:00:00.000Z",
+  "scope": "shared",
+  "paragraphs": [
+    {
+      "index": 0,
+      "text": "An introductory paragraph of plain text before the rich blocks."
+    },
+    {
+      "index": 1,
+      "kind": "heading",
+      "text": "Section Heading Two",
+      "heading": {
+        "level": 2
+      }
+    },
+    {
+      "index": 2,
+      "kind": "heading",
+      "text": "Subsection Heading Three",
+      "heading": {
+        "level": 3
+      }
+    },
+    {
+      "index": 3,
+      "kind": "heading",
+      "text": "Minor Heading Four",
+      "heading": {
+        "level": 4
+      }
+    },
+    {
+      "index": 4,
+      "kind": "list",
+      "text": "Fifth item\nNested child A\nGrandchild A1\nNested child B\nSixth item\nSeventh item",
+      "list": {
+        "ordered": true,
+        "start": 5,
+        "items": [
+          {
+            "text": "Fifth item",
+            "children": [
+              {
+                "text": "Nested child A",
+                "children": [
+                  {
+                    "text": "Grandchild A1"
+                  }
+                ]
+              },
+              {
+                "text": "Nested child B"
+              }
+            ]
+          },
+          {
+            "text": "Sixth item"
+          },
+          {
+            "text": "Seventh item"
+          }
+        ]
+      }
+    },
+    {
+      "index": 5,
+      "kind": "code",
+      "text": "// Example\nfunction main() {\n  const veryLongIdentifierName = computeSomething(argument0, argument1, argument2, argument3, argument4, argument5, argument6, argument7, argument8, argument9, argument10, argument11, argument12, argument13, argument14, argument15, argument16, argument17, argument18, argument19, argument20, argument21, argument22, argument23, argument24, argument25, argument26, argument27, argument28, argument29, argument30, argument31, argument32, argument33, argument34, argument35, argument36, argument37, argument38, argument39);\n  return 0;\n}",
+      "code": {
+        "language": "typescript",
+        "content": "// Example\nfunction main() {\n  const veryLongIdentifierName = computeSomething(argument0, argument1, argument2, argument3, argument4, argument5, argument6, argument7, argument8, argument9, argument10, argument11, argument12, argument13, argument14, argument15, argument16, argument17, argument18, argument19, argument20, argument21, argument22, argument23, argument24, argument25, argument26, argument27, argument28, argument29, argument30, argument31, argument32, argument33, argument34, argument35, argument36, argument37, argument38, argument39);\n  return 0;\n}"
+      }
+    },
+    {
+      "index": 6,
+      "kind": "table",
+      "text": "Column header number 1 with long text\tColumn header number 2 with long text\tColumn header number 3 with long text\tColumn header number 4 with long text\tColumn header number 5 with long text\tColumn header number 6 with long text\tColumn header number 7 with long text\tColumn header number 8 with long text\tColumn header number 9 with long text\nRow 1 cell 1 containing a fairly long piece of text\tRow 1 cell 2 containing a fairly long piece of text\tRow 1 cell 3 containing a fairly long piece of text\tRow 1 cell 4 containing a fairly long piece of text\tRow 1 cell 5 containing a fairly long piece of text\tRow 1 cell 6 containing a fairly long piece of text\tRow 1 cell 7 containing a fairly long piece of text\tRow 1 cell 8 containing a fairly long piece of text\tRow 1 cell 9 containing a fairly long piece of text\nRow 2 cell 1 containing a fairly long piece of text\tRow 2 cell 2 containing a fairly long piece of text\tRow 2 cell 3 containing a fairly long piece of text\tRow 2 cell 4 containing a fairly long piece of text\tRow 2 cell 5 containing a fairly long piece of text\tRow 2 cell 6 containing a fairly long piece of text\tRow 2 cell 7 containing a fairly long piece of text\tRow 2 cell 8 containing a fairly long piece of text\tRow 2 cell 9 containing a fairly long piece of text\nRow 3 cell 1 containing a fairly long piece of text\tRow 3 cell 2 containing a fairly long piece of text\tRow 3 cell 3 containing a fairly long piece of text\tRow 3 cell 4 containing a fairly long piece of text\tRow 3 cell 5 containing a fairly long piece of text\tRow 3 cell 6 containing a fairly long piece of text\tRow 3 cell 7 containing a fairly long piece of text\tRow 3 cell 8 containing a fairly long piece of text\tRow 3 cell 9 containing a fairly long piece of text",
+      "table": {
+        "headers": [
+          "Column header number 1 with long text",
+          "Column header number 2 with long text",
+          "Column header number 3 with long text",
+          "Column header number 4 with long text",
+          "Column header number 5 with long text",
+          "Column header number 6 with long text",
+          "Column header number 7 with long text",
+          "Column header number 8 with long text",
+          "Column header number 9 with long text"
+        ],
+        "rows": [
+          [
+            "Row 1 cell 1 containing a fairly long piece of text",
+            "Row 1 cell 2 containing a fairly long piece of text",
+            "Row 1 cell 3 containing a fairly long piece of text",
+            "Row 1 cell 4 containing a fairly long piece of text",
+            "Row 1 cell 5 containing a fairly long piece of text",
+            "Row 1 cell 6 containing a fairly long piece of text",
+            "Row 1 cell 7 containing a fairly long piece of text",
+            "Row 1 cell 8 containing a fairly long piece of text",
+            "Row 1 cell 9 containing a fairly long piece of text"
+          ],
+          [
+            "Row 2 cell 1 containing a fairly long piece of text",
+            "Row 2 cell 2 containing a fairly long piece of text",
+            "Row 2 cell 3 containing a fairly long piece of text",
+            "Row 2 cell 4 containing a fairly long piece of text",
+            "Row 2 cell 5 containing a fairly long piece of text",
+            "Row 2 cell 6 containing a fairly long piece of text",
+            "Row 2 cell 7 containing a fairly long piece of text",
+            "Row 2 cell 8 containing a fairly long piece of text",
+            "Row 2 cell 9 containing a fairly long piece of text"
+          ],
+          [
+            "Row 3 cell 1 containing a fairly long piece of text",
+            "Row 3 cell 2 containing a fairly long piece of text",
+            "Row 3 cell 3 containing a fairly long piece of text",
+            "Row 3 cell 4 containing a fairly long piece of text",
+            "Row 3 cell 5 containing a fairly long piece of text",
+            "Row 3 cell 6 containing a fairly long piece of text",
+            "Row 3 cell 7 containing a fairly long piece of text",
+            "Row 3 cell 8 containing a fairly long piece of text",
+            "Row 3 cell 9 containing a fairly long piece of text"
+          ]
+        ]
+      }
+    },
+    {
+      "index": 7,
+      "kind": "figure",
+      "text": "A wide architecture diagram",
+      "figure": {
+        "assetKey": "content/assets/fbab9bd5cd7a63ac15db636fb9b531bfe20d2b7c5190b0df71e2e71a7beffc2d.svg",
+        "format": "svg",
+        "width": 2400,
+        "height": 600,
+        "alt": "Wide architecture diagram",
+        "caption": "Figure 1: A wide architecture diagram"
+      }
+    },
+    {
+      "index": 8,
+      "kind": "figure",
+      "text": "A small raster thumbnail",
+      "figure": {
+        "assetKey": "content/assets/019a888210e368525123ddc70433b8cd5ff924d0cc3e9c0e344b7678550ec82d.png",
+        "format": "png",
+        "width": 200,
+        "height": 100,
+        "alt": "Small raster thumbnail",
+        "caption": "Figure 2: A small raster thumbnail"
+      }
+    },
+    {
+      "index": 9,
+      "kind": "figure",
+      "text": "A diagram that failed to import",
+      "figure": {
+        "assetKey": null,
+        "format": null,
+        "width": null,
+        "height": null,
+        "alt": "Missing diagram",
+        "caption": "Figure 3: A diagram that failed to import",
+        "unavailable": true
+      }
+    },
+    {
+      "index": 10,
+      "text": "A closing paragraph of plain text."
+    }
+  ]
+}
