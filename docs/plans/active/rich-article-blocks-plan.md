@@ -14,7 +14,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [ ] RAB-07 — Service: table extraction
 - [ ] RAB-08 — Service: catch-all text and no-loss property
 - [x] RAB-09 — Service: image info reader
-- [ ] RAB-10 — Service: SVG sanitizer
+- [x] RAB-10 — Service: SVG sanitizer
 - [x] RAB-11 — Service: SSRF-safe image fetcher
 - [x] RAB-12 — Repository: asset store
 - [ ] RAB-13 — Service: figure detection and resolution
@@ -35,3 +35,5 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - 2026-10-01 — S3 409 ConditionalRequestConflict on asset write is surfaced as an error (not success); RAB-13 should turn it into an unavailable figure.
 - Lint: repo has no ESLint config; agents run typecheck + tests only. Separate task suggested.
 - 2026-10-01 — UI block components use PascalCase under `src/ui/components/blocks/` (matches existing component convention), with `BlockContent.tsx` dispatching by kind.
+- 2026-10-01 — RAB-10 sanitizer has private viewBox/length helpers duplicating RAB-09 `readSvgDimensions`; they differ when only one of width/height is absolute (sanitizer overwrites both from viewBox; reader derives the missing side from the viewBox ratio). RAB-13 must dedupe onto `readSvgDimensions` and write the sanitizer's width/height from it so stored attrs and stored figure dims agree.
+- 2026-10-01 — Sanitizer residual risks (accepted, mitigated by `<img>` rendering + CSP): pattern-based CSS cleaning (rejects any backslash), HTML-mode parsing (XML-only DTD features lost), no internal complexity cap (relies on 2 MB fetch cap), benign animations kept.
