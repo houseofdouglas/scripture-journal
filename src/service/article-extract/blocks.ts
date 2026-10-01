@@ -59,7 +59,7 @@ import { isExcluded, normalizeText, textOf as textOfElement } from "./exclusions
 
 // ── Handler imports ──────────────────────────────────────────────────────────
 // RAB-05 (list):
-// import { listHandler } from "./list";
+import { listHandler } from "./list";
 // RAB-06 (code):
 // import { codeHandler } from "./code";
 // RAB-07 (table):
@@ -148,7 +148,7 @@ export const headingHandler: BlockHandler = {
  */
 export const DEFAULT_HANDLERS: readonly BlockHandler[] = [
   // RAB-05 (list):
-  // listHandler,
+  listHandler,
   // RAB-06 (code):
   // codeHandler,
   // RAB-07 (table):
