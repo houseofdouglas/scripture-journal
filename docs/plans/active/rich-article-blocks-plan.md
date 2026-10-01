@@ -7,7 +7,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 ## Progress
 - [x] RAB-01 — Test: fixtures and baseline article ids
 - [x] RAB-02 — Types: block kinds and schemas
-- [ ] RAB-03 — Service: content-root selection
+- [x] RAB-03 — Service: content-root selection
 - [ ] RAB-04 — Service: block walker, text and headings
 - [ ] RAB-05 — Service: list extraction
 - [ ] RAB-06 — Service: code-block extraction
