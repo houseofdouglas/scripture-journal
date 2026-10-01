@@ -63,7 +63,7 @@ import { listHandler } from "./list";
 // RAB-06 (code):
 import { codeHandler } from "./code";
 // RAB-07 (table):
-// import { tableHandler } from "./table";
+import { tableHandler } from "./table";
 // RAB-13 (figure):
 // import { figureHandler } from "./figure";
 // RAB-08 (catch-all):
@@ -152,7 +152,7 @@ export const DEFAULT_HANDLERS: readonly BlockHandler[] = [
   // RAB-06 (code):
   codeHandler,
   // RAB-07 (table):
-  // tableHandler,
+  tableHandler,
   // RAB-13 (figure):
   // figureHandler,
   // ── built-ins (keep last) ──
