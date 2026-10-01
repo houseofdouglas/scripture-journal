@@ -10,7 +10,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [x] RAB-03 — Service: content-root selection
 - [x] RAB-04 — Service: block walker, text and headings
 - [ ] RAB-05 — Service: list extraction
-- [ ] RAB-06 — Service: code-block extraction
+- [x] RAB-06 — Service: code-block extraction
 - [ ] RAB-07 — Service: table extraction
 - [ ] RAB-08 — Service: catch-all text and no-loss property
 - [x] RAB-09 — Service: image info reader
