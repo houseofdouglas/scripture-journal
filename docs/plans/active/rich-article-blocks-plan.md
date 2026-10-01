@@ -24,7 +24,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [ ] RAB-17 — UI: code block with Copy
 - [ ] RAB-18 — UI: figure block
 - [ ] RAB-19 — UI: "View original size" modal
-- [ ] RAB-20 — UI: Past Entry excerpt prefixes
+- [x] RAB-20 — UI: Past Entry excerpt prefixes
 - [ ] RAB-21 — Test: E2E rich article view
 - [ ] RAB-22 — Deploy and smoke-test the reference import
 
