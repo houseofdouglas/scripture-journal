@@ -302,7 +302,7 @@ Figure handler: `<figure>`, standalone `<img>`, inline `<svg>`, with decorative 
 Replace `parseHtml` in `article-import.ts` with content root → `extractBlocks` → figure resolution. `articleId` per FR-15 (block texts joined by `\n\n`, figures add `figure:<sha>` / `figure:unavailable`). Duplicate / version / URL-index / article-index flows unchanged. Manual-paste and PDF modes untouched.
 
 ### Acceptance criteria
-- [ ] `<p>`-only and talk fixtures reproduce the RAB-01 golden ids
+- [ ] `<p>`-only fixture reproduces its RAB-01 golden id; talk fixture keeps its 29 standalone `<p>` texts byte-identical, gains 1 list + 5 figure blocks, and re-import against the baseline id returns `NEW_VERSION` (its id necessarily changes per FR-16)
 - [ ] Re-import of a text-only article returns `NEW_VERSION`; confirm sets `previousVersionId`
 - [ ] All existing `article-import` tests pass; service-layer coverage ≥ 80%
 
