@@ -1,6 +1,8 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useJournalEntry } from "../lib/queries/entry";
+import { blockExcerpt } from "../lib/block-excerpt";
+import { BlockKindSchema, type BlockKind } from "../../types";
 
 /** Fetch the content JSON for a given contentRef path and return a blockId→text map. */
 async function fetchBlockMap(contentRef: string, contentType: "scripture" | "article"): Promise<Map<number, string>> {
@@ -12,10 +14,26 @@ async function fetchBlockMap(contentRef: string, contentType: "scripture" | "art
     const verses = data.verses as Array<{ number: number; text: string }> | undefined;
     verses?.forEach((v) => map.set(v.number, v.text));
   } else {
-    const paragraphs = data.paragraphs as Array<{ index: number; text: string }> | undefined;
-    paragraphs?.forEach((p) => map.set(p.index, p.text));
+    const paragraphs = Array.isArray(data.paragraphs) ? (data.paragraphs as unknown[]) : [];
+    paragraphs.forEach((raw) => {
+      const p = toExcerptBlock(raw);
+      if (p) map.set(p.index, blockExcerpt(p));
+    });
   }
   return map;
+}
+
+/**
+ * Lenient per-block read: only `index` and `text` are required, and `kind` is
+ * honoured only when it is a known kind (absent/unknown → unprefixed text), so
+ * older articles without `kind` keep working and one odd block can't drop the rest.
+ */
+function toExcerptBlock(raw: unknown): { index: number; text: string; kind?: BlockKind } | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const { index, text, kind } = raw as Record<string, unknown>;
+  if (typeof index !== "number" || typeof text !== "string") return null;
+  const parsedKind = BlockKindSchema.safeParse(kind);
+  return parsedKind.success ? { index, text, kind: parsedKind.data } : { index, text };
 }
 
 export function PastEntryPage() {
