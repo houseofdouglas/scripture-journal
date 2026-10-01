@@ -12,6 +12,9 @@
 //   - Ragged rows are padded with "" to the widest row; caps are 50 body rows
 //     × 12 columns (`truncated: true` when either is exceeded).
 //   - Tables with no non-whitespace text are dropped.
+//   - A non-empty `<caption>` is emitted as a `{ text }` block immediately
+//     before the table block (even when the table itself is dropped), so its
+//     text is not lost.
 //
 // Only types are imported from `./blocks` (see its header comment).
 
@@ -197,6 +200,12 @@ export function flattenTable(headers: string[], rows: string[][]): string {
   return headers.filter((h) => h !== "").join("; ");
 }
 
+/** Text of the table's own `<caption>` (first non-excluded one), or "". */
+function captionText(table: Element): string {
+  const caption = elementChildren(table).find((c) => tag(c) === "CAPTION" && !isExcluded(c));
+  return caption ? cellText(caption) : "";
+}
+
 export const tableHandler: BlockHandler = {
   matches: (el) => tag(el) === "TABLE",
   extract: (el): BlockOutput[] => {
@@ -215,9 +224,14 @@ export const tableHandler: BlockHandler = {
       truncated = true;
     }
 
-    const text = flattenTable(headers, rows);
-    if (text === "") return [];
+    const outputs: BlockOutput[] = [];
+    const caption = captionText(el);
+    if (caption !== "") outputs.push({ text: caption });
 
-    return [{ kind: "table", text, table: truncated ? { headers, rows, truncated: true } : { headers, rows } }];
+    const text = flattenTable(headers, rows);
+    if (text === "") return outputs;
+
+    outputs.push({ kind: "table", text, table: truncated ? { headers, rows, truncated: true } : { headers, rows } });
+    return outputs;
   },
 };

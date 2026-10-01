@@ -67,7 +67,7 @@ import { tableHandler } from "./table";
 // RAB-13 (figure):
 import { figureHandler } from "./figure";
 // RAB-08 (catch-all):
-// import { uncoveredTextHandler } from "./catch-all";
+import { uncoveredTextHandler } from "./catch-all";
 // ── end handler imports ──────────────────────────────────────────────────────
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -161,7 +161,7 @@ export const DEFAULT_HANDLERS: readonly BlockHandler[] = [
 ];
 
 /** RAB-08 replaces this with its catch-all callback (e.g. `uncoveredTextHandler`). */
-export const DEFAULT_ON_UNCOVERED_TEXT: UncoveredTextCallback = () => [];
+export const DEFAULT_ON_UNCOVERED_TEXT: UncoveredTextCallback = uncoveredTextHandler;
 
 // ── Walker ────────────────────────────────────────────────────────────────────
 
