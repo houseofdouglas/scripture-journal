@@ -65,7 +65,7 @@ import { isExcluded, normalizeText, textOf as textOfElement } from "./exclusions
 // RAB-07 (table):
 // import { tableHandler } from "./table";
 // RAB-13 (figure):
-// import { figureHandler } from "./figure";
+import { figureHandler } from "./figure";
 // RAB-08 (catch-all):
 // import { uncoveredTextHandler } from "./catch-all";
 // ── end handler imports ──────────────────────────────────────────────────────
@@ -154,7 +154,7 @@ export const DEFAULT_HANDLERS: readonly BlockHandler[] = [
   // RAB-07 (table):
   // tableHandler,
   // RAB-13 (figure):
-  // figureHandler,
+  figureHandler,
   // ── built-ins (keep last) ──
   headingHandler,
   paragraphHandler,
