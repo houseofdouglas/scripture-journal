@@ -19,7 +19,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [ ] RAB-12 — Repository: asset store
 - [ ] RAB-13 — Service: figure detection and resolution
 - [ ] RAB-14 — Service: hashing and import integration
-- [ ] RAB-15 — Infra: IAM and CloudFront asset headers
+- [x] RAB-15 — Infra: IAM and CloudFront asset headers
 - [ ] RAB-16 — UI: block renderers (headings, lists, tables)
 - [ ] RAB-17 — UI: code block with Copy
 - [ ] RAB-18 — UI: figure block

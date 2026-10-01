@@ -48,7 +48,7 @@ s3://{bucket}/
 
 - `<sha256>` is the hash of the stored bytes (post-sanitization for SVG); `<ext>` ∈ `png | jpg | gif | webp | svg`.
 - Written with `If-None-Match: *`; identical images dedupe naturally.
-- Served via the existing `/content/*` CloudFront behaviour, with a response-headers policy adding `nosniff` and a restrictive CSP for SVG.
+- Served via dedicated `/content/assets/*` CloudFront behaviours (same settings as `/content/*`) whose response-headers policies add `nosniff` and, for SVG, a restrictive CSP.
 - **Never hotlink** the source site: hotlinking reintroduces link rot (the reason articles are copied locally at all) and leaks reading activity to third parties.
 
 ### 3. Hash continuity

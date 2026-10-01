@@ -123,7 +123,7 @@
 
 24. **Out-of-context block text.** Where a block's content is quoted outside the article view (the Past Entry page's block excerpt above each annotation), it shows the block's `text`, prefixed `List:`, `Code:`, `Table:`, or `Figure:` (headings and text unprefixed). Note-history block labels (`¶ N`) are unchanged. Browse Articles search is unaffected — it matches title and source URL only, not body text.
 
-25. **Serving.** Assets served via the existing `/content/*` CloudFront behaviour with long-lived caching (immutable, content-addressed). A response-headers policy on `/content/assets/*` adds `X-Content-Type-Options: nosniff`, and for SVG `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; img-src data:` (protects the "Open in new tab" path). Lambda IAM gains `s3:PutObject` on `content/assets/*`.
+25. **Serving.** Assets served via dedicated `/content/assets/*.svg` and `/content/assets/*` CloudFront behaviours (same origin and cache settings as `/content/*`, ordered before it — a single behaviour cannot vary headers by extension) with long-lived caching (immutable, content-addressed). Their response-headers policies add `X-Content-Type-Options: nosniff`, and for SVG `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; img-src data:` (protects the "Open in new tab" path). Lambda IAM gains `s3:PutObject` on `content/assets/*`.
 
 26. **Unchanged modes.** Manual-paste and PDF import modes are unchanged (text only).
 
