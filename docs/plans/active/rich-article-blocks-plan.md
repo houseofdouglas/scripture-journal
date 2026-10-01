@@ -20,7 +20,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [ ] RAB-13 — Service: figure detection and resolution
 - [ ] RAB-14 — Service: hashing and import integration
 - [x] RAB-15 — Infra: IAM and CloudFront asset headers
-- [ ] RAB-16 — UI: block renderers (headings, lists, tables)
+- [x] RAB-16 — UI: block renderers (headings, lists, tables)
 - [ ] RAB-17 — UI: code block with Copy
 - [ ] RAB-18 — UI: figure block
 - [ ] RAB-19 — UI: "View original size" modal
@@ -34,3 +34,4 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - 2026-10-01 — RAB-01 verified fixture counts: 10 h2 (not 11 — 3 more h2 sit outside the body), 2 `.sd-key` callouts (not 5). Spec/tasks/ADR corrected. Callout icons have only a viewBox, so decorative-size detection must read viewBox. Baseline ids in `src/service/__tests__/fixtures/baseline-ids.json`.
 - 2026-10-01 — S3 409 ConditionalRequestConflict on asset write is surfaced as an error (not success); RAB-13 should turn it into an unavailable figure.
 - Lint: repo has no ESLint config; agents run typecheck + tests only. Separate task suggested.
+- 2026-10-01 — UI block components use PascalCase under `src/ui/components/blocks/` (matches existing component convention), with `BlockContent.tsx` dispatching by kind.
