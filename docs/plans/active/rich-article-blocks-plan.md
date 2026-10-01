@@ -22,7 +22,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [x] RAB-15 — Infra: IAM and CloudFront asset headers
 - [x] RAB-16 — UI: block renderers (headings, lists, tables)
 - [x] RAB-17 — UI: code block with Copy
-- [ ] RAB-18 — UI: figure block
+- [x] RAB-18 — UI: figure block
 - [ ] RAB-19 — UI: "View original size" modal
 - [x] RAB-20 — UI: Past Entry excerpt prefixes
 - [ ] RAB-21 — Test: E2E rich article view
