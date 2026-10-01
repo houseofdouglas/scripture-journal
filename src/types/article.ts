@@ -1,11 +1,162 @@
 import { z } from "zod";
 
+// ── Assets ────────────────────────────────────────────────────────────────────
+
+/** File extensions for stored figure assets (`jpeg` format is stored as `.jpg`). */
+export type AssetExt = "png" | "jpg" | "gif" | "webp" | "svg";
+
+/** Matches `content/assets/<sha256>.<ext>` — the only keys a figure may reference. */
+export const ASSET_KEY_PATTERN = /^content\/assets\/[0-9a-f]{64}\.(png|jpg|gif|webp|svg)$/;
+
+/**
+ * S3 key: content/assets/<sha256>.<ext>
+ * sha = SHA-256 of the stored bytes (post-sanitization for SVG), lowercase hex.
+ * Write-once, immutable, shared.
+ */
+export function assetKey(sha: string, ext: AssetExt): string {
+  return `content/assets/${sha}.${ext}`;
+}
+
+// ── Block payloads ────────────────────────────────────────────────────────────
+
+export const BlockKindSchema = z.enum(["text", "heading", "list", "code", "table", "figure"]);
+export type BlockKind = z.infer<typeof BlockKindSchema>;
+
+export const HeadingPayloadSchema = z.object({
+  level: z.union([z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]),
+});
+export type HeadingPayload = z.infer<typeof HeadingPayloadSchema>;
+
+/** Maximum list nesting depth; top-level items are depth 1. */
+export const MAX_LIST_DEPTH = 3;
+
+// `| undefined` matches Zod's optional output under exactOptionalPropertyTypes.
+export type ListItem = { text: string; children?: ListItem[] | undefined };
+
+export const ListItemSchema: z.ZodType<ListItem> = z.lazy(() =>
+  z.object({
+    text: z.string(),
+    children: z.array(ListItemSchema).optional(),
+  })
+);
+
+/** Depth of the deepest item in `items`, where the items themselves are at depth 1. */
+function listDepth(items: ListItem[]): number {
+  let max = 0;
+  for (const item of items) {
+    const depth = 1 + (item.children ? listDepth(item.children) : 0);
+    if (depth > max) max = depth;
+  }
+  return max;
+}
+
+export const ListPayloadSchema = z
+  .object({
+    ordered: z.boolean(),
+    start: z.number().int(),
+    items: z.array(ListItemSchema),
+    truncated: z.boolean().optional(),
+  })
+  .superRefine((list, ctx) => {
+    if (listDepth(list.items) > MAX_LIST_DEPTH) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `List nesting exceeds depth ${MAX_LIST_DEPTH}`,
+        path: ["items"],
+      });
+    }
+  });
+export type ListPayload = z.infer<typeof ListPayloadSchema>;
+
+export const CodePayloadSchema = z.object({
+  language: z.string().nullable(),
+  content: z.string(),
+  truncated: z.boolean().optional(),
+});
+export type CodePayload = z.infer<typeof CodePayloadSchema>;
+
+export const TablePayloadSchema = z.object({
+  headers: z.array(z.string()),
+  rows: z.array(z.array(z.string())),
+  truncated: z.boolean().optional(),
+});
+export type TablePayload = z.infer<typeof TablePayloadSchema>;
+
+/**
+ * An available figure has non-null assetKey/format/width/height (positive-integer px).
+ * An unavailable figure (FR-13) keeps alt/caption with the asset fields null.
+ */
+export const FigurePayloadSchema = z
+  .object({
+    assetKey: z.string().nullable(), // "content/assets/<sha256>.<ext>"
+    format: z.enum(["png", "jpeg", "gif", "webp", "svg"]).nullable(),
+    width: z.number().nullable(), // intrinsic px; null only when unavailable
+    height: z.number().nullable(),
+    alt: z.string(),
+    caption: z.string(),
+    unavailable: z.boolean().optional(),
+  })
+  .superRefine((figure, ctx) => {
+    if (figure.unavailable === true) return;
+    if (figure.assetKey === null) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "assetKey required for an available figure", path: ["assetKey"] });
+    } else if (!ASSET_KEY_PATTERN.test(figure.assetKey)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid asset key", path: ["assetKey"] });
+    }
+    if (figure.format === null) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "format required for an available figure", path: ["format"] });
+    }
+    for (const dim of ["width", "height"] as const) {
+      const value = figure[dim];
+      if (value === null || !Number.isInteger(value) || value <= 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `${dim} must be a positive integer for an available figure`,
+          path: [dim],
+        });
+      }
+    }
+  });
+export type FigurePayload = z.infer<typeof FigurePayloadSchema>;
+
 // ── Article ───────────────────────────────────────────────────────────────────
 
-export const ArticleParagraphSchema = z.object({
-  index: z.number().int().min(0), // 0-indexed; used as blockId for annotation
-  text: z.string().min(1),
-});
+const PAYLOAD_KINDS = ["heading", "list", "code", "table", "figure"] as const;
+
+/**
+ * One block of an article. `kind` absent means "text" (all pre-existing articles).
+ * The payload matching `kind` is required; payloads for other kinds must be absent.
+ */
+export const ArticleParagraphSchema = z
+  .object({
+    index: z.number().int().min(0), // 0-indexed; used as blockId for annotation
+    text: z.string().min(1), // flattened text for non-text kinds
+    kind: BlockKindSchema.optional(), // default "text"
+    heading: HeadingPayloadSchema.optional(),
+    list: ListPayloadSchema.optional(),
+    code: CodePayloadSchema.optional(),
+    table: TablePayloadSchema.optional(),
+    figure: FigurePayloadSchema.optional(),
+  })
+  .superRefine((block, ctx) => {
+    const kind = block.kind ?? "text";
+    for (const payloadKind of PAYLOAD_KINDS) {
+      const present = block[payloadKind] !== undefined;
+      if (payloadKind === kind && !present) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `${payloadKind} payload required for kind "${kind}"`,
+          path: [payloadKind],
+        });
+      } else if (payloadKind !== kind && present) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `${payloadKind} payload not allowed for kind "${kind}"`,
+          path: [payloadKind],
+        });
+      }
+    }
+  });
 export type ArticleParagraph = z.infer<typeof ArticleParagraphSchema>;
 
 /**

@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
+  ASSET_KEY_PATTERN,
   ArticleIndexEntrySchema,
+  ArticleParagraphSchema,
+  ArticleSchema,
+  assetKey,
+  type FigurePayload,
+  type ListItem,
   ExtractUploadUrlResponseSchema,
   ExtractPdfRequestSchema,
   ExtractPdfResponseSchema,
@@ -120,5 +126,176 @@ describe("ExtractPdfResponseSchema", () => {
     expect(() =>
       ExtractPdfResponseSchema.parse({ paragraphs: ["text"], suggestedTitle: null, pageCount: 0 })
     ).toThrow();
+  });
+});
+
+// ── Rich article blocks (RAB-02) ──────────────────────────────────────────────
+
+const SHA = "0123456789abcdef".repeat(4);
+const FIGURE_KEY = assetKey(SHA, "svg");
+
+const AVAILABLE_FIGURE: FigurePayload = {
+  assetKey: FIGURE_KEY,
+  format: "svg",
+  width: 2400,
+  height: 600,
+  alt: "Diagram",
+  caption: "The SDLC loop",
+};
+
+const UNAVAILABLE_FIGURE: FigurePayload = {
+  assetKey: null,
+  format: null,
+  width: null,
+  height: null,
+  alt: "Diagram",
+  caption: "The SDLC loop",
+  unavailable: true,
+};
+
+const PAYLOADS = {
+  heading: { level: 2 },
+  list: { ordered: true, start: 5, items: [{ text: "one" }, { text: "two", children: [{ text: "two.a" }] }] },
+  code: { language: "ts", content: "const x = 1;\n\tconsole.log(x);" },
+  table: { headers: ["A", "B"], rows: [["1", "2"], ["3", ""]], truncated: true },
+  figure: AVAILABLE_FIGURE,
+} as const;
+
+/** Builds a list item nested to `depth` (1 = no children). */
+function nested(depth: number): ListItem {
+  return depth <= 1 ? { text: `d${depth}` } : { text: `d${depth}`, children: [nested(depth - 1)] };
+}
+
+describe("ArticleSchema — existing articles", () => {
+  it("validates pre-existing article JSON (no kind) unchanged", () => {
+    const stored = {
+      articleId: VALID_ARTICLE_ID,
+      sourceUrl: "https://www.churchofjesuschrist.org/study/general-conference/2024/04/talk",
+      title: "Faith",
+      importedAt: "2026-04-22T10:00:00.000Z",
+      scope: "shared",
+      paragraphs: [
+        { index: 0, text: "First paragraph." },
+        { index: 1, text: "Second paragraph." },
+      ],
+    };
+    expect(ArticleSchema.parse(stored)).toEqual(stored);
+  });
+});
+
+describe("ArticleParagraphSchema — block kinds", () => {
+  it("accepts an explicit text kind without payload", () => {
+    expect(ArticleParagraphSchema.safeParse({ index: 0, text: "Hi", kind: "text" }).success).toBe(true);
+  });
+
+  for (const [kind, payload] of Object.entries(PAYLOADS)) {
+    it(`accepts kind "${kind}" with its payload`, () => {
+      const block = { index: 3, text: "flattened", kind, [kind]: payload };
+      expect(ArticleParagraphSchema.parse(block)).toEqual(block);
+    });
+
+    it(`rejects kind "${kind}" without its payload`, () => {
+      expect(ArticleParagraphSchema.safeParse({ index: 0, text: "x", kind }).success).toBe(false);
+    });
+
+    it(`rejects a ${kind} payload on a text block`, () => {
+      expect(ArticleParagraphSchema.safeParse({ index: 0, text: "x", [kind]: payload }).success).toBe(false);
+      expect(
+        ArticleParagraphSchema.safeParse({ index: 0, text: "x", kind: "text", [kind]: payload }).success
+      ).toBe(false);
+    });
+  }
+
+  it("rejects a mismatched payload", () => {
+    const result = ArticleParagraphSchema.safeParse({ index: 0, text: "x", kind: "heading", code: PAYLOADS.code });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects two payloads", () => {
+    const result = ArticleParagraphSchema.safeParse({
+      index: 0,
+      text: "x",
+      kind: "heading",
+      heading: PAYLOADS.heading,
+      table: PAYLOADS.table,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an unknown kind and an out-of-range heading level", () => {
+    expect(ArticleParagraphSchema.safeParse({ index: 0, text: "x", kind: "quote" }).success).toBe(false);
+    expect(
+      ArticleParagraphSchema.safeParse({ index: 0, text: "x", kind: "heading", heading: { level: 1 } }).success
+    ).toBe(false);
+  });
+});
+
+describe("ArticleParagraphSchema — figures", () => {
+  const figureBlock = (figure: unknown): unknown => ({ index: 0, text: "Figure", kind: "figure", figure });
+
+  it("accepts an unavailable figure with null asset fields", () => {
+    expect(ArticleParagraphSchema.safeParse(figureBlock(UNAVAILABLE_FIGURE)).success).toBe(true);
+  });
+
+  for (const field of ["assetKey", "format", "width", "height"] as const) {
+    it(`rejects an available figure with null ${field}`, () => {
+      const result = ArticleParagraphSchema.safeParse(figureBlock({ ...AVAILABLE_FIGURE, [field]: null }));
+      expect(result.success).toBe(false);
+    });
+  }
+
+  it("treats unavailable: false as available", () => {
+    const result = ArticleParagraphSchema.safeParse(
+      figureBlock({ ...UNAVAILABLE_FIGURE, unavailable: false })
+    );
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects non-integer or non-positive dimensions", () => {
+    for (const bad of [0, -10, 12.5]) {
+      expect(ArticleParagraphSchema.safeParse(figureBlock({ ...AVAILABLE_FIGURE, width: bad })).success).toBe(false);
+      expect(ArticleParagraphSchema.safeParse(figureBlock({ ...AVAILABLE_FIGURE, height: bad })).success).toBe(false);
+    }
+  });
+
+  it("rejects an available figure whose assetKey does not match the pattern", () => {
+    for (const bad of [`content/assets/${SHA}.exe`, `https://cdn.example.com/${SHA}.png`, "content/assets/abc.png"]) {
+      expect(ArticleParagraphSchema.safeParse(figureBlock({ ...AVAILABLE_FIGURE, assetKey: bad })).success).toBe(
+        false
+      );
+    }
+  });
+});
+
+describe("ArticleParagraphSchema — list depth", () => {
+  const listBlock = (items: ListItem[]): unknown => ({
+    index: 0,
+    text: "- x",
+    kind: "list",
+    list: { ordered: false, start: 1, items },
+  });
+
+  it("accepts a list nested to depth 3", () => {
+    expect(ArticleParagraphSchema.safeParse(listBlock([{ text: "flat" }, nested(3)])).success).toBe(true);
+  });
+
+  it("rejects a list nested to depth 4", () => {
+    expect(ArticleParagraphSchema.safeParse(listBlock([{ text: "flat" }, nested(4)])).success).toBe(false);
+  });
+});
+
+describe("assetKey() / ASSET_KEY_PATTERN", () => {
+  it("builds content/assets/<sha>.<ext> keys that match the pattern", () => {
+    expect(FIGURE_KEY).toBe(`content/assets/${SHA}.svg`);
+    for (const ext of ["png", "jpg", "gif", "webp", "svg"] as const) {
+      expect(ASSET_KEY_PATTERN.test(assetKey(SHA, ext))).toBe(true);
+    }
+  });
+
+  it("rejects uppercase hex, wrong length, jpeg extension, and path traversal", () => {
+    expect(ASSET_KEY_PATTERN.test(assetKey(SHA.toUpperCase(), "png"))).toBe(false);
+    expect(ASSET_KEY_PATTERN.test(assetKey(SHA.slice(1), "png"))).toBe(false);
+    expect(ASSET_KEY_PATTERN.test(`content/assets/${SHA}.jpeg`)).toBe(false);
+    expect(ASSET_KEY_PATTERN.test(`content/assets/../${SHA}.png`)).toBe(false);
   });
 });
