@@ -7,6 +7,7 @@ Specs are the source of truth. Code is derived from specs.
 | Spec | File | Summary |
 |------|------|---------|
 | Scripture Browsing | [scripture-browsing.md](scripture-browsing.md) | Browse Standard Works (Work → Book → Chapter), read verse lists, prev/next chapter nav |
+| Rich Article Blocks | [rich-article-blocks.md](rich-article-blocks.md) | URL imports keep headings, lists, code, tables, figures (stored, sanitized SVG, original-ratio display) and all loose text as annotatable blocks |
 
 ## Completed Specs
 

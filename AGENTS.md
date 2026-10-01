@@ -36,4 +36,4 @@ A web-based journaling tool that preserves source content (LDS Standard Works an
 - **No database.** All state lives in S3 as JSON. Reads via CloudFront; writes via Lambda with conditional PUTs.
 - **Auth is custom** (username/password + JWT). No IdP in Phase 1.
 - **Multi-user from day one** via `users/<userId>/` prefixes, even though only one account exists initially.
-- **Source content is plain text only** — footnotes, hyperlinks, and cross-references from imported articles are stripped.
+- **Source content is structured plain text** (headings, lists, code, tables, captions) plus locally stored, sanitized images — no stored HTML; footnotes, hyperlinks, and cross-references are stripped. See [ADR 2026-10-01](docs/adr/2026-10-01-rich-article-blocks.md).

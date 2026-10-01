@@ -63,7 +63,8 @@ Cross-cutting concerns (auth, logging) enter via explicit middleware, not import
 s3://{bucket}/
 ├── content/
 │   ├── scripture/<work>/<book>/<chapter>.json   # pre-loaded, immutable
-│   └── articles/<sha256>.json                   # write-once on import
+│   ├── articles/<sha256>.json                   # write-once on import
+│   └── assets/<sha256>.<ext>                    # write-once article images (ADR 2026-10-01)
 ├── users/<userId>/
 │   ├── profile.json                             # username, password hash
 │   ├── entries/<entryId>.json                   # one journal entry
@@ -129,3 +130,4 @@ Decisions worth recording so far:
 - 2026-04-21 — Pure content-addressed storage (S3 JSON, no DB)
 - 2026-04-21 — Custom JWT auth (no Cognito) for lowest cost and simplest login UX
 - 2026-04-21 — Terraform over AWS CDK for IaC; state in a separate S3 bucket
+- 2026-10-01 — Rich article blocks (structured text, no stored HTML) and content-addressed image assets
