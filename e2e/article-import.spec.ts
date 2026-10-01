@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { seedAuth } from "./helpers/auth";
 import {
   mockImportSuccess,
@@ -12,7 +12,7 @@ import {
 } from "./helpers/mocks";
 
 // Helper to open the import modal
-async function openImportModal(page: any) {
+async function openImportModal(page: Page) {
   await page.goto("/import");
 }
 

@@ -62,9 +62,10 @@ describe("extractPdfCloud()", () => {
     mockPost.mockReturnValueOnce(new Promise(() => {})); // never resolves
 
     const promise = extractPdfCloud(FAKE_FILE);
-    const assertion = expect(promise).rejects.toThrow("Timed out");
-    await vi.advanceTimersByTimeAsync(121_000);
-    await assertion;
+    await Promise.all([
+      expect(promise).rejects.toThrow("Timed out"),
+      vi.advanceTimersByTimeAsync(121_000),
+    ]);
     vi.useRealTimers();
   });
 });
@@ -102,13 +103,14 @@ describe("extractPdfWithFallback()", () => {
     mockExtractPdfText.mockResolvedValue("Local paragraph after timeout.");
 
     const promise = extractPdfWithFallback(FAKE_FILE);
-    const assertion = expect(promise).resolves.toEqual({
-      paragraphs: ["Local paragraph after timeout."],
-      suggestedTitle: null,
-      source: "local",
-    });
-    await vi.advanceTimersByTimeAsync(121_000);
-    await assertion;
+    await Promise.all([
+      expect(promise).resolves.toEqual({
+        paragraphs: ["Local paragraph after timeout."],
+        suggestedTitle: null,
+        source: "local",
+      }),
+      vi.advanceTimersByTimeAsync(121_000),
+    ]);
     vi.useRealTimers();
   });
 

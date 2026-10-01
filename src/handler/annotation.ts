@@ -4,7 +4,7 @@ import { AnnotateRequestSchema } from "../types";
 import { annotate } from "../service/annotation";
 import { ValidationError } from "../service/errors";
 import { WriteConflictError } from "../repository/errors";
-import { ZodError } from "zod";
+import { type ZodError } from "zod";
 
 export function registerAnnotationRoutes(app: Hono<AppEnv>): void {
   // ── POST /entries/annotate ──────────────────────────────────────────────────

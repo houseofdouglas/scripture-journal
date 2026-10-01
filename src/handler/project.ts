@@ -2,7 +2,7 @@ import type { Hono } from "hono";
 import type { AppEnv } from "./app";
 import { CreateProjectRequestSchema } from "../types";
 import { listProjects, createProject } from "../service/project";
-import { ZodError } from "zod";
+import { type ZodError } from "zod";
 
 export function registerProjectRoutes(app: Hono<AppEnv>): void {
   // ── GET /projects ──────────────────────────────────────────────────────────

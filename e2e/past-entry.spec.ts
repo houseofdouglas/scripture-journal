@@ -3,7 +3,6 @@ import { seedAuth } from "./helpers/auth";
 import { mockPastEntry, mockEntryNotFound } from "./helpers/mocks";
 
 const PAST_ENTRY_URL = "/entries/entry-past-001?entry-date=2026-04-15";
-const TODAY_ENTRY_URL = "/entries/entry-today-001";
 
 // ---------------------------------------------------------------------------
 // Redirect tests — no auth seeded

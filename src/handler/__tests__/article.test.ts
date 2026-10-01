@@ -51,7 +51,7 @@ async function req(app: ReturnType<typeof buildApp>, body?: unknown, token?: str
   return app.request("/api/articles/import", {
     method: "POST",
     headers,
-    body: body ? JSON.stringify(body) : (undefined as any),
+    body: body ? JSON.stringify(body) : null,
   });
 }
 
@@ -312,7 +312,7 @@ async function extractReq(app: ReturnType<typeof buildApp>, body?: unknown, toke
   return app.request("/api/articles/extract-pdf", {
     method: "POST",
     headers,
-    body: body ? JSON.stringify(body) : (undefined as any),
+    body: body ? JSON.stringify(body) : null,
   });
 }
 

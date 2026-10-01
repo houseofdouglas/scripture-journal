@@ -104,7 +104,7 @@ export function ChapterViewPage() {
               onOpen: annotation.openEditor,
               onClose: annotation.closeEditor,
               onTextChange: annotation.setEditorText,
-              onSave: annotation.saveAnnotation,
+              onSave: () => void annotation.saveAnnotation(),
             }}
           />
 

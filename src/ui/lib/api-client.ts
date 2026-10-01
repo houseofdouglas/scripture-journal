@@ -34,7 +34,7 @@ async function request<T>(
   const response = await fetch(`${BASE}${path}`, {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : (undefined as any),
+    body: body !== undefined ? JSON.stringify(body) : null,
   });
 
   const json: unknown = await response.json().catch(() => null);

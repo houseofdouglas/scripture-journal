@@ -6,7 +6,8 @@ import { extractPdf } from "../service/pdf-extract";
 import { createExtractUploadUrl } from "../repository/tmp-upload";
 import { ValidationError } from "../service/errors";
 import { WriteConflictError, ExtractionFailedError, ExtractionTimeoutError } from "../repository/errors";
-import { ZodError } from "zod";
+import { type ZodError } from "zod";
+import { log } from "../lib/log";
 
 export function registerArticleRoutes(app: Hono<AppEnv>): void {
   // ── POST /articles/import ───────────────────────────────────────────────────
@@ -122,14 +123,7 @@ export function registerArticleRoutes(app: Hono<AppEnv>): void {
     try {
       const result = await extractPdf(parsed.data.key);
       // Structured log: filename + pageCount only — never extracted text.
-      console.log(
-        JSON.stringify({
-          level: "info",
-          message: "pdf extracted",
-          filename: parsed.data.filename,
-          pageCount: result.pageCount,
-        })
-      );
+      log.info("pdf extracted", { filename: parsed.data.filename, pageCount: result.pageCount });
       return c.json(result, 200);
     } catch (err) {
       if (err instanceof ValidationError) {

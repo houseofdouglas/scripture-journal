@@ -28,8 +28,9 @@ function makeWrapper() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return ({ children }: { children: React.ReactNode }) =>
-    createElement(QueryClientProvider, { client }, children);
+  return function Wrapper({ children }: { children: React.ReactNode }) {
+    return createElement(QueryClientProvider, { client }, children);
+  };
 }
 
 // apiClient (used by the mutation hooks below) reads/writes localStorage.
