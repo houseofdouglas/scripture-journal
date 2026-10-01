@@ -12,7 +12,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [x] RAB-05 — Service: list extraction
 - [x] RAB-06 — Service: code-block extraction
 - [x] RAB-07 — Service: table extraction
-- [ ] RAB-08 — Service: catch-all text and no-loss property
+- [x] RAB-08 — Service: catch-all text and no-loss property
 - [x] RAB-09 — Service: image info reader
 - [x] RAB-10 — Service: SVG sanitizer
 - [x] RAB-11 — Service: SSRF-safe image fetcher
@@ -39,3 +39,4 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - 2026-10-01 — Sanitizer residual risks (accepted, mitigated by `<img>` rendering + CSP): pattern-based CSS cleaning (rejects any backslash), HTML-mode parsing (XML-only DTD features lost), no internal complexity cap (relies on 2 MB fetch cap), benign animations kept.
 - 2026-10-01 — RAB-07 dropped `<table><caption>` text; RAB-08 fixes this (table handler emits the caption as a text block before the table) so the no-loss property holds.
 - 2026-10-01 — RAB-13: figure hashing for FR-15 derives from the asset key (`figureAssetSha(figure)`), no side map. A `<figure>` without media is not matched (inner tables/pre stay structured). `blocks.ts` now transitively loads the S3 client via `figure.ts` → `repository/asset` (needs env at import; fine in Lambda/tests).
+- 2026-10-01 — RAB-08: no-loss property compares whitespace-stripped character streams (extraction joins adjacent inline text like textContent). Known limitation: inline elements styled block-level only via CSS glue to the next word (reference `sd-vs`: `<small>Traditional</small>An idea…` → "TraditionalAn idea…"). Follow-up decision for the user.
