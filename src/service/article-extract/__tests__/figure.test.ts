@@ -439,6 +439,36 @@ describe("resolveFigures — caps, dedupe, concurrency, order", () => {
     );
   });
 
+  it("timeBudgetMs: figures not resolved by the deadline become unavailable (DEADLINE)", async () => {
+    const routes: Record<string, Uint8Array> = { "https://example.com/fast.png": image("tiny.png") };
+    const never = new Promise<FetchImageResult>(() => undefined);
+    const fetchImage = vi.fn<FetchFn>(async (url) =>
+      routes[url] ? { ok: true, bytes: routes[url]!, finalUrl: url, contentType: null } : never
+    );
+    const figs = [imgFigure("/fast.png", "Fast")];
+    for (let i = 0; i < 6; i++) figs.push(imgFigure(`/slow${i}.png`, `Slow ${i}`));
+    const started = Date.now();
+    const blocks = await resolveFigures(figs, { baseUrl: BASE, fetchImage, putAsset: fakePut().fn, timeBudgetMs: 30 });
+    expect(Date.now() - started).toBeLessThan(2_000);
+    expect(blocks[0]!.figure!.unavailable).toBeUndefined();
+    expect(blocks.slice(1).every((b) => b.figure!.unavailable === true)).toBe(true);
+    // Slots freed after the deadline do not start new fetches.
+    expect(fetchImage.mock.calls.length).toBeLessThanOrEqual(FIGURE_CONCURRENCY + 1);
+    const reasons = warn.mock.calls.map((c) => JSON.parse(c[0] as string).reason);
+    expect(reasons.filter((r) => r === "DEADLINE")).toHaveLength(6);
+  });
+
+  it("timeBudgetMs that is not reached changes nothing", async () => {
+    const fetch = fakeFetch({ "https://example.com/a.png": image("tiny.png") });
+    const blocks = await resolveFigures([imgFigure("/a.png", "A")], {
+      baseUrl: BASE,
+      fetchImage: fetch.fn,
+      putAsset: fakePut().fn,
+      timeBudgetMs: 5_000,
+    });
+    expect(blocks[0]!.figure).toMatchObject({ format: "png", width: 3, height: 2 });
+  });
+
   it("end to end: reference fixture → 4 figure blocks, 3 captions + 'Figure'", async () => {
     const outputs = extractBlocks(selectContentRoot(parse(html("reference-ai-native-sdlc.html"))));
     const urls = pendings(outputs).map((f) => (f.source.type === "img" ? f.source.src : ""));

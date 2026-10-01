@@ -216,6 +216,14 @@ export interface ResolveFiguresOptions {
   fetchImage?: typeof defaultFetchImage;
   /** Injected for tests; defaults to the S3 `putAsset`. */
   putAsset?: typeof defaultPutAsset;
+  /**
+   * Overall time budget in ms for the whole call. When it elapses, every
+   * figure not yet resolved becomes unavailable (`DEADLINE`) and the call
+   * returns; in-flight fetches are abandoned (each still ends at its own 10 s
+   * timeout, and a late `putAsset` is a harmless content-addressed write).
+   * Omitted → no overall limit.
+   */
+  timeBudgetMs?: number;
 }
 
 type StoredAsset = { assetKey: string; format: ImageFormat; width: number; height: number };
@@ -362,16 +370,35 @@ export async function resolveFigures(
     return promise;
   };
 
+  // Overall deadline: a single timer that every pending resolution races.
+  let expired = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline: Promise<Outcome> | null =
+    opts.timeBudgetMs === undefined
+      ? null
+      : new Promise<Outcome>((resolve) => {
+          timer = setTimeout(() => {
+            expired = true;
+            resolve(failure("DEADLINE", "-"));
+          }, Math.max(0, opts.timeBudgetMs!));
+        });
+
   let next = 0;
   const worker = async (): Promise<void> => {
     while (next < jobs.length) {
       const job = jobs[next++]!;
-      const outcome = await resolveOne(job.pending);
+      const outcome = expired
+        ? failure("DEADLINE", "-")
+        : await (deadline ? Promise.race([resolveOne(job.pending), deadline]) : resolveOne(job.pending));
       if (!outcome.ok) logUnavailable(outcome.reason, outcome.host);
       result[job.index] = figureBlock(job.pending, outcome.ok ? outcome.asset : null);
     }
   };
-  await Promise.all(Array.from({ length: Math.min(FIGURE_CONCURRENCY, jobs.length) }, worker));
+  try {
+    await Promise.all(Array.from({ length: Math.min(FIGURE_CONCURRENCY, jobs.length) }, worker));
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
 
   return result as ExtractedBlock[];
 }
