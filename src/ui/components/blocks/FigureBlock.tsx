@@ -73,6 +73,7 @@ export function FigureBlock({ figure, text, imgRef, onViewOriginal }: Props) {
         <button
           type="button"
           onClick={onViewOriginal}
+          aria-label={caption || alt ? `View original size: ${caption || alt}` : "View original size"}
           className="mt-1 text-sm text-blue-600 underline hover:no-underline dark:text-blue-400"
         >
           View original size
