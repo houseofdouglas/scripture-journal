@@ -1,0 +1,95 @@
+// Global exclusion rules (spec rich-article-blocks FR-14, FR-12).
+//
+// An excluded element contributes nothing — no block, no text — under any
+// rule: structured handlers, catch-all text, or `textOf`. The walker in
+// `blocks.ts` skips excluded subtrees entirely.
+//
+// This module has no runtime imports from `blocks.ts`, so handler modules can
+// import `textOf` / `normalizeText` from here without creating an import cycle
+// with the handler registry.
+
+// Node type constants (avoid depending on a global `Node` in non-DOM runtimes).
+const ELEMENT_NODE = 1;
+const TEXT_NODE = 3;
+const CDATA_SECTION_NODE = 4;
+
+const EXCLUDED_TAGS: ReadonlySet<string> = new Set([
+  "SCRIPT",
+  "STYLE",
+  "NOSCRIPT",
+  "TEMPLATE",
+  "BUTTON",
+  "INPUT",
+  "SELECT",
+  "TEXTAREA",
+  "LABEL",
+  "NAV",
+  "FOOTER",
+]);
+
+const EXCLUDED_ROLES: ReadonlySet<string> = new Set(["doc-endnotes", "doc-footnote"]);
+
+const DISPLAY_NONE = /(?:^|;)\s*display\s*:\s*none\s*(?:!important\s*)?(?:;|$)/i;
+const VISIBILITY_HIDDEN = /(?:^|;)\s*visibility\s*:\s*hidden\s*(?:!important\s*)?(?:;|$)/i;
+
+/** True when `el` itself matches an exclusion rule (ancestors not considered). */
+export function isExcluded(el: Element): boolean {
+  // tagName is upper-case for HTML elements; SVG/MathML elements keep their
+  // own case, so normalise.
+  if (EXCLUDED_TAGS.has(el.tagName.toUpperCase())) return true;
+
+  const role = el.getAttribute("role");
+  if (role !== null && EXCLUDED_ROLES.has(role.trim().toLowerCase())) return true;
+
+  if (el.classList.contains("footnotes")) return true;
+  if (el.hasAttribute("hidden")) return true;
+  // Applies to any element, including the decorative aria-hidden SVG icons.
+  if ((el.getAttribute("aria-hidden") ?? "").trim().toLowerCase() === "true") return true;
+
+  const style = el.getAttribute("style");
+  if (style !== null && (DISPLAY_NONE.test(style) || VISIBILITY_HIDDEN.test(style))) return true;
+
+  return false;
+}
+
+/**
+ * True when `node` (if it is an element) or any ancestor element is excluded.
+ * The walk stops after checking `root` (inclusive); without `root` it walks to
+ * the document.
+ */
+export function isInsideExcluded(node: Node, root?: Element): boolean {
+  let current: Node | null = node;
+  while (current) {
+    if (current.nodeType === ELEMENT_NODE && isExcluded(current as Element)) return true;
+    if (current === root) return false;
+    current = current.parentNode;
+  }
+  return false;
+}
+
+/** Collapse every run of whitespace (`\s`, which includes NBSP) to one space and trim. */
+export function normalizeText(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Normalized plain text of `el`, skipping excluded descendants (and returning
+ * "" if `el` itself is excluded). Concatenates text nodes like `textContent`
+ * (no separators are inserted between elements), then collapses whitespace.
+ */
+export function textOf(el: Element): string {
+  if (isExcluded(el)) return "";
+  const parts: string[] = [];
+  collectText(el, parts);
+  return normalizeText(parts.join(""));
+}
+
+function collectText(node: Node, parts: string[]): void {
+  for (let child = node.firstChild; child; child = child.nextSibling) {
+    if (child.nodeType === TEXT_NODE || child.nodeType === CDATA_SECTION_NODE) {
+      parts.push((child as CharacterData).data);
+    } else if (child.nodeType === ELEMENT_NODE) {
+      if (!isExcluded(child as Element)) collectText(child, parts);
+    }
+  }
+}
