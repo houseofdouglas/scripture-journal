@@ -106,13 +106,12 @@ describe("conditionalWrite()", () => {
       (current) => ({ count: (current?.count ?? 0) + 1 })
     );
 
-    // Attach rejection handler BEFORE advancing timers — prevents unhandled rejection
-    const rejection = expect(writePromise).rejects.toThrow(WriteConflictError);
-
+    // Attach rejection handler BEFORE advancing timers — prevents unhandled rejection.
     // Advance through all backoffs: 100ms + 200ms + 400ms = 700ms
-    await vi.advanceTimersByTimeAsync(700);
-
-    await rejection;
+    await Promise.all([
+      expect(writePromise).rejects.toThrow(WriteConflictError),
+      vi.advanceTimersByTimeAsync(700),
+    ]);
     // 1 initial + 3 retries = 4 PUT calls
     expect(s3Mock.commandCalls(PutObjectCommand)).toHaveLength(4);
   });

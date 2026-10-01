@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { type Page } from "@playwright/test";
 
 /** Base64url-encode a string (no padding). */
 function b64url(str: string): string {
@@ -44,8 +44,6 @@ export async function seedAuth(
   const jwt = buildJwt({ sub, username, iat, exp });
 
   // auth-context uses new Date(expiresAt) — must be an ISO string
-  const expiresAtIso = new Date(expiresAt * 1000).toISOString();
-
   const expires = new Date(expiresAt * 1000).toISOString();
 
   await page.evaluate(
@@ -54,9 +52,10 @@ export async function seedAuth(
       localStorage.setItem("jwt_expires_at", expiresAt);
       localStorage.setItem("jwt_username", uname);
       localStorage.setItem("jwt_user_id", uid);
-      if ((window as any).__AUTH_LOGIN__) {
-        (window as any).__AUTH_LOGIN__(token, expiresAt);
-      }
+      const w = window as typeof window & {
+        __AUTH_LOGIN__?: (token: string, expiresAt: string) => void;
+      };
+      w.__AUTH_LOGIN__?.(token, expiresAt);
     },
     [jwt, expires, username, userId] as const,
   );

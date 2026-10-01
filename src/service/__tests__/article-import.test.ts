@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Provide env values (including a distribution ID so invalidation is exercised in tests)
@@ -141,10 +142,9 @@ describe("importArticle()", () => {
         title: "Test",
       });
 
-      if (result.status === "DUPLICATE") {
-        expect(mockUpdateIndex).not.toHaveBeenCalled();
-        expect(cfSend).not.toHaveBeenCalled();
-      }
+      expect(result.status).toBe("DUPLICATE");
+      expect(mockUpdateIndex).not.toHaveBeenCalled();
+      expect(cfSend).not.toHaveBeenCalled();
     });
   });
 
@@ -171,12 +171,13 @@ describe("importArticle()", () => {
 
       const result = await importArticle({ url: ALLOWED_URL });
 
-      if (result.status === "IMPORTED") {
-        expect(result.title).toContain("Article Title");
-      }
+      expect(result).toMatchObject({
+        status: "IMPORTED",
+        title: expect.stringContaining("Article Title"),
+      });
 
       expect(mockPutArticle).toHaveBeenCalled();
-      const article = mockPutArticle.mock.calls[0]![0]!;
+      const article = mockPutArticle.mock.calls[0]![0];
       expect(article.paragraphs.length).toBeGreaterThan(0);
       expect(article.paragraphs.every((p: { text: string }) => p.text.trim().length > 0)).toBe(true);
     });
@@ -203,7 +204,7 @@ describe("importArticle()", () => {
       await importArticle({ url: ALLOWED_URL });
 
       expect(mockPutArticle).toHaveBeenCalled();
-      const article = mockPutArticle.mock.calls[0]![0]!;
+      const article = mockPutArticle.mock.calls[0]![0];
       expect(article.paragraphs).toHaveLength(2);
       expect(article.paragraphs[0]!.text).toBe("In the beginning of the article.");
       expect(article.paragraphs[1]!.text).toBe("Second article paragraph.");
@@ -229,7 +230,7 @@ describe("importArticle()", () => {
       await importArticle({ url: ALLOWED_URL });
 
       expect(mockPutArticle).toHaveBeenCalled();
-      const article = mockPutArticle.mock.calls[0]![0]!;
+      const article = mockPutArticle.mock.calls[0]![0];
       expect(article.paragraphs).toHaveLength(1);
       expect(article.paragraphs[0]!.text).toBe("Article content only.");
     });
@@ -253,10 +254,7 @@ describe("importArticle()", () => {
 
       const result = await importArticle({ url: ALLOWED_URL });
 
-      expect(result.status).toBe("NEW_VERSION");
-      if (result.status === "NEW_VERSION") {
-        expect(result.previousArticleId).toBe(PREVIOUS_ID);
-      }
+      expect(result).toMatchObject({ status: "NEW_VERSION", previousArticleId: PREVIOUS_ID });
     });
 
     it("does not call updateArticleIndex on NEW_VERSION (unconfirmed)", async () => {
@@ -294,10 +292,7 @@ describe("importArticle()", () => {
 
       const result = await importArticle({ url: ALLOWED_URL, confirm: true });
 
-      expect(result.status).toBe("VERSION_IMPORTED");
-      if (result.status === "VERSION_IMPORTED") {
-        expect(result.previousArticleId).toBe(PREVIOUS_ID);
-      }
+      expect(result).toMatchObject({ status: "VERSION_IMPORTED", previousArticleId: PREVIOUS_ID });
     });
   });
 
@@ -313,7 +308,7 @@ describe("importArticle()", () => {
       await importArticle({ url: ALLOWED_URL, text, title: "Test Article" });
 
       expect(mockPutArticle).toHaveBeenCalled();
-      const article = mockPutArticle.mock.calls[0]![0]!;
+      const article = mockPutArticle.mock.calls[0]![0];
       expect(article.paragraphs).toHaveLength(3);
       expect(article.paragraphs[0]!.text).toBe("First paragraph.");
       expect(article.paragraphs[1]!.text).toBe("Second paragraph.");
@@ -332,7 +327,7 @@ describe("importArticle()", () => {
 
       expect(result.status).toBe("IMPORTED");
       expect(mockPutArticle).toHaveBeenCalledOnce();
-      const article = mockPutArticle.mock.calls[0]![0]!;
+      const article = mockPutArticle.mock.calls[0]![0];
       expect(article.title).toBe("My PDF");
       expect(article.sourceUrl).toMatch(/^pdf-import:/);
       expect(article.paragraphs).toHaveLength(2);
@@ -340,7 +335,7 @@ describe("importArticle()", () => {
 
     it("returns DUPLICATE for identical PDF content", async () => {
       const text = "Same content.";
-      const articleId = require("crypto").createHash("sha256").update(text).digest("hex");
+      const articleId = createHash("sha256").update(text).digest("hex");
       mockGetArticle.mockResolvedValue({
         articleId,
         sourceUrl: `pdf-import:${articleId}`,
@@ -383,7 +378,7 @@ describe("importArticle()", () => {
       expect(mockUpdateIndex).toHaveBeenCalledOnce();
 
       // Invoke the mutator with an empty index and verify the result
-      const mutator = mockUpdateIndex.mock.calls[0]![0]!;
+      const mutator = mockUpdateIndex.mock.calls[0]![0];
       const result = mutator({ articles: [] });
       expect(result.articles).toHaveLength(1);
       expect(result.articles[0]!.title).toBe("Fresh Article");
@@ -400,7 +395,7 @@ describe("importArticle()", () => {
         title: "New Article",
       });
 
-      const mutator = mockUpdateIndex.mock.calls[0]![0]!;
+      const mutator = mockUpdateIndex.mock.calls[0]![0];
       const existingEntry = {
         articleId: "d".repeat(64),
         title: "Old Article",
@@ -433,7 +428,7 @@ describe("importArticle()", () => {
       expect(result.status).toBe("VERSION_IMPORTED");
       expect(mockUpdateIndex).toHaveBeenCalledOnce();
 
-      const mutator = mockUpdateIndex.mock.calls[0]![0]!;
+      const mutator = mockUpdateIndex.mock.calls[0]![0];
       // Old entry for this sourceUrl is archived — the new version must NOT inherit that.
       const oldEntry = {
         articleId: PREVIOUS_ID,
@@ -513,9 +508,8 @@ describe("importArticle()", () => {
         title: "Test",
       });
 
-      if (result.status === "DUPLICATE") {
-        expect(cfSend).not.toHaveBeenCalled();
-      }
+      expect(result.status).toBe("DUPLICATE");
+      expect(cfSend).not.toHaveBeenCalled();
     });
   });
 });

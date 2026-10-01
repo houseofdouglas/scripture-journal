@@ -13,7 +13,7 @@ export function DashboardPage() {
   const { data: projects = [] } = useProjects();
 
   // "all" shows every entry; otherwise filtered by projectId
-  const [projectFilter, setProjectFilter] = useState<string | "all">("all");
+  const [projectFilter, setProjectFilter] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const { data: index, isLoading, isError } = useUserIndex();
@@ -41,7 +41,7 @@ export function DashboardPage() {
     byDate.set(entry.date, list);
   }
 
-  function handleProjectTab(id: string | "all") {
+  function handleProjectTab(id: string) {
     setProjectFilter(id);
     setSelectedDate(null);
     if (id !== "all") setActiveProject(id); // also updates active project for new notes

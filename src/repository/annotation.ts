@@ -1,9 +1,10 @@
 import crypto from "crypto";
 import { JournalEntrySchema, UserIndexSchema } from "../types";
 import type { JournalEntry, UserIndex, Annotation, ContentType } from "../types";
-import { getObject, putObject } from "./s3-client";
+import { getObject } from "./s3-client";
 import { conditionalWrite } from "./conditional-write";
 import { WriteConflictError } from "./errors";
+import { log } from "../lib/log";
 
 // ── Key helpers ───────────────────────────────────────────────────────────────
 
@@ -107,7 +108,7 @@ export async function appendAnnotation(
   } catch (err) {
     // Log failure but don't propagate — entry is durable, dashboard may be stale
     if (!(err instanceof WriteConflictError)) throw err;
-    console.error(`[annotation-repo] UserIndex update failed for entry ${entryId} (write conflict)`);
+    log.error("UserIndex update failed (write conflict)", { entryId });
   }
 
   return { entry: updatedEntry, annotation };

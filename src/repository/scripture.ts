@@ -10,7 +10,7 @@ export class DataIntegrityError extends Error {
   }
 }
 
-async function fetchJson(url: string): Promise<unknown | null> {
+async function fetchJson(url: string): Promise<unknown> {
   const res = await fetch(url);
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);

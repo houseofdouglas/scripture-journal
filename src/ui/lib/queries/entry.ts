@@ -2,6 +2,7 @@ import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { useAuth } from "../auth-context";
 import { JournalEntrySchema } from "../../../types";
 import type { JournalEntry } from "../../../types";
+import { log } from "../../../lib/log";
 
 async function fetchEntry(userId: string, entryId: string): Promise<JournalEntry | null> {
   const res = await fetch(`/users/${userId}/entries/${entryId}.json`);
@@ -13,11 +14,10 @@ async function fetchEntry(userId: string, entryId: string): Promise<JournalEntry
   if (!parsed.success) {
     // Log only field paths, never values — annotation text must never reach
     // the console (NFR-14).
-    console.error(
-      "Failed to parse journal entry",
+    log.error("Failed to parse journal entry", {
       entryId,
-      parsed.error.issues.map((issue) => issue.path.join("."))
-    );
+      paths: parsed.error.issues.map((issue) => issue.path.join(".")),
+    });
     throw new Error("Invalid journal entry");
   }
   return parsed.data;

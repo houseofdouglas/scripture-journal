@@ -106,9 +106,10 @@ describe("analyzeDocumentLayout()", () => {
     textractMock.on(GetDocumentAnalysisCommand).resolves({ JobStatus: "IN_PROGRESS" });
 
     const promise = analyzeDocumentLayout("my-bucket", "tmp/extract/a.pdf");
-    const assertion = expect(promise).rejects.toThrow(ExtractionTimeoutError);
-    await vi.advanceTimersByTimeAsync(80_000);
-    await assertion;
+    await Promise.all([
+      expect(promise).rejects.toThrow(ExtractionTimeoutError),
+      vi.advanceTimersByTimeAsync(80_000),
+    ]);
     vi.useRealTimers();
   });
 });

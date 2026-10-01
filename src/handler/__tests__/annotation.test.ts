@@ -39,7 +39,7 @@ async function req(
   return app.request("/api/entries/annotate", {
     method: "POST",
     headers,
-    body: body ? JSON.stringify(body) : (undefined as any),
+    body: body ? JSON.stringify(body) : null,
   });
 }
 
