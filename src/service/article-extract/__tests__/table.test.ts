@@ -207,3 +207,27 @@ describe("tableHandler — cell content and structure", () => {
     expect(b!.table).toEqual({ headers: ["X", "Y"], rows: [["", ""]] });
   });
 });
+
+describe("tableHandler — <caption>", () => {
+  it("emits the caption as a text block immediately before the table", () => {
+    const out = extractBlocks(
+      body(`<p>Before</p><table><caption> Table <b>1</b>: Results </caption><tr><th>A</th></tr><tr><td>x</td></tr></table><p>After</p>`)
+    );
+    expect(out).toEqual([
+      { text: "Before" },
+      { text: "Table 1: Results" },
+      { kind: "table", text: "A: x", table: { headers: ["A"], rows: [["x"]] } },
+      { text: "After" },
+    ]);
+  });
+
+  it("still emits the caption when the table itself is empty", () => {
+    const out = extractBlocks(body(`<table><caption>Only a caption</caption><tr><td> </td></tr></table>`));
+    expect(out).toEqual([{ text: "Only a caption" }]);
+  });
+
+  it("drops an empty or excluded caption", () => {
+    const out = extractBlocks(body(`<table><caption hidden>secret</caption><tr><td>x</td></tr></table>`));
+    expect(out).toEqual([{ kind: "table", text: "x", table: { headers: [], rows: [["x"]] } }]);
+  });
+});

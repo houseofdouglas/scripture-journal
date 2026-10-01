@@ -15,6 +15,7 @@ import {
   type ExtractedBlock,
 } from "../blocks";
 import { isExcluded, isInsideExcluded, textOf } from "../exclusions";
+import { uncoveredTextHandler } from "../catch-all";
 
 const FIXTURES = path.resolve(__dirname, "../../__tests__/fixtures/html");
 
@@ -124,7 +125,10 @@ describe("extractBlocks — paragraphs", () => {
   it("never offers the root itself to handlers", () => {
     const root = body("<p>inner</p>");
     const p = root.querySelector("p")!;
-    expect(extractBlocks(p)).toEqual([]);
+    // With catch-all off, nothing is emitted: the <p> root is not a paragraph block.
+    expect(extractBlocks(p, DEFAULT_HANDLERS, { onUncoveredText: () => [] })).toEqual([]);
+    // With the default catch-all, its text arrives as uncovered text instead.
+    expect(extractBlocks(p)).toEqual([{ text: "inner" }]);
   });
 });
 
@@ -281,9 +285,14 @@ describe("onUncoveredText", () => {
     expect(texts(out)).toEqual(["a b c"]);
   });
 
-  it("defaults to a no-op that drops uncovered text", () => {
-    expect(DEFAULT_ON_UNCOVERED_TEXT(body("x").firstChild as Text, {} as never)).toEqual([]);
-    expect(extractBlocks(body("<div>loose</div><p>kept</p>"))).toEqual([{ text: "kept" }]);
+  it("defaults to the RAB-08 catch-all (uncovered text becomes text blocks)", () => {
+    expect(DEFAULT_ON_UNCOVERED_TEXT).toBe(uncoveredTextHandler);
+    expect(extractBlocks(body("<div>loose</div><p>kept</p>"))).toEqual([{ text: "loose" }, { text: "kept" }]);
+  });
+
+  it("drops uncovered text when given a no-op callback", () => {
+    const out = extractBlocks(body("<div>loose</div><p>kept</p>"), DEFAULT_HANDLERS, { onUncoveredText: () => [] });
+    expect(out).toEqual([{ text: "kept" }]);
   });
 
   it("exports the built-in handlers last in DEFAULT_HANDLERS", () => {
