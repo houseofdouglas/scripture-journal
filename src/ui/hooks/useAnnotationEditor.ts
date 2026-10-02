@@ -132,7 +132,7 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
         { blockId: result.annotation.blockId, text: result.annotation.text, createdAt: result.annotation.createdAt },
       ]);
       setEditor({ blockId: null, text: "", status: "idle", errorMessage: null });
-      queryClient.invalidateQueries({ queryKey: ["userIndex"] });
+      void queryClient.invalidateQueries({ queryKey: ["userIndex"] });
     } catch (err) {
       // On 401: api-client redirects; just preserve error state
       if (err instanceof ApiError && err.status === 401) {
@@ -148,7 +148,7 @@ export function useAnnotationEditor(options: UseAnnotationEditorOptions): UseAnn
 
       setEditor((prev) => ({ ...prev, status: "error", errorMessage: message }));
     }
-  }, [editor, options, contentTitle]);
+  }, [editor, options, contentTitle, activeProjectId, queryClient]);
 
   return {
     openBlockId: editor.blockId,

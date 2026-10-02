@@ -10,7 +10,6 @@ import type { Article } from "../../types";
 
 async function fetchArticle(articleId: string): Promise<Article | null> {
   const res = await fetch(`/content/articles/${articleId}.json`);
-  console.log("[fetchArticle] articleId:", articleId, "status:", res.status);
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json() as Promise<Article>;
@@ -34,10 +33,7 @@ export function ArticleViewPage() {
 
   const { data: article, isLoading, isError } = useQuery<Article | null>({
     queryKey: ["article", articleId],
-    queryFn: () => {
-      console.log("[useQuery] fetching article:", articleId);
-      return fetchArticle(articleId!);
-    },
+    queryFn: () => fetchArticle(articleId!),
     staleTime: Infinity,
     enabled: Boolean(articleId),
   });
@@ -60,11 +56,13 @@ export function ArticleViewPage() {
   const isPastEntry = Boolean(pastEntryDate);
   const [openEntryId, setOpenEntryId] = useState<string | null>(null);
 
+  const articleTitle = article?.title;
+  const { setContentTitle } = annotation;
   useEffect(() => {
-    if (article && !isPastEntry) {
-      annotation.setContentTitle(article.title);
+    if (articleTitle !== undefined && !isPastEntry) {
+      setContentTitle(articleTitle);
     }
-  }, [article?.title, isPastEntry]);
+  }, [articleTitle, isPastEntry, setContentTitle]);
 
   // Close the modal when navigating to a different article — the component
   // instance persists across param changes on this route.
@@ -179,7 +177,7 @@ export function ArticleViewPage() {
               onOpen: annotation.openEditor,
               onClose: annotation.closeEditor,
               onTextChange: annotation.setEditorText,
-              onSave: annotation.saveAnnotation,
+              onSave: () => void annotation.saveAnnotation(),
             }}
           />
         </div>
@@ -202,7 +200,7 @@ export function ArticleViewPage() {
                 onOpen: annotation.openEditor,
                 onClose: annotation.closeEditor,
                 onTextChange: annotation.setEditorText,
-                onSave: annotation.saveAnnotation,
+                onSave: () => void annotation.saveAnnotation(),
               }}
             />
           </div>

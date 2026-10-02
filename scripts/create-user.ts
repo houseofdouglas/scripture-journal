@@ -45,7 +45,7 @@ const password = values.password;
 
 async function initialize() {
   try {
-    const secret = await getJwtSecret();
+    await getJwtSecret();
     console.log(`ℹ️  JWT secret loaded from ${process.env.JWT_SECRET ? 'JWT_SECRET env var' : 'SSM'}`);
   } catch (err) {
     console.error("❌ Failed to load JWT secret:", err instanceof Error ? err.message : err);

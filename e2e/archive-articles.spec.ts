@@ -1,6 +1,6 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { seedAuth } from "./helpers/auth";
-import { mockUserIndex, ArticleIndexEntryFixture } from "./helpers/mocks";
+import { mockUserIndex, type ArticleIndexEntryFixture } from "./helpers/mocks";
 
 const ARTICLE_A_ID = "a".repeat(64);
 const ARTICLE_B_ID = "b".repeat(64);

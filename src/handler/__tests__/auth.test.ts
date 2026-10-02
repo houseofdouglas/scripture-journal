@@ -13,7 +13,6 @@ vi.mock("../../service/auth", () => ({
 import * as authService from "../../service/auth";
 import {
   InvalidCredentialsError,
-  UnauthorizedError,
   ValidationError,
   UsernameTakenError,
 } from "../../service/errors";
@@ -50,7 +49,7 @@ async function req(
   return app.request(fullPath, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : (undefined as any),
+    body: body ? JSON.stringify(body) : null,
   });
 }
 

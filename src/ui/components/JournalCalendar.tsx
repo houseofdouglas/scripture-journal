@@ -21,7 +21,7 @@ export function JournalCalendar({ markedDays, selectedDate, onSelectDate }: Prop
   const startDow = new Date(year, month, 1).getDay();
 
   const cells: Array<number | null> = [
-    ...Array(startDow).fill(null),
+    ...Array.from({ length: startDow }, () => null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
 

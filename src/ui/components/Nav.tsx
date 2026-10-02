@@ -64,50 +64,54 @@ export function Nav() {
         </Link>
 
         {/* Mobile menu toggle */}
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen((open) => !open)}
-          className="rounded p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200 md:hidden"
-          aria-label="Toggle navigation menu"
-          aria-expanded={mobileMenuOpen}
-        >
-          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-            {mobileMenuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
-        </button>
+        {user && (
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="rounded p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200 md:hidden"
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        )}
 
-        {/* Centre links */}
-        <div className="hidden gap-6 text-sm text-gray-700 dark:text-gray-300 md:flex">
-          <NavLink
-            to="/scripture"
-            className={({ isActive }) =>
-              isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
-            }
-          >
-            Browse Scripture
-          </NavLink>
-          <NavLink
-            to="/articles"
-            end
-            className={({ isActive }) =>
-              isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
-            }
-          >
-            Browse Articles
-          </NavLink>
-          <NavLink
-            to="/import"
-            className={({ isActive }) =>
-              isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
-            }
-          >
-            Import Article
-          </NavLink>
-        </div>
+        {/* Centre links — app links need a session, so hidden while signed out */}
+        {user && (
+          <div className="hidden gap-6 text-sm text-gray-700 dark:text-gray-300 md:flex">
+            <NavLink
+              to="/scripture"
+              className={({ isActive }) =>
+                isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
+              }
+            >
+              Browse Scripture
+            </NavLink>
+            <NavLink
+              to="/articles"
+              end
+              className={({ isActive }) =>
+                isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
+              }
+            >
+              Browse Articles
+            </NavLink>
+            <NavLink
+              to="/import"
+              className={({ isActive }) =>
+                isActive ? "font-semibold text-gray-900 dark:text-gray-100" : "hover:text-gray-900 dark:hover:text-gray-100"
+              }
+            >
+              Import Article
+            </NavLink>
+          </div>
+        )}
 
         {/* Right side: project switcher + user dropdown */}
         <div className="hidden items-center gap-3 md:flex">
@@ -225,7 +229,7 @@ export function Nav() {
       </div>
 
       {/* Mobile menu panel */}
-      {mobileMenuOpen && (
+      {user && mobileMenuOpen && (
         <div className="mt-3 flex flex-col gap-4 border-t border-gray-200 pt-3 dark:border-gray-700 md:hidden">
           <div className="flex flex-col gap-3 text-sm text-gray-700 dark:text-gray-300">
             <NavLink

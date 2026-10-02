@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type ReactNode,
 } from "react";
 
@@ -15,6 +16,12 @@ export interface AuthUser {
 
 interface AuthContextValue {
   user: AuthUser | null;
+  /**
+   * True when a stored session existed at page load but was expired or
+   * unusable. Lets ProtectedRoute tell "your session expired" apart from
+   * "you were never signed in" (auth spec FR-11a).
+   */
+  sessionExpired: boolean;
   login: (token: string, expiresAt: string) => void;
   logout: () => void;
 }
@@ -26,24 +33,47 @@ const JWT_EXPIRES_AT_KEY = "jwt_expires_at";
 const JWT_USERNAME_KEY = "jwt_username";
 const JWT_USER_ID_KEY = "jwt_user_id";
 
-function loadStoredUser(): AuthUser | null {
+interface StoredSession {
+  user: AuthUser | null;
+  sessionExpired: boolean;
+}
+
+/**
+ * Reads the stored session without side effects — StrictMode double-invokes
+ * state initializers, so clearing storage here would make the second call
+ * misreport an expired session as "never signed in".
+ */
+function readStoredSession(): StoredSession {
   const token = localStorage.getItem(JWT_KEY);
   const expiresAt = localStorage.getItem(JWT_EXPIRES_AT_KEY);
   const username = localStorage.getItem(JWT_USERNAME_KEY);
   const userId = localStorage.getItem(JWT_USER_ID_KEY);
 
-  if (!token || !expiresAt || !username || !userId) return null;
+  // No token at all — the visitor was never signed in on this browser
+  if (!token) return { user: null, sessionExpired: false };
 
-  // Expired token — clear and return null
-  if (Date.now() >= new Date(expiresAt).getTime()) {
-    clearStorage();
-    return null;
+  // A token exists but is incomplete or past its expiry — a session existed
+  // and is no longer usable
+  if (!expiresAt || !username || !userId || Date.now() >= new Date(expiresAt).getTime()) {
+    return { user: null, sessionExpired: true };
   }
 
-  return { token, expiresAt, username, userId };
+  return { user: { token, expiresAt, username, userId }, sessionExpired: false };
 }
 
-function clearStorage(): void {
+/**
+ * Builds the `/login` redirect URL. `expired=1` is set only when a real
+ * session existed and expired or became invalid — LoginPage shows the
+ * "session expired" banner on that flag alone, never on `return` (auth spec FR-11a).
+ */
+export function loginUrl(returnPath: string, opts: { expired: boolean }): string {
+  const params = new URLSearchParams({ return: returnPath });
+  if (opts.expired) params.set("expired", "1");
+  return `/login?${params.toString()}`;
+}
+
+/** Removes every stored session key. Also used by api-client on a 401. */
+export function clearStoredSession(): void {
   localStorage.removeItem(JWT_KEY);
   localStorage.removeItem(JWT_EXPIRES_AT_KEY);
   localStorage.removeItem(JWT_USERNAME_KEY);
@@ -62,7 +92,14 @@ function decodeJwtPayload(token: string): { sub: string; username: string } | nu
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(loadStoredUser);
+  const [initial] = useState(readStoredSession);
+  const [user, setUser] = useState<AuthUser | null>(initial.user);
+  const [sessionExpired, setSessionExpired] = useState(initial.sessionExpired);
+
+  // Drop an expired/incomplete stored session once, after mount
+  useEffect(() => {
+    if (initial.sessionExpired) clearStoredSession();
+  }, [initial]);
 
   const login = useCallback((token: string, expiresAt: string) => {
     const payload = decodeJwtPayload(token);
@@ -74,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(JWT_USER_ID_KEY, payload.sub);
 
     setUser({ token, expiresAt, username: payload.username, userId: payload.sub });
+    setSessionExpired(false);
   }, []);
 
   // Expose login to window for E2E tests
@@ -82,12 +120,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = useCallback(() => {
-    clearStorage();
+    clearStoredSession();
     setUser(null);
+    setSessionExpired(false);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, sessionExpired, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

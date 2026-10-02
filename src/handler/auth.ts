@@ -6,9 +6,8 @@ import {
   InvalidCredentialsError,
   ValidationError,
   UsernameTakenError,
-  ForbiddenError,
 } from "../service/errors";
-import { ZodError } from "zod";
+import { type ZodError } from "zod";
 
 export function registerAuthRoutes(app: Hono<AppEnv>): void {
   // ── POST /auth/login ────────────────────────────────────────────────────────

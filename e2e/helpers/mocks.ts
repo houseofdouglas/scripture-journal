@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { type Page } from "@playwright/test";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import path from "path";
@@ -89,8 +89,6 @@ const DEFAULT_CHAPTER = {
     },
   ],
 };
-
-const DEFAULT_USER_INDEX = { entries: [] };
 
 // ---------------------------------------------------------------------------
 // Auth mocks
@@ -256,7 +254,7 @@ const DEFAULT_ARTICLE = {
 export async function mockArticle(
   page: Page,
   article = DEFAULT_ARTICLE,
-  entryData?: { entryId: string; title: string; notes: unknown[] },
+  entryData?: { entryId: string; title: string; notes: Array<{ blockId: number; text: string; createdAt: string }> },
 ): Promise<void> {
   await page.route("**/content/articles/*.json", async (route) => {
     console.log("[mockArticle] matching content route for URL:", route.request().url());
@@ -274,7 +272,7 @@ export async function mockArticle(
     const date = localDateString(new Date());
     const entryId = computeEntryId(date, contentRef);
 
-    const annotations = entryData.notes.map((note: any) => ({
+    const annotations = entryData.notes.map((note) => ({
       blockId: note.blockId,
       text: note.text,
       createdAt: note.createdAt,

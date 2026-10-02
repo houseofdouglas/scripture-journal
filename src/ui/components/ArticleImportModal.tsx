@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { apiClient, ApiError } from "../lib/api-client";
 import { extractPdfWithFallback, type ExtractSource } from "../lib/pdf-extract-client";
 import type { ImportResponse } from "../../types";
+import { log } from "../../lib/log";
 
 type ModalState =
   | { mode: "url"; url: string; error?: string; fetchFailed?: boolean }
@@ -67,7 +68,7 @@ export function ArticleImportModal({ onClose }: Props) {
         title: state.title,
       });
       handleImportResponse(result, state.url);
-    } catch (err) {
+    } catch {
       const errState = state;
       setState({ ...errState, error: "Could not import. Please try again." });
     }
@@ -155,7 +156,7 @@ export function ArticleImportModal({ onClose }: Props) {
         source: result.source,
       });
     } catch (err) {
-      console.error("PDF extraction failed:", err);
+      log.error("PDF extraction failed", { error: err instanceof Error ? err.message : String(err) });
       setState({ mode: "pdf", fileName: file.name, error: "Could not extract text from this PDF." });
     }
   }
@@ -193,7 +194,10 @@ export function ArticleImportModal({ onClose }: Props) {
                   placeholder="https://example.com/article"
                   required
                   value={state.url}
-                  onChange={(e) => setState({ ...state, url: e.target.value, error: undefined as any })}
+                  onChange={(e) => {
+                    const { error: _error, ...rest } = state;
+                    setState({ ...rest, url: e.target.value });
+                  }}
                   className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100 ${
                     state.error ? "border-red-400 dark:border-red-600" : "border-gray-300 dark:border-gray-600"
                   }`}

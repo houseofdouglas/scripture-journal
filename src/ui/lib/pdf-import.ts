@@ -10,8 +10,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 // which needs ReadableStream.prototype[Symbol.asyncIterator]. Some Safari
 // builds still lack it, throwing "undefined is not a function" deep inside
 // the library. Polyfill it up front rather than depend on the OS/browser.
-if (typeof ReadableStream !== "undefined" && !(ReadableStream.prototype as any)[Symbol.asyncIterator]) {
-  (ReadableStream.prototype as any)[Symbol.asyncIterator] = async function* (this: ReadableStream) {
+type MaybeAsyncIterable = { [Symbol.asyncIterator]?: (this: ReadableStream<unknown>) => AsyncGenerator<unknown> };
+const streamProto =
+  typeof ReadableStream !== "undefined" ? (ReadableStream.prototype as unknown as MaybeAsyncIterable) : undefined;
+if (streamProto && !streamProto[Symbol.asyncIterator]) {
+  streamProto[Symbol.asyncIterator] = async function* (this: ReadableStream<unknown>) {
     const reader = this.getReader();
     try {
       while (true) {
