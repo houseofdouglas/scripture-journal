@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Lists Fixture</title>
+</head>
+<body>
+  <article>
+    <p>Lists fixture: nesting, numbering, empty items, block content in items.</p>
+
+    <!-- 4-level nesting: level-4 items must be flattened into level 3 -->
+    <ul id="nested-four">
+      <li>Level 1 item A
+        <ul>
+          <li>Level 2 item A.1
+            <ol>
+              <li>Level 3 item A.1.a
+                <ul>
+                  <li>Level 4 item A.1.a.i</li>
+                  <li>Level 4 item A.1.a.ii</li>
+                </ul>
+              </li>
+              <li>Level 3 item A.1.b</li>
+            </ol>
+          </li>
+          <li>Level 2 item A.2</li>
+        </ul>
+      </li>
+      <li>Level 1 item B</li>
+    </ul>
+
+    <!-- Ordered list starting at 5 -->
+    <ol id="start-five" start="5">
+      <li>Fifth step</li>
+      <li>Sixth step</li>
+      <li>Seventh step</li>
+    </ol>
+
+    <!-- Empty items must be dropped -->
+    <ul id="empty-items">
+      <li>Kept item one</li>
+      <li></li>
+      <li>   </li>
+      <li><span></span></li>
+      <li>Kept item two</li>
+    </ul>
+
+    <!-- A list with only empty items must be dropped entirely -->
+    <ul id="all-empty">
+      <li></li>
+      <li> </li>
+    </ul>
+
+    <!-- <p> inside <li> -->
+    <ol id="p-in-li">
+      <li><p>First paragraph inside an item.</p><p>Second paragraph inside the same item.</p></li>
+      <li><p>Single paragraph item.</p></li>
+    </ol>
+
+    <!-- <pre> inside <li> -->
+    <ul id="pre-in-li">
+      <li>Run this command:
+        <pre><code class="language-bash">npm install
+npm run build</code></pre>
+      </li>
+      <li>Then continue.</li>
+    </ul>
+
+    <p>Closing paragraph after the lists.</p>
+  </article>
+</body>
+</html>

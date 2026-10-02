@@ -14,6 +14,39 @@ resource "aws_cloudfront_origin_access_control" "app" {
   signing_protocol                  = "sigv4"
 }
 
+# ── Response Headers Policies ─────────────────────────────────────────────────
+
+# /content/assets/* — X-Content-Type-Options: nosniff so browsers never
+# reinterpret a stored image as another type (spec FR-25).
+resource "aws_cloudfront_response_headers_policy" "assets" {
+  name    = "scripture-journal-assets-${var.env}"
+  comment = "nosniff for article image assets"
+
+  security_headers_config {
+    content_type_options {
+      override = true
+    }
+  }
+}
+
+# /content/assets/*.svg — nosniff plus a restrictive CSP so a sanitized SVG
+# opened directly ("Open in new tab") cannot run script or load resources (spec FR-25).
+resource "aws_cloudfront_response_headers_policy" "assets_svg" {
+  name    = "scripture-journal-assets-svg-${var.env}"
+  comment = "nosniff + restrictive CSP for SVG article assets"
+
+  security_headers_config {
+    content_type_options {
+      override = true
+    }
+
+    content_security_policy {
+      content_security_policy = "default-src 'none'; style-src 'unsafe-inline'; img-src data:"
+      override                = true
+    }
+  }
+}
+
 # ── Distribution ──────────────────────────────────────────────────────────────
 
 resource "aws_cloudfront_distribution" "app" {
@@ -98,6 +131,39 @@ resource "aws_cloudfront_distribution" "app" {
     # Cache-Control: no-store is set on S3 objects at write time (see s3-client.ts).
     cache_policy_id          = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # Managed-CachingDisabled
     origin_request_policy_id = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-CORS-S3Origin
+  }
+
+  # /content/assets/*.svg — sanitized SVG article images (nosniff + restrictive CSP)
+  # Must precede /content/assets/* and /content/*: CloudFront matches ordered
+  # behaviours first-to-last and cannot vary headers by extension within one.
+  # Origin/caching identical to /content/* below — assets are content-addressed
+  # and write-once.
+  ordered_cache_behavior {
+    path_pattern           = "/content/assets/*.svg"
+    target_origin_id       = "app-data"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+
+    cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
+    origin_request_policy_id   = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-CORS-S3Origin
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.assets_svg.id
+  }
+
+  # /content/assets/* — raster article images (png/jpg/gif/webp; nosniff)
+  # Must precede /content/*. Origin/caching identical to /content/* below.
+  ordered_cache_behavior {
+    path_pattern           = "/content/assets/*"
+    target_origin_id       = "app-data"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+
+    cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
+    origin_request_policy_id   = "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf" # Managed-CORS-S3Origin
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.assets.id
   }
 
   # /content/* — cached scripture and article JSON

@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     // Exclude Playwright E2E specs — those run via `npx playwright test`
-    exclude: ["e2e/**", "**/node_modules/**"],
+    exclude: ["e2e/**", "**/node_modules/**", ".claude/**"],
     // Node environment for Lambda/S3/SSM tests
     environment: "node",
     // Sets env vars before any module is imported (env.ts validates eagerly)
