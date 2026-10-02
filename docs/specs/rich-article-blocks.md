@@ -1,6 +1,6 @@
 # Spec: Rich Article Blocks (Headings, Lists, Code, Tables & Figures)
 
-**Status**: APPROVED
+**Status**: IMPLEMENTED
 **Created**: 2026-09-30
 **Last Updated**: 2026-10-01
 **Related Specs**: [article-import](article-import.md), [annotation](annotation.md), [note-history](note-history.md), [browse-articles](browse-articles.md), [pdf-textract-extraction](pdf-textract-extraction.md)

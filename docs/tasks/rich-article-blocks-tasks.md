@@ -3,7 +3,7 @@
 **Spec**: [docs/specs/rich-article-blocks.md](../specs/rich-article-blocks.md)
 **ADR**: [docs/adr/2026-10-01-rich-article-blocks.md](../adr/2026-10-01-rich-article-blocks.md)
 **Created**: 2026-10-01
-**Status**: IN PROGRESS
+**Status**: DONE
 
 New extraction code lives in `src/service/article-extract/`; `src/service/article-import.ts` calls it in place of `parseHtml`.
 
@@ -484,7 +484,8 @@ Playwright spec using a mocked article JSON containing every block kind: annotat
 **Layer**: Test
 **Estimate**: 1hr
 **Depends on**: RAB-14, RAB-15, RAB-21
-**Status**: PENDING
+**Status**: DONE
+**Completed**: 2026-10-02
 
 ### What to build
 Deploy to dev. Import the reference URL and a churchofjesuschrist.org talk; verify against the spec's acceptance criteria and record results via `/check-acceptance`.
