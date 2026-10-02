@@ -191,7 +191,7 @@ describe("exclusions", () => {
     ];
     for (const html of excluded) {
       const el = body(html).firstElementChild!;
-      expect(isExcluded(el), html).toBe(true);
+      expect({ html, excluded: isExcluded(el) }).toEqual({ html, excluded: true });
     }
     const included = [
       "<p></p>",
@@ -204,7 +204,7 @@ describe("exclusions", () => {
     ];
     for (const html of included) {
       const el = body(html).firstElementChild!;
-      expect(isExcluded(el), html).toBe(false);
+      expect({ html, excluded: isExcluded(el) }).toEqual({ html, excluded: false });
     }
   });
 

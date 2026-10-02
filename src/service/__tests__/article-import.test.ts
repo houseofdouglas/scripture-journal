@@ -354,7 +354,7 @@ describe("importArticle()", () => {
       const result = await importArticle({ url });
       expect(result.status).toBe("IMPORTED");
       expect(mockPutArticle).toHaveBeenCalledOnce();
-      return mockPutArticle.mock.calls[0]![0]!;
+      return mockPutArticle.mock.calls[0]![0];
     }
 
     let logSpy: ReturnType<typeof vi.spyOn>;
@@ -419,7 +419,7 @@ describe("importArticle()", () => {
       const second = await importArticle({ url: TALK_URL, confirm: true });
       expect(second).toMatchObject({ status: "VERSION_IMPORTED", previousArticleId: BASELINE_IDS["talk.html"] });
       expect(mockPutArticle).toHaveBeenCalledOnce();
-      const stored = mockPutArticle.mock.calls[0]![0]!;
+      const stored = mockPutArticle.mock.calls[0]![0];
       expect(stored.previousVersionId).toBe(BASELINE_IDS["talk.html"]);
       expect(ArticleSchema.safeParse(stored).success).toBe(true);
       expect(mockUpdateUrlIndex).toHaveBeenCalledWith(TALK_URL, stored.articleId, stored.importedAt);
@@ -480,7 +480,7 @@ describe("importArticle()", () => {
 
       expect(mockFetchImage).toHaveBeenCalledOnce();
       expect(mockFetchImage.mock.calls[0]![0]).toBe("https://final.example.com/posts/img/a.png");
-      const article = mockPutArticle.mock.calls[0]![0]!;
+      const article = mockPutArticle.mock.calls[0]![0];
       expect(article.paragraphs[1]).toMatchObject({ index: 1, kind: "figure", text: "Cap" });
     });
 
@@ -533,8 +533,8 @@ describe("importArticle()", () => {
 
       expect(fetchSpy).not.toHaveBeenCalled();
       expect(mockFetchImage).not.toHaveBeenCalled();
-      const article = mockPutArticle.mock.calls[0]![0]!;
-      expect(article.articleId).toBe(require("crypto").createHash("sha256").update(text).digest("hex"));
+      const article = mockPutArticle.mock.calls[0]![0];
+      expect(article.articleId).toBe(createHash("sha256").update(text).digest("hex"));
       expect(article.paragraphs).toEqual([
         { index: 0, text: "Alpha." },
         { index: 1, text: "Beta." },

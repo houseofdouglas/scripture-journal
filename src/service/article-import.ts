@@ -1,3 +1,4 @@
+import { log } from "../lib/log";
 import crypto from "crypto";
 import { JSDOM, VirtualConsole } from "jsdom";
 import {
@@ -100,16 +101,12 @@ async function importFetchedUrl(url: string, confirm: boolean | undefined): Prom
 
   const figures = blocks.filter((b) => b.kind === "figure");
   // Structured import log. Never includes URLs (query strings may carry tokens).
-  console.log(
-    JSON.stringify({
-      level: "info",
-      message: "article import parsed",
-      articleId,
-      blockCount: blocks.length,
-      figureCount: figures.length,
-      unavailableFigureCount: figures.filter((b) => b.figure?.unavailable === true).length,
-    })
-  );
+  log.info("article import parsed", {
+    articleId,
+    blockCount: blocks.length,
+    figureCount: figures.length,
+    unavailableFigureCount: figures.filter((b) => b.figure?.unavailable === true).length,
+  });
 
   return dedupeAndWrite(url, articleId, parsed.title, confirm, () => indexBlocks(blocks), true);
 }
@@ -295,14 +292,10 @@ async function writeArticle(
     // schema (and so the reader UI) would not accept.
     const result = ArticleSchema.safeParse(article);
     if (!result.success) {
-      console.error(
-        JSON.stringify({
-          level: "error",
-          message: "imported article failed schema validation",
-          articleId,
-          issues: result.error.issues.slice(0, 5).map((i) => ({ path: i.path.join("."), message: i.message })),
-        })
-      );
+      log.error("imported article failed schema validation", {
+        articleId,
+        issues: result.error.issues.slice(0, 5).map((i) => ({ path: i.path.join("."), message: i.message })),
+      });
       throw new ValidationError({ url: "The article content could not be stored." });
     }
     article = result.data;

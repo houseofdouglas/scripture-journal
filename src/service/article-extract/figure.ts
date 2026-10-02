@@ -18,6 +18,7 @@
 // Only TYPES are imported from `./blocks` (a runtime import would create an
 // import cycle with DEFAULT_HANDLERS).
 
+import { log } from "../../lib/log";
 import type { BlockHandler, BlockOutput, ExtractContext, ExtractedBlock, PendingFigure } from "./blocks";
 import { isInsideExcluded, textOf } from "./exclusions";
 import { fetchImage as defaultFetchImage, MAX_RASTER_BYTES, MAX_SVG_BYTES } from "./image-fetch";
@@ -307,7 +308,7 @@ function figureBlock(pending: PendingFigure, asset: StoredAsset | null): Extract
 
 function logUnavailable(reason: string, host: string): void {
   // Host only — never the path or query string.
-  console.warn(JSON.stringify({ level: "warn", message: "figure unavailable", reason, host }));
+  log.warn("figure unavailable", { reason, host });
 }
 
 /**
@@ -324,7 +325,7 @@ export async function resolveFigures(
 ): Promise<ExtractedBlock[]> {
   const fetchImage = opts.fetchImage ?? defaultFetchImage;
   const put = opts.putAsset ?? defaultPutAsset;
-  const result: (ExtractedBlock | undefined)[] = new Array(outputs.length);
+  const result: (ExtractedBlock | undefined)[] = Array.from({ length: outputs.length }, () => undefined);
   const jobs: { index: number; pending: PendingFigure }[] = [];
 
   let figureCount = 0;

@@ -86,7 +86,7 @@ export function normalizeText(text: string): string {
 const LABEL_TAGS: ReadonlySet<string> = new Set(["SMALL", "B", "STRONG"]);
 
 /** Placeholder pushed after a leading label; resolved by `joinParts`. */
-export const LABEL_BREAK = "\u0000";
+export const LABEL_BREAK = "\uE000"; // private-use char; never in source text after normalization
 
 /** True when `el` is one of the label elements the separator rule applies to. */
 export function isLabelElement(el: Element): boolean {
@@ -101,7 +101,7 @@ export function isLeadingLabel(el: Element, partsSoFar: readonly string[]): bool
 /** Join collected parts, turning LABEL_BREAKs into spaces before an uppercase letter or digit. */
 export function joinParts(parts: readonly string[]): string {
   return normalizeText(
-    parts.join("").replace(/\u0000+(?=\s*[\p{Lu}\p{N}])/gu, " ").replace(/\u0000/g, "")
+    parts.join("").replace(/\uE000+(?=\s*[\p{Lu}\p{N}])/gu, " ").replace(/\uE000/gu, "")
   );
 }
 

@@ -1,3 +1,4 @@
+import { log } from "../../lib/log";
 import { promises as dns } from "dns";
 import net from "net";
 
@@ -137,15 +138,13 @@ export function isBlockedAddress(ip: string): boolean {
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
 
-function log(level: "info" | "warn", message: string, host: string, reason?: string): void {
+function logFetch(level: "info" | "warn", message: string, host: string, reason?: string): void {
   // Host only — never the path or query string, which may carry tokens.
-  const entry = JSON.stringify({ level, message, host, ...(reason ? { reason } : {}) });
-  if (level === "warn") console.warn(entry);
-  else console.log(entry);
+  log[level](message, { host, ...(reason ? { reason } : {}) });
 }
 
 function fail(host: string, reason: FetchImageFailureReason): FetchImageResult {
-  log("warn", "image fetch failed", host, reason);
+  logFetch("warn", "image fetch failed", host, reason);
   return { ok: false, reason };
 }
 
@@ -254,7 +253,7 @@ export async function fetchImage(
       const bytes = res.body ? await readCapped(res.body, opts.maxBytes) : new Uint8Array(0);
       if (!bytes) return fail(current.hostname, "TOO_LARGE");
 
-      log("info", "image fetched", current.hostname);
+      logFetch("info", "image fetched", current.hostname);
       return {
         ok: true,
         bytes,

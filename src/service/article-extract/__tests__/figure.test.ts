@@ -97,8 +97,10 @@ describe("figureHandler — reference fixture", () => {
   it("yields exactly 4 pending figures, in order, from the 4 <figure>s", () => {
     expect(figs).toHaveLength(4);
     for (const f of figs) {
-      expect(f.source.type).toBe("img");
-      if (f.source.type === "img") expect(f.source.src).toMatch(/^https:\/\/cdn\.prod\.website-files\.com\/.+\.png$/);
+      expect(f.source).toMatchObject({
+        type: "img",
+        src: expect.stringMatching(/^https:\/\/cdn\.prod\.website-files\.com\/.+\.png$/),
+      });
       expect(f.alt).toBe("");
     }
   });
@@ -204,7 +206,7 @@ describe("figureHandler — standalone elements", () => {
       `<svg width="64" height="64">${big}</svg>`,
       `<svg viewBox="0 0 24 24"><text>icon</text></svg>`,
     ];
-    for (const c of cases) expect(pendings(extractBlocks(body(c))), c).toEqual([]);
+    for (const c of cases) expect({ c, figures: pendings(extractBlocks(body(c))) }).toEqual({ c, figures: [] });
     // One side > 64 is not decorative.
     expect(pendings(extractBlocks(body(`<svg width="65" height="10">${big}</svg>`)))).toHaveLength(1);
     // Unsizeable inline svg is still a figure (it resolves to unavailable).
@@ -443,7 +445,7 @@ describe("resolveFigures — caps, dedupe, concurrency, order", () => {
     const routes: Record<string, Uint8Array> = { "https://example.com/fast.png": image("tiny.png") };
     const never = new Promise<FetchImageResult>(() => undefined);
     const fetchImage = vi.fn<FetchFn>(async (url) =>
-      routes[url] ? { ok: true, bytes: routes[url]!, finalUrl: url, contentType: null } : never
+      routes[url] ? { ok: true, bytes: routes[url], finalUrl: url, contentType: null } : never
     );
     const figs = [imgFigure("/fast.png", "Fast")];
     for (let i = 0; i < 6; i++) figs.push(imgFigure(`/slow${i}.png`, `Slow ${i}`));
@@ -482,7 +484,7 @@ describe("resolveFigures — caps, dedupe, concurrency, order", () => {
     expect(put.stored.size).toBe(1); // same bytes everywhere → one object
     blocks.forEach((b, index) => {
       const parsed = ArticleParagraphSchema.safeParse({ ...b, index });
-      expect(parsed.success, JSON.stringify(parsed.error?.issues)).toBe(true);
+      expect(parsed.error?.issues).toBeUndefined();
     });
   });
 });

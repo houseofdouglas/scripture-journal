@@ -96,7 +96,7 @@ describe("codeHandler — code.html cases", () => {
   const code = codeBlocks(all);
   const byId = (id: string): ExtractedBlock | undefined => {
     const pre = doc.getElementById(id)!;
-    const raw = pre.textContent!.replace(/\n$/, "");
+    const raw = pre.textContent.replace(/\n$/, "");
     return code.find((b) => b.code?.content === raw);
   };
 

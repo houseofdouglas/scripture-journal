@@ -197,7 +197,7 @@ describe("catch-all — run grouping", () => {
   });
 
   it("collapses whitespace including NBSP", () => {
-    expect(run(`<div>\n  a   b \t\n c  </div>`)).toEqual(["a b c"]);
+    expect(run(`<div>\n  a\u00a0\u00a0 b \t\n c  </div>`)).toEqual(["a b c"]);
   });
 
   it("emits nothing for whitespace-only or excluded-only containers", () => {

@@ -1,3 +1,4 @@
+/* eslint vitest/expect-expect: ["error", { assertFunctionNames: ["expect", "expectNoLoss"] }] */
 // No-loss property (spec rich-article-blocks, Happy Path AC "No-loss property";
 // FR-3, FR-14): every visible character of the content root — minus FR-14
 // exclusions — appears in the extracted blocks exactly once, in document order.

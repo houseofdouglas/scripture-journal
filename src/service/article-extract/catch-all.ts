@@ -66,7 +66,7 @@ function blockAncestor(node: Node, root: Element): Node {
 function isLeadingLabelOf(el: Element, parts: readonly string[]): boolean {
   if (!isLabelElement(el)) return false;
   const own = textOf(el).replace(/\s/g, "");
-  return own !== "" && parts.join("").replace(/[\s\u0000]/g, "") === own;
+  return own !== "" && parts.join("").replace(/[\s\uE000]/gu, "") === own;
 }
 
 /** Collect the run starting at `start`; marks consumed text nodes covered. */

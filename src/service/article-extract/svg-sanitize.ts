@@ -1,5 +1,5 @@
 import createDOMPurify from "dompurify";
-import type { Config, WindowLike } from "dompurify";
+import type { Config } from "dompurify";
 import { JSDOM } from "jsdom";
 import { readSvgDimensions } from "./image-info";
 
@@ -22,7 +22,7 @@ const XLINK_NS = "http://www.w3.org/1999/xlink";
 const XMLNS_NS = "http://www.w3.org/2000/xmlns/";
 
 const { window } = new JSDOM("");
-const purify = createDOMPurify(window as unknown as WindowLike);
+const purify = createDOMPurify(window);
 
 const FRAGMENT_RE = /^#[A-Za-z0-9_.:-]+$/;
 const RASTER_DATA_URI_RE = /^data:image\/(?:png|jpeg|gif|webp);base64,[A-Za-z0-9+/]+={0,2}$/i;

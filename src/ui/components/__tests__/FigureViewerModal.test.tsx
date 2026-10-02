@@ -55,7 +55,7 @@ class MockResizeObserver {
     const entries = this.targets.map(
       (target) => ({ target, contentRect: { width } as DOMRectReadOnly }) as ResizeObserverEntry,
     );
-    this.callback(entries, this as unknown as ResizeObserver);
+    this.callback(entries, this);
   }
 }
 
