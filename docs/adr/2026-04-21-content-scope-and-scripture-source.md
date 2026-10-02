@@ -1,7 +1,7 @@
 # ADR: Content Scope Model and Scripture Source
 
 **Date**: 2026-04-21
-**Status**: Accepted
+**Status**: Accepted — source allowlist and private scope superseded by [ADR 2026-10-01 shared-scope-for-imports](2026-10-01-shared-scope-for-imports.md)
 
 ## Context
 

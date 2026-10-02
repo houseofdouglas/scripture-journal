@@ -68,6 +68,6 @@ s3://{bucket}/
 - **Storage grows** with binary assets (~200 KB per image typical). Negligible at expected volumes, but `content/assets/` has no garbage collection; orphaned assets (from abandoned versions) are retained indefinitely.
 - **Constitution update**: the storage layout in `constitution.md` and the plain-text constraint in `AGENTS.md` are updated to reference this ADR.
 
-## Known tension (not resolved here)
+## Known tension (resolved)
 
-[ADR 2026-04-21 content-scope](2026-04-21-content-scope-and-scripture-source.md) states that sources not on the allowlist (only churchofjesuschrist.org) should be `scope=private`. Arbitrary-URL import was later shipped with all articles stored as `scope=shared` under `content/`. This ADR follows current behaviour and stores assets under shared `content/assets/`; when private scope is implemented, non-allowlisted articles *and their assets* should move to `users/<userId>/content/assets/`. Copying images (not just text) from third-party sites raises the stakes of that gap slightly and should be revisited before the app has more than one user.
+[ADR 2026-04-21 content-scope](2026-04-21-content-scope-and-scripture-source.md) said that sources not on its allowlist should be `scope=private`, while arbitrary-URL import stored everything as shared. This is resolved by [ADR 2026-10-01 shared-scope-for-imports](2026-10-01-shared-scope-for-imports.md): all imported content, including assets, is shared, so `content/assets/` is the permanent location.

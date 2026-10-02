@@ -131,3 +131,4 @@ Decisions worth recording so far:
 - 2026-04-21 — Custom JWT auth (no Cognito) for lowest cost and simplest login UX
 - 2026-04-21 — Terraform over AWS CDK for IaC; state in a separate S3 bucket
 - 2026-10-01 — Rich article blocks (structured text, no stored HTML) and content-addressed image assets
+- 2026-10-01 — All imported content (any source, including images) is scope=shared; source allowlist retired
