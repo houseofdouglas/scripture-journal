@@ -94,6 +94,19 @@ aws iam attach-user-policy \
 
 ---
 
+### Update after editing `deploy-policy.json`
+
+```bash
+aws iam create-policy-version \
+  --policy-arn arn:aws:iam::818371815071:policy/scripture-journal-deploy \
+  --policy-document file://infra/iam/deploy-policy.json \
+  --set-as-default
+```
+
+IAM keeps at most 5 versions. If the call fails with `LimitExceeded`, delete the oldest non-default version first with `aws iam list-policy-versions` and then `aws iam delete-policy-version`.
+
+---
+
 ## Testing the deploy policy
 
 After switching to the scoped policy, run:
@@ -116,5 +129,7 @@ Add only that action, scoped to the same resource pattern already in the policy.
 - **CloudFront** cannot be scoped to a specific distribution ARN for most `Create*` and `List*` actions — those actions don't support resource-level restrictions. The `Resource: "*"` on the CloudFront statement is intentional and standard practice.
 - **ACM** certificates are scoped to the account but not to a specific cert ARN, because Terraform needs to call `ListCertificates` to find existing ones during `plan`.
 - **API Gateway v2** ARNs do not include an account ID — this is an AWS quirk.
+- **SSM** `DescribeParameters` does not support resource-level permissions, so it has its own `Resource: "*"` statement (`SSMDescribe`). It only lists parameter metadata, never values.
+- **S3** `GetReplicationConfiguration` is read by Terraform's AWS provider when it refreshes every `aws_s3_bucket`, even though no replication is configured.
 - **Route53** `GetChange` requires `arn:aws:route53:::change/*` (not zone-scoped) because change IDs are global.
 - The deploy policy does **not** grant `lambda:InvokeFunction` — the scripts call the deployed API over HTTPS, not Lambda directly.

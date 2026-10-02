@@ -40,6 +40,7 @@
         "s3:GetBucketOwnershipControls",
         "s3:PutBucketOwnershipControls",
         "s3:GetBucketLogging",
+        "s3:GetReplicationConfiguration",
         "s3:GetBucketAcl",
         "s3:GetBucketCORS",
         "s3:GetLifecycleConfiguration",
@@ -199,12 +200,18 @@
         "ssm:GetParameters",
         "ssm:PutParameter",
         "ssm:DeleteParameter",
-        "ssm:DescribeParameters",
         "ssm:AddTagsToResource",
         "ssm:ListTagsForResource",
         "ssm:RemoveTagsFromResource"
       ],
       "Resource": "arn:aws:ssm:us-east-1:818371815071:parameter/scripture-journal/*"
+    },
+
+    {
+      "Sid": "SSMDescribe",
+      "Effect": "Allow",
+      "Action": ["ssm:DescribeParameters"],
+      "Resource": "*"
     },
 
     {
