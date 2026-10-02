@@ -10,7 +10,9 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnPath = searchParams.get("return") ?? "/";
-  const isSessionExpired = searchParams.has("return");
+  // Only a real expired/invalid session sets `expired=1` — a signed-out
+  // visitor bounced here by ProtectedRoute gets `return` alone (auth spec FR-11a)
+  const isSessionExpired = searchParams.get("expired") === "1";
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

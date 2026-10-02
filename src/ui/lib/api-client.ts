@@ -2,8 +2,12 @@
  * Thin fetch wrapper that:
  * - Attaches `Authorization: Bearer <token>` from localStorage
  * - Parses JSON responses
- * - On 401, stores the current path in localStorage and redirects to /login
+ * - On 401 for a request that carried a token, clears the stored session and
+ *   redirects to /login?return=<path>&expired=1. A 401 on a request sent
+ *   without a token is not an expired session — it surfaces as an ApiError.
  */
+
+import { clearStoredSession, loginUrl } from "./auth-context";
 
 const BASE = "/api";
 
@@ -43,14 +47,17 @@ async function request<T>(
   // POST /auth/password) also use 401 for a domain-specific error — those
   // carry their own error code and must reach the caller as an ApiError
   // instead of forcing a session-expired redirect (annotation spec / auth spec).
+  // A 401 without a token means there was never a session to expire, so it
+  // falls through to the ApiError below (auth spec FR-11a).
   const isSessionExpired =
-    response.status === 401 && (json as { error?: string } | null)?.error !== "WRONG_CURRENT_PASSWORD";
+    token !== null &&
+    response.status === 401 &&
+    (json as { error?: string } | null)?.error !== "WRONG_CURRENT_PASSWORD";
 
   if (isSessionExpired) {
-    // Store return path then redirect to login
     const returnPath = window.location.pathname + window.location.search;
-    localStorage.removeItem("jwt");
-    window.location.href = `/login?return=${encodeURIComponent(returnPath)}`;
+    clearStoredSession();
+    window.location.href = loginUrl(returnPath, { expired: true });
     // Return a never-resolving promise — navigation is in progress
     return new Promise(() => {});
   }

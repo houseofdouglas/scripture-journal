@@ -1,26 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../api-client";
+import { useAuth } from "../auth-context";
 import type { Project, ProjectsResponse } from "../../../types";
 
 async function fetchProjects(): Promise<Project[]> {
-  // Nav (and this hook) renders on the public /login page too, before any
-  // token exists — fetch manually rather than via apiClient so a 401 there
-  // resolves to an empty list instead of triggering apiClient's global
-  // redirect-to-login on every anonymous page load.
-  const token = localStorage.getItem("jwt");
-  const res = await fetch("/api/projects", {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-  if (res.status === 401) return []; // not yet logged in
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = (await res.json()) as ProjectsResponse;
+  const data = await apiClient.get<ProjectsResponse>("/projects");
   return data.projects;
 }
 
+/**
+ * Projects for the signed-in user. Disabled while signed out — Nav renders on
+ * the public /login page too, and must not fire an unauthenticated request there.
+ */
 export function useProjects() {
+  const { user } = useAuth();
   return useQuery<Project[]>({
-    queryKey: ["projects"],
+    queryKey: ["projects", user?.userId],
     queryFn: fetchProjects,
+    enabled: Boolean(user),
     staleTime: 5 * 60_000,
     placeholderData: [],
   });
