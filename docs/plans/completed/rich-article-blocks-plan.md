@@ -1,6 +1,6 @@
 # Execution Plan: rich-article-blocks
 Started: 2026-10-01
-Status: IN PROGRESS
+Status: COMPLETED (2026-10-02)
 
 Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks file); each task is built in its own worktree branch `rab/<task>` and merged into the feature branch at the end of its wave.
 
@@ -26,7 +26,7 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - [x] RAB-19 — UI: "View original size" modal
 - [x] RAB-20 — UI: Past Entry excerpt prefixes
 - [x] RAB-21 — Test: E2E rich article view
-- [ ] RAB-22 — Deploy and smoke-test the reference import
+- [x] RAB-22 — Deploy and smoke-test the reference import
 
 ## Decisions & Notes
 - 2026-10-01 — Spec FR-24 corrected during planning: Browse Articles search is title/URL only, so "search matches block text" was replaced with Past Entry excerpt prefixes.
@@ -43,3 +43,4 @@ Branch: `feat/rich-article-blocks`. Tasks run in parallel waves (see the tasks f
 - 2026-10-01 — RAB-14: `p-only.html` reproduces its baseline id. `talk.html` cannot: its body has a `<ul>` of 17 `<p>`-in-`<li>` items (now one list block) and 5 images (now figures), so FR-15/16 require a new id. Its 29 standalone `<p>` texts are byte-identical to the legacy importer, and re-importing over the baseline id returns `NEW_VERSION` (tested). Time budget: API Gateway HTTP API (30 s hard cap) and CloudFront (30 s origin read) bound the request, not the 90 s Lambda timeout, so figure resolution gets `min(20 s, 25 s − elapsed)` via `resolveFigures({ timeBudgetMs })`. Assets are still written before the duplicate check (id depends on asset shas); idempotent, documented in `article-import.ts`.
 - 2026-10-01 — User decided all imported content (any source, including images) is `scope=shared`; recorded in ADR 2026-10-01-shared-scope-for-imports, superseding the allowlist rule in ADR 2026-04-21.
 - 2026-10-01 — Deploy: CI now runs `terraform apply` before the code deploy on push to main (CloudFront asset behaviours from RAB-15 must exist before code that writes assets ships). RAB-22 completes when the PR merges.
+- 2026-10-02 — Deployed via #11–#15. Live smoke test passed. See [acceptance report](rich-article-blocks-acceptance-2026-10-02.md).

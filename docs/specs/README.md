@@ -7,12 +7,12 @@ Specs are the source of truth. Code is derived from specs.
 | Spec | File | Summary |
 |------|------|---------|
 | Scripture Browsing | [scripture-browsing.md](scripture-browsing.md) | Browse Standard Works (Work → Book → Chapter), read verse lists, prev/next chapter nav |
-| Rich Article Blocks | [rich-article-blocks.md](rich-article-blocks.md) | URL imports keep headings, lists, code, tables, figures (stored, sanitized SVG, original-ratio display) and all loose text as annotatable blocks |
 
 ## Completed Specs
 
 | Spec | File | Summary | Acceptance Report |
 |------|------|---------|---|
+| Rich Article Blocks | [rich-article-blocks.md](rich-article-blocks.md) | URL imports keep headings, lists, code, tables, figures (stored, sanitized SVG, original-ratio display) and all loose text as annotatable blocks | [2026-10-02](../plans/completed/rich-article-blocks-acceptance-2026-10-02.md) |
 | Note History | [note-history.md](note-history.md) | Muted right-hand rail on chapter/article pages listing past entry dates for that content, with a modal reader and jump-to-verse (delivers FR-92) | [2026-08-30](../plans/completed/note-history-acceptance-2026-08-30.md) |
 | PDF Textract Extraction | [pdf-textract-extraction.md](pdf-textract-extraction.md) | Server-side PDF extraction via Textract Layout: presigned S3 upload (≤50 MB), typed-block filtering, preview before import, pdf.js fallback | [2026-07-06](../plans/completed/pdf-textract-extraction-acceptance-2026-07-06.md) |
 | Archive Articles | [archive-articles.md](archive-articles.md) | Archive/unarchive an article via a new index flag; kept intact for entries/annotations; "Show archived" toggle on Browse Articles | [2026-07-03](../plans/completed/archive-articles-acceptance-2026-07-03.md) |
