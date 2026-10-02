@@ -79,14 +79,14 @@ describe("catch-all — reference fixture", () => {
     for (const t of expected) expect(texts).toContain(t);
   });
 
-  it("keeps an inline label and inline <code> inside one sd-vs run", () => {
-    // `<small>AI-native</small>The originator…` — <small> is inline, so it joins
-    // the run with no separator (as textContent would); only CSS makes it a
-    // block on the source page, and CSS is not consulted.
+  it("separates a leading CSS-block label from the text after it in an sd-vs run", () => {
+    // `<small>AI-native</small>The originator…` — <small> is display:block only
+    // via CSS. The leading-label rule (exclusions.joinParts) inserts a space.
     expect(texts).toContain(
-      "AI-nativeThe originator brainstorms with Claude and writes the result down as intent.md, a proto-spec in the originator's own terms. The artifact contains what is wanted, why, and under which constraints. Repeat processes are encoded via skills."
+      "AI-native The originator brainstorms with Claude and writes the result down as intent.md, a proto-spec in the originator's own terms. The artifact contains what is wanted, why, and under which constraints. Repeat processes are encoded via skills."
     );
-    expect(texts.some((t) => t.startsWith("TraditionalAn idea passes through backlog entries"))).toBe(true);
+    expect(texts.some((t) => t.startsWith("Traditional An idea passes through backlog entries"))).toBe(true);
+    expect(texts.some((t) => t.includes("TraditionalAn"))).toBe(false);
   });
 
   it("puts sd-band parts in document order around the heading", () => {

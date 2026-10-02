@@ -72,16 +72,50 @@ export function normalizeText(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
+// ── Leading-label separator ──────────────────────────────────────────────────
+//
+// Pages often render a short label on its own line purely through CSS, e.g.
+// `<div><small>Traditional</small>An idea passes…</div>` with
+// `small { display: block }`. CSS is not consulted, so textContent-style
+// joining yields "TraditionalAn idea…". Narrow rule: when a LABEL_TAGS element
+// is the first content of a text run, and the text after it starts with an
+// uppercase letter or digit, a space is inserted after it. Mid-run elements
+// (footnote markers like `marker<sup>1</sup>.`) and lowercase continuations
+// (`<b>Un</b>believable`) are left joined.
+
+const LABEL_TAGS: ReadonlySet<string> = new Set(["SMALL", "B", "STRONG"]);
+
+/** Placeholder pushed after a leading label; resolved by `joinParts`. */
+export const LABEL_BREAK = "\u0000";
+
+/** True when `el` is one of the label elements the separator rule applies to. */
+export function isLabelElement(el: Element): boolean {
+  return LABEL_TAGS.has(el.tagName.toUpperCase());
+}
+
+/** True when `el` is a label element and `partsSoFar` holds no text yet. */
+export function isLeadingLabel(el: Element, partsSoFar: readonly string[]): boolean {
+  return isLabelElement(el) && partsSoFar.join("").trim() === "";
+}
+
+/** Join collected parts, turning LABEL_BREAKs into spaces before an uppercase letter or digit. */
+export function joinParts(parts: readonly string[]): string {
+  return normalizeText(
+    parts.join("").replace(/\u0000+(?=\s*[\p{Lu}\p{N}])/gu, " ").replace(/\u0000/g, "")
+  );
+}
+
 /**
  * Normalized plain text of `el`, skipping excluded descendants (and returning
  * "" if `el` itself is excluded). Concatenates text nodes like `textContent`
- * (no separators are inserted between elements), then collapses whitespace.
+ * (no separators are inserted between elements, except after a leading label —
+ * see `joinParts`), then collapses whitespace.
  */
 export function textOf(el: Element): string {
   if (isExcluded(el)) return "";
   const parts: string[] = [];
   collectText(el, parts);
-  return normalizeText(parts.join(""));
+  return joinParts(parts);
 }
 
 function collectText(node: Node, parts: string[]): void {
@@ -89,7 +123,11 @@ function collectText(node: Node, parts: string[]): void {
     if (child.nodeType === TEXT_NODE || child.nodeType === CDATA_SECTION_NODE) {
       parts.push((child as CharacterData).data);
     } else if (child.nodeType === ELEMENT_NODE) {
-      if (!isExcluded(child as Element)) collectText(child, parts);
+      const childEl = child as Element;
+      if (isExcluded(childEl)) continue;
+      const leading = isLeadingLabel(childEl, parts);
+      collectText(child, parts);
+      if (leading) parts.push(LABEL_BREAK);
     }
   }
 }

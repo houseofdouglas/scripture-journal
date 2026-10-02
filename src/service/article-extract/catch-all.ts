@@ -26,7 +26,7 @@
 // Only types are imported from `./blocks` (see its header comment).
 
 import type { BlockOutput, ExtractContext, UncoveredTextCallback } from "./blocks";
-import { isExcluded, normalizeText } from "./exclusions";
+import { LABEL_BREAK, isExcluded, isLabelElement, joinParts, textOf } from "./exclusions";
 
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
@@ -62,15 +62,11 @@ function blockAncestor(node: Node, root: Element): Node {
   return root;
 }
 
-/**
- * Next node after `node` in document order, without descending into `node`,
- * staying inside `container`. Null when `container` is exhausted.
- */
-function nextOutside(node: Node, container: Node): Node | null {
-  for (let current: Node | null = node; current && current !== container; current = current.parentNode) {
-    if (current.nextSibling) return current.nextSibling;
-  }
-  return null;
+/** True when `el` is a label element whose own text is all of `parts` so far. */
+function isLeadingLabelOf(el: Element, parts: readonly string[]): boolean {
+  if (!isLabelElement(el)) return false;
+  const own = textOf(el).replace(/\s/g, "");
+  return own !== "" && parts.join("").replace(/[\s\u0000]/g, "") === own;
 }
 
 /** Collect the run starting at `start`; marks consumed text nodes covered. */
@@ -79,39 +75,53 @@ function collectRun(start: Text, ctx: ExtractContext): string {
   const parts: string[] = [start.data];
   ctx.markCovered(start);
 
-  let node = nextOutside(start, container);
+  // Next node after `from` in document order, without descending into it and
+  // staying inside `container`; null when `container` is exhausted. Notes each
+  // inline element the walk leaves: when that element is a label and everything collected so far is its own text,
+  // it was the run's leading label: push a LABEL_BREAK (see `joinParts`).
+  const advance = (from: Node): Node | null => {
+    for (let current: Node | null = from; current && current !== container; current = current.parentNode) {
+      if (current.nodeType === ELEMENT_NODE && isLeadingLabelOf(current as Element, parts)) {
+        parts.push(LABEL_BREAK);
+      }
+      if (current.nextSibling) return current.nextSibling;
+    }
+    return null;
+  };
+
+  let node = advance(start);
   while (node) {
     if (ctx.isCovered(node)) break;
 
     if (node.nodeType === TEXT_NODE || node.nodeType === CDATA_SECTION_NODE) {
       parts.push((node as CharacterData).data);
       ctx.markCovered(node);
-      node = nextOutside(node, container);
+      node = advance(node);
       continue;
     }
 
     if (node.nodeType !== ELEMENT_NODE) {
-      node = nextOutside(node, container); // comments, processing instructions
+      node = advance(node); // comments, processing instructions
       continue;
     }
 
     const el = node as Element;
     if (isExcluded(el)) {
-      node = nextOutside(el, container); // skipped; the run continues
+      node = advance(el); // skipped; the run continues
       continue;
     }
     if (tag(el) === "BR") {
       parts.push(" ");
-      node = nextOutside(el, container);
+      node = advance(el);
       continue;
     }
     if (isBoundary(el)) break;
 
     // Inline wrapper: descend.
-    node = el.firstChild ?? nextOutside(el, container);
+    node = el.firstChild ?? advance(el);
   }
 
-  return normalizeText(parts.join(""));
+  return joinParts(parts);
 }
 
 /** FR-14: one `{ text }` block per maximal run of uncovered inline content. */

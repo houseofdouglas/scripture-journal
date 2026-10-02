@@ -95,6 +95,7 @@
     - Grouping: each maximal run of uncovered inline content (text nodes and inline elements) under the same nearest block-level ancestor (`div`, `section`, `blockquote`, `aside`, `details`, `dt`, `dd`, etc.) is one block, in document order. Block-level boundaries split runs.
     - Whitespace collapsed to single spaces and trimmed; whitespace-only runs skipped.
     - **Excluded** (never emitted, by catch-all or any other rule): `<script>`, `<style>`, `<noscript>`, `<template>`, `<button>`, form controls (`<input>`, `<select>`, `<textarea>`, `<label>`), `<nav>`, `<footer>`, footnote containers (`[role="doc-endnotes"]`, `[role="doc-footnote"]`, `.footnotes`) per the constitution's footnote-stripping rule, and hidden content (`hidden` attribute, `aria-hidden="true"`, inline `display:none` or `visibility:hidden`).
+    - **Leading-label separator**: when a `<small>`, `<b>`, or `<strong>` element is the first content of a run (catch-all) or of a block's text (`textOf`), and the text after it starts with an uppercase letter or digit, a space is inserted after it. This covers labels rendered on their own line only via CSS (reference `sd-vs`: `<small>Traditional</small>An idea…` → "Traditional An idea…"). Mid-run elements (`marker<sup>1</sup>.`) and lowercase continuations (`<b>Un</b>believable`) stay joined.
     - This covers the reference article's callout and embed boxes (`.sd-key`, `.sd-side`, `.sd-res`, …) and definition lists (`<dt>`/`<dd>` each become a text block).
 
 ### Hashing and versioning
