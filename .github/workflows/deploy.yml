@@ -40,6 +40,27 @@ jobs:
           role-to-assume: arn:aws:iam::818371815071:role/scripture-journal-github-actions
           aws-region: us-east-1
 
+      # Infrastructure first: code that depends on new resources (e.g. the
+      # /content/assets/* CloudFront behaviours) must not ship before them.
+      # Terraform also deploys dist/lambda.zip (source_code_hash), so the
+      # explicit update-function-code below is a harmless no-op re-upload.
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.10"
+          terraform_wrapper: false
+
+      - name: Terraform init
+        working-directory: infra
+        run: terraform init -input=false -lockfile=readonly
+
+      - name: Terraform plan
+        working-directory: infra
+        run: terraform plan -input=false -var="env=dev" -out=tfplan
+
+      - name: Terraform apply
+        working-directory: infra
+        run: terraform apply -input=false tfplan
+
       - name: Deploy Lambda
         run: |
           aws lambda update-function-code \
