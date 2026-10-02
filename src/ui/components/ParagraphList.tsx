@@ -65,7 +65,7 @@ export function ParagraphList({ paragraphs, annotation }: Props) {
             )}
           </div>
           {/* min-w-0 lets wide blocks (tables, code) scroll inside their own container */}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 break-words">
             <BlockContent block={p} />
 
             {annotation?.openBlockId === p.index && (
