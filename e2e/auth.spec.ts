@@ -11,6 +11,26 @@ test("unauthenticated visit to / redirects to /login?return=/", async ({ page })
   await expect(page).toHaveURL(/\/login\?return=%2F|\/login\?return=\//);
 });
 
+test("never-signed-in visitor sees no session-expired banner, no app links, and no /api/projects call", async ({
+  page,
+}) => {
+  const apiRequests: string[] = [];
+  page.on("request", (req) => {
+    if (new URL(req.url()).pathname.startsWith("/api/")) apiRequests.push(req.url());
+  });
+
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/login\?return=%2F$/);
+  await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
+
+  await expect(page.getByText(/session has expired/i)).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Scripture Journal" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /browse scripture/i })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /browse articles/i })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /import article/i })).toHaveCount(0);
+  expect(apiRequests).toEqual([]);
+});
+
 test("unauthenticated visit to /scripture redirects to /login?return=/scripture", async ({
   page,
 }) => {
@@ -77,12 +97,35 @@ test("429 shows rate-limit alert and disables the form", async ({ page }) => {
 });
 
 // ---------------------------------------------------------------------------
-// ?return= param shows session-expired info alert
+// Session-expired info alert — only on expired=1, never on ?return= alone
 // ---------------------------------------------------------------------------
 
-test("?return= param shows the session-expired info alert", async ({ page }) => {
+test("?return= alone does not show the session-expired alert", async ({ page }) => {
   await page.goto("/login?return=/scripture");
-  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("?expired=1 shows the session-expired info alert", async ({ page }) => {
+  await page.goto("/login?return=/scripture&expired=1");
+  await expect(page.getByRole("alert")).toHaveText(/session has expired/i);
+});
+
+test("401 on a request that sent a token redirects with the session-expired alert", async ({
+  page,
+}) => {
+  await page.route("**/api/projects", (route) =>
+    route.fulfill({ status: 401, json: { error: "UNAUTHORIZED", message: "Token expired" } }),
+  );
+  await mockUserIndex(page);
+  await page.goto("/login");
+  await seedAuth(page);
+  await page.goto("/");
+
+  await expect(page).toHaveURL(/\/login\?return=%2F&expired=1/);
+  await expect(page.getByRole("alert")).toHaveText(/session has expired/i);
+  const jwt = await page.evaluate(() => localStorage.getItem("jwt"));
+  expect(jwt).toBeNull();
 });
 
 // ---------------------------------------------------------------------------
@@ -117,5 +160,6 @@ test("expired JWT in localStorage redirects to login on page load", async ({
   await page.goto("/login");
   await seedExpiredAuth(page);
   await page.goto("/");
-  await expect(page).toHaveURL(/\/login/);
+  await expect(page).toHaveURL(/\/login\?return=%2F&expired=1/);
+  await expect(page.getByRole("alert")).toHaveText(/session has expired/i);
 });

@@ -2,7 +2,7 @@
 
 **Status**: APPROVED
 **Created**: 2026-04-22
-**Last Updated**: 2026-04-22
+**Last Updated**: 2026-10-01
 **Related Specs**: annotation, dashboard
 
 ---
@@ -39,6 +39,8 @@
 9. Usernames are normalized to lowercase before storage and lookup.
 10. Logout is client-side only: the SPA clears the JWT from `localStorage`. No server-side token invalidation.
 11. Any write endpoint receiving an expired or invalid JWT returns 401. The SPA clears `localStorage`, preserves the current URL as `?return=`, and redirects to `/login`.
+11a. The "Your session has expired" banner on `/login` is shown only when a session actually existed and expired or became invalid. The SPA signals this with `?expired=1` alongside `?return=`, set in exactly two cases: (a) on page load, a stored JWT is past `jwt_expires_at` or its stored session keys are incomplete; (b) a request that **sent** a Bearer token receives a session 401. A visitor with no stored session who hits a protected route is redirected to `/login?return=<path>` with no banner. A 401 on a request sent without a token is not treated as an expired session.
+11b. While signed out, the SPA issues no authenticated API requests (e.g. `GET /projects`), and the top nav shows only the brand/home link — app links (Browse Scripture, Browse Articles, Import Article), the mobile menu, the project switcher and the user menu are hidden.
 
 ---
 
@@ -194,6 +196,11 @@ Zod constraints: both required, `newPassword` min 8 chars, `newPassword !== curr
 - [ ] `POST /auth/password` with wrong `currentPassword` returns 401 `WRONG_CURRENT_PASSWORD`.
 - [ ] `POST /admin/users` with duplicate username (case-insensitive) returns 409.
 - [ ] Expired JWT on `POST /entries/annotate` returns 401; SPA redirects to `/login?return=<current-path>`.
+- [ ] Never-signed-in visit to `/` redirects to `/login?return=%2F` with no session-expired banner and no `/api/*` request (FR-11a, FR-11b).
+- [ ] Stored JWT past `jwt_expires_at` redirects to `/login?return=<path>&expired=1` and shows the session-expired banner (FR-11a).
+- [ ] A 401 on a request that sent a token redirects with `expired=1`; a 401 on a request without a token surfaces as an error and does not redirect (FR-11a).
+- [ ] `/login?return=<path>` without `expired=1` shows no banner (FR-11a).
+- [ ] Signed-out nav shows the brand link only — no app links or mobile menu toggle (FR-11b).
 
 ### Security
 
