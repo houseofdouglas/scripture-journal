@@ -103,6 +103,14 @@ aws iam create-policy-version \
   --set-as-default
 ```
 
+IAM caps a managed policy at **6,144 characters, not counting whitespace**. `deploy-policy.json` is at about 6,090, so there is little headroom. Check the size before adding actions:
+
+```bash
+python3 -c "import json;print(len(json.dumps(json.load(open('infra/iam/deploy-policy.json')),separators=(',',':'))))"
+```
+
+If a change would exceed the cap, move a group of statements into a second managed policy attached to the same role and user, instead of loosening resource scopes.
+
 IAM keeps at most 5 versions. If the call fails with `LimitExceeded`, delete the oldest non-default version first with `aws iam list-policy-versions` and then `aws iam delete-policy-version`.
 
 ---
@@ -129,7 +137,7 @@ Add only that action, scoped to the same resource pattern already in the policy.
 - **CloudFront** cannot be scoped to a specific distribution ARN for most `Create*` and `List*` actions — those actions don't support resource-level restrictions. The `Resource: "*"` on the CloudFront statement is intentional and standard practice.
 - **ACM** certificates are scoped to the account but not to a specific cert ARN, because Terraform needs to call `ListCertificates` to find existing ones during `plan`.
 - **API Gateway v2** ARNs do not include an account ID — this is an AWS quirk.
-- **SSM** `DescribeParameters` does not support resource-level permissions, so it has its own `Resource: "*"` statement (`SSMDescribe`). It only lists parameter metadata, never values.
+- **SSM** `DescribeParameters` does not support resource-level permissions, so it sits in the `Unscoped` statement (`Resource: "*"`) with `sts:GetCallerIdentity`. It only lists parameter metadata, never values.
 - **S3** `GetReplicationConfiguration` is read by Terraform's AWS provider when it refreshes every `aws_s3_bucket`, even though no replication is configured.
 - **Route53** `GetChange` requires `arn:aws:route53:::change/*` (not zone-scoped) because change IDs are global.
 - The deploy policy does **not** grant `lambda:InvokeFunction` — the scripts call the deployed API over HTTPS, not Lambda directly.

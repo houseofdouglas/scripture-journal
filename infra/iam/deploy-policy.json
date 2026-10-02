@@ -207,12 +207,6 @@
       "Resource": "arn:aws:ssm:us-east-1:818371815071:parameter/scripture-journal/*"
     },
 
-    {
-      "Sid": "SSMDescribe",
-      "Effect": "Allow",
-      "Action": ["ssm:DescribeParameters"],
-      "Resource": "*"
-    },
 
     {
       "Sid": "ACM",
@@ -290,9 +284,9 @@
     },
 
     {
-      "Sid": "CallerIdentity",
+      "Sid": "Unscoped",
       "Effect": "Allow",
-      "Action": "sts:GetCallerIdentity",
+      "Action": ["sts:GetCallerIdentity", "ssm:DescribeParameters"],
       "Resource": "*"
     }
 
