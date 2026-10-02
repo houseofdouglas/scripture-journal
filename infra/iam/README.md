@@ -30,6 +30,19 @@ Covers everything needed to:
 | CloudWatch Metrics | All | Put alarm + read metrics |
 | STS | — | `GetCallerIdentity` (Terraform data source) |
 
+### `deploy-read-policy.json` — Terraform refresh reads (companion to the deploy policy)
+
+During `plan`, Terraform's AWS provider reads many configuration endpoints for each resource it manages. For example, it calls `lambda:GetFunctionCodeSigningConfig`, `s3:GetReplicationConfiguration`, and the other per-bucket `Get*Configuration` actions. This policy grants read-only `Get*`/`List*`/`Describe*` on this project's resources, so that adding a resource type doesn't break CI one missing read at a time. It is a separate policy because `deploy-policy.json` is close to IAM's size cap. Attach it everywhere `scripture-journal-deploy` is attached.
+
+| Service | Resource scope | What's allowed |
+|---|---|---|
+| Lambda | `scripture-journal-api-{dev,prod}` | `Get*`, `List*` |
+| S3 | The four app/SPA buckets (bucket-level ARNs only) | `Get*`, `List*` (bucket configuration, not objects) |
+| IAM | `scripture-journal-lambda-{dev,prod}` roles | `Get*`, `List*` |
+| SSM | `/scripture-journal/*` parameters | `Get*`, `Describe*`, `List*` |
+| Route53 | Zone `Z09637711ZOOUGKI57DYD` and changes | `Get*`, `List*` |
+| CloudFront, ACM, API Gateway v2 | Account (these don't support narrower scoping for reads) | Read-only |
+
 ### `monitor-policy.json` — Read-only observability
 
 Read-only access suitable for a monitoring user, dashboard tool, or on-call access.
@@ -65,6 +78,19 @@ aws iam create-policy \
   --policy-name scripture-journal-monitor \
   --policy-document file://infra/iam/monitor-policy.json \
   --description "Read-only monitoring access for scripture-journal"
+```
+
+### Create and attach the read policy
+
+```bash
+aws iam create-policy \
+  --policy-name scripture-journal-deploy-read \
+  --policy-document file://infra/iam/deploy-read-policy.json \
+  --description "Read-only access Terraform needs to refresh scripture-journal resources"
+
+aws iam attach-role-policy \
+  --role-name scripture-journal-github-actions \
+  --policy-arn arn:aws:iam::818371815071:policy/scripture-journal-deploy-read
 ```
 
 ### Attach to your IAM user

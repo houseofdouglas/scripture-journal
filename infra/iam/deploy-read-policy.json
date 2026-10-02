@@ -1,0 +1,62 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "LambdaRead",
+      "Effect": "Allow",
+      "Action": ["lambda:Get*", "lambda:List*"],
+      "Resource": [
+        "arn:aws:lambda:us-east-1:818371815071:function:scripture-journal-api-dev",
+        "arn:aws:lambda:us-east-1:818371815071:function:scripture-journal-api-prod"
+      ]
+    },
+    {
+      "Sid": "S3BucketRead",
+      "Effect": "Allow",
+      "Action": ["s3:Get*", "s3:List*"],
+      "Resource": [
+        "arn:aws:s3:::scripture-journal-app-818371815071-dev",
+        "arn:aws:s3:::scripture-journal-app-818371815071-prod",
+        "arn:aws:s3:::scripture-journal-spa-818371815071-dev",
+        "arn:aws:s3:::scripture-journal-spa-818371815071-prod"
+      ]
+    },
+    {
+      "Sid": "IAMRoleRead",
+      "Effect": "Allow",
+      "Action": ["iam:Get*", "iam:List*"],
+      "Resource": [
+        "arn:aws:iam::818371815071:role/scripture-journal-lambda-dev",
+        "arn:aws:iam::818371815071:role/scripture-journal-lambda-prod"
+      ]
+    },
+    {
+      "Sid": "SSMParameterRead",
+      "Effect": "Allow",
+      "Action": ["ssm:Get*", "ssm:Describe*", "ssm:List*"],
+      "Resource": "arn:aws:ssm:us-east-1:818371815071:parameter/scripture-journal/*"
+    },
+    {
+      "Sid": "Route53Read",
+      "Effect": "Allow",
+      "Action": ["route53:Get*", "route53:List*"],
+      "Resource": [
+        "arn:aws:route53:::hostedzone/Z09637711ZOOUGKI57DYD",
+        "arn:aws:route53:::change/*"
+      ]
+    },
+    {
+      "Sid": "AccountScopedRead",
+      "Effect": "Allow",
+      "Action": [
+        "cloudfront:Get*",
+        "cloudfront:List*",
+        "acm:Describe*",
+        "acm:Get*",
+        "acm:List*",
+        "apigateway:GET"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
